@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "COSMOLOG",
+    "slug": "cosmolog",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/launcher-icon.png",
+    "scheme": "cosmolog",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/brand/cosmolog-mark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#102F26"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cosmolog.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/cosmolog-mark.png",
+        "backgroundColor": "#184235"
+      },
+      "package": "com.cosmolog.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-image",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -31,4 +31,21 @@ The student rejected the original v1 visual work. V1 is preserved in archived Fi
 
 **Not completed:** React Native app functionality, API adapters, SQLite, DummyJSON login, runtime animation, actual test coverage. The Figma design is an editable mockup, not functioning mobile software. Final device accessibility/usability checks and responsive font scaling remain implementation tasks.
 
-Next: student visual review → Expo initialization → tiny vertical slices with real tests.
+## 2026-11-22 — Task 00: Foundation, Project Configuration, and Route Skeleton Complete
+Completed:
+- Verified Expo SDK 58 runtime environment with React 19.3.1 and React Native 0.88.1.
+- Initialized project configuration (`package.json`, `app.json`, `tsconfig.json`).
+- Configured TypeScript with strict mode, Jest types, and `@/*` module aliases.
+- Configured ESLint 9 using native flat config with `eslint-config-expo/flat.js`.
+- Implemented Figma v2 editorial design tokens (`colors`, `spacing`, `radii`, `typography`, `layout`) in `src/theme/tokens.ts`.
+- Implemented Feather icon wrapper `src/components/common/Icon.tsx` with full accessible prop forwarding.
+- Configured Jest and `jest-expo` with custom Reanimated mock.
+- Created route skeleton:
+  - `app/_layout.tsx` (Google fonts loading for Playfair Display and Inter, splash screen coordination, Stack container).
+  - `app/(auth)/_layout.tsx`, `app/(auth)/login.tsx`, `app/(auth)/register.tsx`.
+  - `app/(tabs)/_layout.tsx` (Discover, The Field Shelf, Field Log & Profile with Feather icons and editorial styling).
+  - `app/(tabs)/index.tsx`, `app/(tabs)/favourites.tsx`, `app/(tabs)/profile.tsx`.
+  - `app/details/[source]/[id].tsx` (typed route parameters).
+- Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
+- Automated test suites passing (5 unit and component tests).
+- All lint and type checks pass cleanly with 0 errors and 0 warnings.

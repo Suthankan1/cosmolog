@@ -12,7 +12,8 @@ The assignment requires at least one example where AI output was corrected or ch
 
 | Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
 |---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | commit / test / issue link |
+| 2026-11-22 | Antigravity | Suggested synchronous RNTL `render(<Icon ... />)` in unit tests | Updated test to `await render(...)` for React Native Testing Library v14 | In RNTL v14 with React 19, `render()` is an asynchronous function returning a Promise. Synchronous invocation returned an empty unmounted object. | `tests/Icon.test.tsx` |
+| 2026-11-22 | Antigravity | Generated legacy `.eslintrc.js` using deprecated rc config | Switched to ESLint 9 `eslint.config.mjs` with `eslint-config-expo/flat.js` | ESLint v9 deprecated eslintrc format and issued warnings; modern flat config eliminates warnings and aligns with Expo SDK 58. | `eslint.config.mjs` |
 
 ## Student responsibility
 AI-generated code must be understood, run, reviewed and tested by the student. The student must be able to explain architectural decisions in the demo.
