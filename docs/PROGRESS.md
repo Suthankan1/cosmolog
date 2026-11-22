@@ -48,6 +48,35 @@ Completed:
   - `app/details/[source]/[id].tsx` (typed route parameters).
 - Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
 - Automated test suites passing (5 unit and component tests).
+## 2026-11-22 — Task 06: Verification, Genuine Screenshots, Documentation & Demo Script Complete
+Completed:
+- Verified native Android prebuild and compilation:
+  - Cleaned and generated native Android project via `npx expo prebuild --platform android --clean`.
+  - Assembled native Android debug APK via Gradle 9.4.1 + OpenJDK 21 (`android/app/build/outputs/apk/debug/app-debug.apk`).
+  - Booted Android emulator `Pixel_9` (Android 15 / API 35) and installed `app-debug.apk`.
+  - Connected app to Metro dev server bundling 1,895 modules.
+- Executed and validated real end-to-end device workflow:
+  - Successfully logged in using DummyJSON credentials (`emilys` / `emilyspass`).
+  - Fetched live NASA APOD replacement endpoint (`https://science.nasa.gov/wp-json/wp/v2/apod-basic/`) and Spaceflight News API v4.
+  - Tapped Daily Plate card to open typed reading room (`/details/nasa-apod/current`).
+  - Preserved discovery to The Field Shelf via animated Reanimated bookmark button.
+  - Verified local image caching via `expo-file-system/legacy` into persistent app documents directory.
+  - Navigated to The Field Shelf tab and confirmed preserved discovery card count and content.
+  - Simulated network failure via `adb shell svc wifi disable && adb shell svc data disable`.
+  - Confirmed Sage offline banner rendered with truthful SQLite synchronization timestamp and manual retry button.
+  - Restored network connectivity via `adb shell svc wifi enable && adb shell svc data enable`.
+- Captured genuine on-device screenshots in `docs/screenshots/`:
+  - `01-login.png`: Editorial Login screen with autofill helper.
+  - `02-discover.png`: Discover feed with Daily Plate hero card and dispatches.
+  - `03-details.png`: Celestial observation reading room with live Juno Jupiter imagery and provenance table.
+  - `04-shelf.png`: The Field Shelf with preserved offline card.
+  - `05-offline-banner.png`: Offline Field Mode banner with exact sync timestamp.
+- Authored comprehensive documentation deliverables:
+  - `docs/DEMO_SCRIPT.md`: Precise 3-minute video presentation script (1 min user flow, 2 min code walkthrough).
+  - `README.md`: System architecture diagram, offline storage choice, 3 key architectural decisions (ADR-003 SecureStore isolation, ADR-002 SQLite hydration, ADR-007 route decoupling), setup commands, test results, and screenshots gallery.
+  - `AI_USAGE.md`: Documented 4 genuine technical corrections with rationale and file references.
+- All 13 test suites (47 tests), ESLint 9, and TypeScript checks pass cleanly.
+
 ## 2026-11-22 — Task 05: UI Polish, Real-Time Search, Accessibility & Selected Bonus Complete
 Completed:
 - Implemented real-time local search in `src/components/discovery/SearchBar.tsx`:
