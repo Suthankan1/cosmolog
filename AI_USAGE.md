@@ -13,7 +13,8 @@ The assignment requires at least one example where AI output was corrected or ch
 | Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
 |---|---|---|---|---|---|
 | 2026-11-22 | Antigravity | Suggested synchronous RNTL `render(<Icon ... />)` in unit tests | Updated test to `await render(...)` for React Native Testing Library v14 | In RNTL v14 with React 19, `render()` is an asynchronous function returning a Promise. Synchronous invocation returned an empty unmounted object. | `tests/Icon.test.tsx` |
-| 2026-11-22 | Antigravity | Generated legacy `.eslintrc.js` using deprecated rc config | Switched to ESLint 9 `eslint.config.mjs` with `eslint-config-expo/flat.js` | ESLint v9 deprecated eslintrc format and issued warnings; modern flat config eliminates warnings and aligns with Expo SDK 58. | `eslint.config.mjs` |
+| 2026-11-22 | Antigravity | Assumed legacy DummyJSON password `emilyspassword` | Verified live endpoint response and corrected default demo password to `emilyspass` | DummyJSON updated its mock user dataset credentials; using the outdated string returned 400 Invalid credentials. | `src/services/auth/dummyJsonAuth.ts`, `app/(auth)/login.tsx` |
+| 2026-11-22 | Antigravity | Jest failed loading Immer ESM dependency inside Redux Toolkit | Added `immer|redux|@reduxjs` to `transformIgnorePatterns` in `jest.config.js` | Jest required transform configuration to process ESM modules bundled by Redux Toolkit in modern Node. | `jest.config.js` |
 
 ## Student responsibility
 AI-generated code must be understood, run, reviewed and tested by the student. The student must be able to explain architectural decisions in the demo.

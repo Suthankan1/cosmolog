@@ -48,4 +48,35 @@ Completed:
   - `app/details/[source]/[id].tsx` (typed route parameters).
 - Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
 - Automated test suites passing (5 unit and component tests).
-- All lint and type checks pass cleanly with 0 errors and 0 warnings.
+## 2026-11-22 — Task 01: DummyJSON Authentication & SecureStore Session Complete
+Completed:
+- Implemented `src/services/storage/secureStore.ts`:
+  - Token storage strictly isolated to OS-backed `expo-secure-store`.
+  - Zero sensitive auth tokens stored in MMKV, SQLite, AsyncStorage or Redux state.
+  - Safe session clearing upon sign out.
+- Implemented Zod validation schemas in `src/services/auth/authSchemas.ts`:
+  - `loginSchema` with non-empty username/password constraints.
+  - `registerSchema` with name, username regex, valid email, and password matching constraints.
+  - `dummyJsonLoginResponseSchema` validating external API responses.
+- Implemented `src/services/auth/dummyJsonAuth.ts`:
+  - Integrated `POST https://dummyjson.com/auth/login` and `POST https://dummyjson.com/users/add`.
+  - Added session restoration via `GET https://dummyjson.com/auth/me` with Bearer token.
+  - Classified errors cleanly: `INVALID_CREDENTIALS`, `NETWORK_ERROR`, `VALIDATION_ERROR`.
+  - Disclosed simulation for academic account creation.
+- Built reusable editorial form components:
+  - `src/components/common/Button.tsx`: primary, outline, and danger variants with loading indicator and >=48dp touch targets.
+  - `src/components/common/Input.tsx`: custom editorial field with focus states, error messages, and password toggle.
+- Created Redux Toolkit auth slice in `src/store/slices/authSlice.ts`:
+  - `loginThunk`, `registerThunk`, `restoreSessionThunk`, `logoutThunk`.
+  - Configured Redux store with typed hooks (`useAppDispatch`, `useAppSelector`).
+- Implemented Figma v2 screens:
+  - `app/(auth)/login.tsx`: branded editorial login with demo autofill helper (`emilys` / `emilyspass`).
+  - `app/(auth)/register.tsx`: simulated registration with explicit academic disclosure.
+  - `app/_layout.tsx`: integrated Redux provider and reactive auth gate routing.
+  - `app/(tabs)/profile.tsx`: observer session display with user name, email, security badges, and working logout action.
+- Wrote unit and integration tests:
+  - `tests/authValidation.test.ts`
+  - `tests/dummyJsonAuth.test.ts`
+  - `tests/secureStore.test.ts`
+  - `tests/authSlice.test.ts`
+- All 6 test suites (23 tests), ESLint flat config, TypeScript check, and Android export passed with 0 errors and 0 warnings.
