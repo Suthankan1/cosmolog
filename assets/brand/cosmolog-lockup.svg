@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="220" viewBox="0 0 960 220">
+  <g transform="translate(10 6) scale(.37)">
+    <path d="M286 67C177 45 91 115 86 220C81 323 156 398 274 384C194 371 136 307 136 227C136 146 194 89 286 67Z" fill="#184235"/>
+    <path d="M85 335C135 287 275 220 371 193C411 182 435 188 430 209C423 242 281 310 166 349C122 363 91 367 83 354" stroke="#C79B4D" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="418" cy="194" r="12" fill="#C79B4D"/>
+    <path d="M253 194C260 232 271 246 300 254C271 261 260 276 253 314C245 276 235 262 207 254C235 246 245 231 253 194Z" fill="#184235"/>
+  </g>
+  <text x="220" y="107" font-family="Playfair Display, Georgia, serif" font-size="84" letter-spacing="5" fill="#184235">COSMOLOG</text>
+  <text x="227" y="160" font-family="Playfair Display, Georgia, serif" font-style="italic" font-size="29" fill="#2C2A27">A field journal for the universe</text>
+</svg>

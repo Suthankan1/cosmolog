@@ -1,0 +1,1 @@
+The Figma v2 artwork uses illustrative high-resolution Figma-generated astronomy imagery. Do not treat it as genuine NASA photography or bundle it into the production app as NASA content. Production cards must use actual attributed API media, with explicit persistent offline image storage for favourites where promised. Original visual references live in `design/references/`.

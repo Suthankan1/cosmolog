@@ -1,0 +1,1 @@
+Starter theme tokens are in `tokens.ts` and mirrored in `design/tokens.json`. Load bundled font files in the Expo root layout before relying on the font-family names. Do not create per-screen ad hoc colours or spacing values.

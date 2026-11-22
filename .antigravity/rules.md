@@ -1,0 +1,2 @@
+# Antigravity project rules
+Read `AGENTS.md`, `PROJECT_CONTEXT.md`, `docs/ASSIGNMENT_REQUIREMENTS.md` and the relevant task before editing. Work in small auditable slices. Preserve secure token storage and offline-first invariants. Do not assume a successful API request is equivalent to durable local persistence. Test offline cold start and app restart. Keep the editorial design system. Record actual progress and do not claim unrun checks.

@@ -1,0 +1,55 @@
+{
+  "file": "COSMOLOG \u2014 Product & Visual Design",
+  "url": "https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N",
+  "team": "Suthankan Balenthiran's team",
+  "current_version": "v2 editorial redesign",
+  "archived_version": "v1 \u2014 do not implement",
+  "pages": {
+    "cover": {
+      "id": "11:2",
+      "name": "00 \u2014 V2 / Reference",
+      "main_board": "22:2"
+    },
+    "brand": {
+      "id": "11:3",
+      "name": "01 \u2014 V2 / Brand System",
+      "main_board": "13:135"
+    },
+    "components": {
+      "id": "11:4",
+      "name": "02 \u2014 V2 / Components",
+      "main_specimen": "13:85"
+    },
+    "screens": {
+      "id": "11:5",
+      "name": "03 \u2014 V2 / App Screens",
+      "nodes": [
+        "16:2",
+        "16:25",
+        "16:70",
+        "17:42",
+        "17:136",
+        "18:109",
+        "18:191"
+      ]
+    },
+    "states": {
+      "id": "11:6",
+      "name": "04 \u2014 V2 / States & UX Flows",
+      "nodes": [
+        "19:2",
+        "19:64",
+        "19:108",
+        "19:153",
+        "19:197"
+      ],
+      "flow": "19:246"
+    },
+    "motion": {
+      "id": "11:7",
+      "name": "05 \u2014 V2 / Motion Storyboard",
+      "main_board": "21:2"
+    }
+  },
+  "design_note": "Five original Figma image generations were used for high-fidelity mockup imagery only; final app should load attributed API media."
+}

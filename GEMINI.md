@@ -1,0 +1,2 @@
+# Gemini / Antigravity context
+This repository is COSMOLOG, a React Native + Expo + TypeScript offline-first Space & Science discovery app for IN3210 Assignment 2. Read `AGENTS.md` and `PROJECT_CONTEXT.md` first. The last numeric digit of index 234202J is 2 (Space & Science); the second-last is 0 (offline-first). Follow `docs/ASSIGNMENT_REQUIREMENTS.md` and `design/`. Keep implementation incremental and tested.
