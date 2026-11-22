@@ -223,3 +223,7 @@ The first set of five cached cold launches had a 3.08-second median on the emula
 Android native lint and the optimized release build passed. The final signed ARM64 APK retained three bookmarks and supported offline search and marking a plate as read after a cold start. The five-run median was 3.14 seconds on the emulator, so the 2.5-second target remains open. Larger-text checks covered Discover, Shelf, Details, the note editor and Profile at four widths. TalkBack focus reached Discover search and Details back.
 
 The revised narrated demo lasts 169.02 seconds. It includes Android screenshots and footage followed by a code walkthrough. Full audio and video decoding succeeded. See [verification scenarios and release checks](TEST_PLAN.md).
+
+## 2026-11-23 — Native splash handoff
+
+The launch recording exposed a white native frame before the forest reveal. Expo's native splash configuration now uses the existing ivory mark and forest background. Android registers Expo's splash manager before starting React and scopes the icon preference to API 33 and newer. ESLint, TypeScript, 60 Jest tests, Android lint and the signed ARM64 QA build passed. The installed APK cold-launched to cached Discover in airplane mode.

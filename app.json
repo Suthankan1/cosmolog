@@ -7,11 +7,6 @@
     "icon": "./assets/brand/launcher-icon.png",
     "scheme": "cosmolog",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/brand/cosmolog-mark.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#102F26"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.cosmolog.app"
@@ -32,6 +27,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/cosmolog-mark-ivory.png",
+          "imageWidth": 128,
+          "backgroundColor": "#102F26"
+        }
+      ],
       "expo-secure-store",
       "expo-sqlite",
       "expo-image",

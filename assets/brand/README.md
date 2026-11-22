@@ -10,4 +10,4 @@ Wordmark uses Playfair Display and tagline Playfair Display Italic. The SVG keep
 
 Test at 24px and 48px, with real Android adaptive-icon safe zone before submission.
 
-The v2 ivory observation mark is exported as `cosmolog-mark-ivory.svg` for the dark launch and authentication mastheads.
+The v2 ivory observation mark is exported as `cosmolog-mark-ivory.svg` for the dark launch and authentication mastheads. `cosmolog-mark-ivory.png` is the transparent raster of the same mark for the native splash.

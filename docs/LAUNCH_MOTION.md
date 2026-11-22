@@ -4,6 +4,8 @@ Figma storyboard: https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=21
 
 **Platform constraint:** Android and iOS launcher icons are static application assets. Animate the in-app launch reveal, not the operating-system icon.
 
+The Expo SplashScreen plugin in `app.json` defines the forest background and ivory mark for native generation. The checked-in Android project mirrors those resources and registers Expo's splash manager before React starts. Regenerate the splash resources when the mark or the native theme changes. [Expo SplashScreen configuration](https://docs.expo.dev/versions/latest/sdk/splash-screen/#configuration)
+
 ## Motion sequence
 1. **Static native splash** — brand mark on forest background. No blank flash.
 2. **0–180 ms** — ivory crescent path emerges with ease-out.
