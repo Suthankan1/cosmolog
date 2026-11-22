@@ -1,55 +1,34 @@
-export type DiscoverySource = 'nasa-apod' | 'spaceflight-news';
+import type { useRouter } from 'expo-router';
+
+export const discoverySources = ['nasa-apod', 'spaceflight-news'] as const;
+export type DiscoverySource = typeof discoverySources[number];
 
 export interface DetailsRouteParams {
   source: DiscoverySource;
   id: string;
 }
 
-/**
- * Validates and normalizes route parameters for the Details screen.
- * Per assignment rules, Details receives only item source and ID, never a serialized full object.
- */
+export function isCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+export function isNewsId(value: string): boolean {
+  return /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value));
+}
+
 export function parseDetailsParams(params: {
   source?: string | string[];
   id?: string | string[];
 }): DetailsRouteParams | null {
-  const sourceRaw = Array.isArray(params.source) ? params.source[0] : params.source;
-  const idRaw = Array.isArray(params.id) ? params.id[0] : params.id;
+  const source = Array.isArray(params.source) && params.source.length === 1 ? params.source[0] : params.source;
+  const id = Array.isArray(params.id) && params.id.length === 1 ? params.id[0] : params.id;
+  if (typeof id !== 'string' || (source !== 'nasa-apod' && source !== 'spaceflight-news')) return null;
 
-  if (!sourceRaw || !idRaw) {
-    return null;
-  }
-
-  if (sourceRaw !== 'nasa-apod' && sourceRaw !== 'spaceflight-news') {
-    return null;
-  }
-
-  const decodedId = decodeURIComponent(idRaw).trim();
-  if (!decodedId) {
-    return null;
-  }
-
-  return {
-    source: sourceRaw as DiscoverySource,
-    id: decodedId,
-  };
+  return (source === 'nasa-apod' ? isCalendarDate(id) : isNewsId(id)) ? { source, id } : null;
 }
 
-export interface RouterLike {
-  push: (href: any) => void;
-  replace: (href: any) => void;
-  back: () => void;
-}
-
-/**
- * Type-safe navigation helper to push the Details screen.
- */
-export function navigateToDetails(router: RouterLike, source: DiscoverySource, id: string): void {
-  router.push({
-    pathname: '/details/[source]/[id]',
-    params: {
-      source,
-      id: encodeURIComponent(id),
-    },
-  });
+export function navigateToDetails(router: Pick<ReturnType<typeof useRouter>, 'push'>, source: DiscoverySource, id: string): void {
+  router.push({ pathname: '/details/[source]/[id]', params: { source, id } });
 }

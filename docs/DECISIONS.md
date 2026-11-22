@@ -35,3 +35,11 @@
 **Decision:** Provide a static launcher asset and a short in-app Reanimated brand reveal after native splash.
 **Reason:** Mobile operating systems control launcher icon rendering; a continuously animated launcher icon is not a normal cross-platform app capability.
 **Trade-off:** Animation is an opening transition, not a continuously animated home-screen icon.
+
+## ADR-007 — Local session continuity and protected routes
+
+A verified DummyJSON identity and its tokens are stored together in SecureStore. Startup reads that record locally and opens protected routes immediately. Online validation can refresh or revoke the session. Service outages leave the existing local session usable. A sign-out marker takes precedence over older credential keys and conditional updates keep an in-progress validation from restoring a signed-out session. Legacy token-only installs need one online verification.
+
+## ADR-008 — Source snapshots and Redux Toolkit thunks
+
+The remote workflow keeps the repository's Redux Toolkit thunks. The coordinator hydrates SQLite before refreshing, and each source commits its feed membership and successful timestamp together. This gives cached content, source failures, reconnects, and local writes one reconciliation path without depending on a second in-memory remote cache.

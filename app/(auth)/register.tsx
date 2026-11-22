@@ -91,7 +91,7 @@ export default function RegisterScreen() {
           <View style={styles.disclosureBox}>
             <Icon name="info" size={16} color={colors.forest} style={styles.disclosureIcon} />
             <Text style={styles.disclosureText}>
-              Academic Notice: User registration is simulated via DummyJSON POST /users/add per assignment requirements.
+              This is a demo registration. Sign in with the demo account afterwards.
             </Text>
           </View>
 

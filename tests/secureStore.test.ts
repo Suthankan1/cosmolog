@@ -1,52 +1,31 @@
 import * as SecureStore from 'expo-secure-store';
-import {
-  clearAuthTokens,
-  getAuthToken,
-  getRefreshToken,
-  saveAuthTokens,
-} from '../src/services/storage/secureStore';
+import { clearSession, readStoredSession, replaceSessionIfCurrent, saveSession } from '../src/services/storage/secureStore';
 
 jest.mock('expo-secure-store', () => {
-  const store: Record<string, string> = {};
+  const values = new Map<string, string>();
   return {
-    setItemAsync: jest.fn(async (key: string, value: string) => {
-      store[key] = value;
-    }),
-    getItemAsync: jest.fn(async (key: string) => store[key] || null),
-    deleteItemAsync: jest.fn(async (key: string) => {
-      delete store[key];
-    }),
+    setItemAsync: jest.fn(async (key: string, value: string) => { values.set(key, value); }),
+    getItemAsync: jest.fn(async (key: string) => values.get(key) ?? null),
+    deleteItemAsync: jest.fn(async (key: string) => { values.delete(key); }),
   };
 });
 
-describe('SecureStore Authentication Storage', () => {
-  beforeEach(async () => {
-    await clearAuthTokens();
-    jest.clearAllMocks();
-  });
+const user = {
+  id: 1, username: 'emilys', email: 'emily@example.com',
+  firstName: 'Emily', lastName: 'Johnson', fullName: 'Emily Johnson',
+};
+const session = { user, accessToken: 'test-token', refreshToken: 'test-refresh' };
 
-  it('persists access and refresh tokens to OS-backed secure storage', async () => {
-    await saveAuthTokens('access_token_123', 'refresh_token_456');
+it('persists and restores a verified session through SecureStore', async () => {
+  await saveSession(session);
+  expect(SecureStore.setItemAsync).toHaveBeenCalledWith('cosmolog_session_v1', JSON.stringify(session));
+  expect(await readStoredSession()).toEqual({ kind: 'verified', session });
+});
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith('cosmolog_access_token', 'access_token_123');
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith('cosmolog_refresh_token', 'refresh_token_456');
-
-    const token = await getAuthToken();
-    const refreshToken = await getRefreshToken();
-
-    expect(token).toBe('access_token_123');
-    expect(refreshToken).toBe('refresh_token_456');
-  });
-
-  it('clears all tokens completely upon logout', async () => {
-    await saveAuthTokens('token_to_clear');
-    expect(await getAuthToken()).toBe('token_to_clear');
-
-    await clearAuthTokens();
-
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('cosmolog_access_token');
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('cosmolog_refresh_token');
-    expect(await getAuthToken()).toBeNull();
-    expect(await getRefreshToken()).toBeNull();
-  });
+it('prevents a stale validation or leftover legacy token from restoring a signed-out session', async () => {
+  await saveSession(session);
+  await clearSession();
+  await SecureStore.setItemAsync('cosmolog_access_token', session.accessToken);
+  expect(await replaceSessionIfCurrent(session.accessToken, session)).toBe(false);
+  expect(await readStoredSession()).toEqual({ kind: 'signedOut' });
 });

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -23,7 +23,7 @@ import { Icon } from '../../src/components/common/Icon';
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const {
     control,
@@ -37,12 +37,6 @@ export default function LoginScreen() {
       password: '',
     },
   });
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, router]);
 
   const onSubmit = (data: LoginFormData) => {
     dispatch(clearAuthError());
@@ -125,7 +119,7 @@ export default function LoginScreen() {
             accessibilityLabel="Autofill demo credentials"
           >
             <Icon name="key" size={14} color={colors.brass} style={styles.demoIcon} />
-            <Text style={styles.demoHelperText}>Tap to autofill demo account (emilys)</Text>
+            <Text style={styles.demoHelperText}>Use demo account</Text>
           </Pressable>
 
           <Button

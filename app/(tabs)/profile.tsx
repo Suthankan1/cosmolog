@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { logoutThunk } from '../../src/store/slices/authSlice';
 import { loadCachedFeedThunk } from '../../src/store/slices/feedSlice';
@@ -17,9 +16,8 @@ import { Button } from '../../src/components/common/Button';
 import { Icon } from '../../src/components/common/Icon';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const { items, lastSyncedAt } = useAppSelector((state) => state.feed);
   const { favourites } = useAppSelector((state) => state.favourites);
 
@@ -34,7 +32,6 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await dispatch(logoutThunk());
-            router.replace('/(auth)/login');
           },
         },
       ]
@@ -158,7 +155,9 @@ export default function ProfileScreen() {
         style={styles.verifyButton}
       />
 
+      {error && <Text accessibilityRole="alert">{error}</Text>}
       <Button
+        loading={isLoading}
         title="Sign Out of Observatory"
         onPress={handleLogout}
         variant="danger"

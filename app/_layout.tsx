@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import {
@@ -15,59 +15,45 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { store, useAppDispatch, useAppSelector } from '../src/store';
-import { restoreSessionThunk } from '../src/store/slices/authSlice';
+import { revalidateSessionThunk, restoreSessionThunk } from '../src/store/slices/authSlice';
 import { colors } from '../src/theme/tokens';
+import { subscribeToNetworkState } from '../src/services/network/networkObserver';
 import { BrandReveal } from '../src/components/common/BrandReveal';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
-  const router = useRouter();
-  const segments = useSegments();
   const dispatch = useAppDispatch();
   const { isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
   const [isBrandRevealed, setIsBrandRevealed] = useState(false);
+  const finishReveal = useCallback(() => setIsBrandRevealed(true), []);
 
   useEffect(() => {
-    dispatch(restoreSessionThunk());
+    void dispatch(restoreSessionThunk());
   }, [dispatch]);
 
   useEffect(() => {
-    if (!isBrandRevealed || isInitialSessionLoading) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated, isInitialSessionLoading, isBrandRevealed, segments, router]);
+    if (!isAuthenticated) return;
+    return subscribeToNetworkState((isOnline) => {
+      if (isOnline) void dispatch(revalidateSessionThunk());
+    });
+  }, [dispatch, isAuthenticated]);
 
   return (
     <>
       <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.ivory },
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="details/[source]/[id]"
-          options={{
-            headerShown: false,
-            animation: 'slide_from_right',
-          }}
-        />
-      </Stack>
-
-      {!isBrandRevealed && (
-        <BrandReveal onFinish={() => setIsBrandRevealed(true)} />
+      {!isInitialSessionLoading && (
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
+          <Stack.Protected guard={isAuthenticated}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="details/[source]/[id]" />
+          </Stack.Protected>
+          <Stack.Protected guard={!isAuthenticated}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+        </Stack>
       )}
+      {(!isBrandRevealed || isInitialSessionLoading) && <BrandReveal onFinish={finishReveal} />}
     </>
   );
 }

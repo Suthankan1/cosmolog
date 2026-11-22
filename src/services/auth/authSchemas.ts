@@ -26,26 +26,20 @@ export const registerSchema = z
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const dummyJsonLoginResponseSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  email: z.string(),
-  firstName: z.string(),
+export const authProfileSchema = z.object({
+  id: z.number().int().positive(),
+  username: z.string().min(1),
+  email: z.email(),
+  firstName: z.string().min(1),
   lastName: z.string(),
-  gender: z.string().optional(),
-  image: z.string().optional(),
-  accessToken: z.string(),
-  refreshToken: z.string().optional(),
+  image: z.url({ protocol: /^https$/ }).optional().catch(undefined),
 });
 
-export type DummyJsonLoginResponse = z.infer<typeof dummyJsonLoginResponseSchema>;
+export const authUserSchema = authProfileSchema.extend({ fullName: z.string().min(1) });
 
-export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  image?: string;
-}
+export const dummyJsonLoginResponseSchema = authProfileSchema.extend({
+  accessToken: z.string().min(1),
+  refreshToken: z.string().min(1).optional(),
+});
+
+export type AuthUser = z.infer<typeof authUserSchema>;

@@ -179,3 +179,7 @@ Completed:
   - `tests/secureStore.test.ts`
   - `tests/authSlice.test.ts`
 - All 6 test suites (23 tests), ESLint flat config, TypeScript check, and Android export passed with 0 errors and 0 warnings.
+
+## 2026-11-23 — Local authentication and protected navigation
+
+Verified-session restore now opens the app directly from SecureStore. The online check can refresh credentials or revoke a rejected session. Sign-out and stale validation are ordered so the signed-out session cannot be restored by a late response. Expo Router protects tabs and Details, and route validation handles malformed IDs. Jest (49 tests), ESLint, and TypeScript passed.
