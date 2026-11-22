@@ -1,22 +1,20 @@
-# COSMOLOG narrated demo
+# COSMOLOG Smart Reading demo
 
-Target duration **2 min 50 sec**. Record the app in an installed build with Metro stopped. Start online with the sign-in screen and an eligible APOD image available. Use the public demo account.
+Target duration **2 min 49 sec**. Use the self-contained Android build with Metro stopped. Use the public DummyJSON demo account and verify the downloaded image has an available offline status before starting.
 
 | Time | Screen or code | Narration cue |
 | --- | --- | --- |
-| 0:00–0:12 | Sign in and open Discover | COSMOLOG is a space and science archive for IN3210. Sign-in uses DummyJSON and the app reads NASA and Spaceflight News. |
-| 0:12–0:25 | Open Daily Plate, save, wait for the image status | Details takes a source and an ID. Saving commits the record first. The image reports when a durable copy is ready. |
-| 0:25–0:37 | Add a short note and open the Shelf | The Field Shelf keeps this discovery and my note together. Both are available on this device. |
-| 0:37–0:53 | Show airplane mode and a force-stop, reopen from the launcher | This is a cold launch with the network off. A previously verified session opens the last collection from SQLite. |
-| 0:53–1:05 | Open the saved record and note, then reconnect | The downloaded image and note still open. When the device reconnects, sources refresh automatically. |
-| 1:05–1:25 | `app/_layout.tsx` and `src/navigation/types.ts` | Expo Router guards tabs and the Details stack. The route only carries the two identifiers, which are validated. |
-| 1:25–1:45 | `src/services/storage/secureStore.ts` and `src/store/slices/authSlice.ts` | SecureStore holds the verified identity and tokens. DummyJSON can refresh or revoke the session when online. |
-| 1:45–2:10 | `src/store/archiveLifecycle.ts` and `src/database/repositories/discoveryRepository.ts` | SQLite hydration happens first. Redux Toolkit thunks coordinate refresh, and each source commits its list and successful timestamp in one transaction. |
-| 2:10–2:31 | `src/database/repositories/favouritesRepository.ts` and `src/services/storage/imageStorage.ts` | Bookmarks belong to an account. Notes update locally, and image files are validated before the database calls them available. |
-| 2:31–2:50 | `tests/sqliteRepositories.test.ts`, `tests/feedSync.test.ts`, and final test results | The tests exercise migration, account ownership, rollback on a bad write, and the cases where only one source is available. |
-
-Explain the decisions in your own words. Keep the final video below three minutes and separately verify the upload plays with audio.
+| 0:00–0:11 | Sign in and Discover | Accounts sign in through DummyJSON. Discover collects NASA astronomy plates and Spaceflight News dispatches. |
+| 0:11–0:22 | Daily Plate and Field Shelf | Saving commits the bookmark first. Eligible images download separately. |
+| 0:22–0:31 | Browse by date and the Cocoon Nebula plate | Choose 2014-09-18 to open an archived NASA plate. The reader keeps its source and credit. |
+| 0:31–0:53 | Airplane-mode cold launch, Continue Reading and offline search | The local archive survives a restart. Resume Reading returns to the saved paragraph. Searching for Cocoon finds the plate offline. |
+| 0:53–1:04 | Field note with the offline banner | The saved note opens and can be edited offline. |
+| 1:04–1:24 | `app/_layout.tsx` | Expo Router separates authentication, the tabs and Details. Details takes the source and ID. |
+| 1:24–1:43 | `src/services/storage/secureStore.ts` | SecureStore restores a verified session offline. DummyJSON can refresh or revoke it when online. |
+| 1:43–2:06 | `src/database/repositories/discoveryRepository.ts` | Redux Toolkit coordinates refresh. SQLite commits each source list and timestamp together. Reconnect can recover an open uncached plate. |
+| 2:06–2:29 | `src/database/repositories/readingRepository.ts` | SQLite stores the paragraph index and article fingerprint per account. The reader waits for layout before restoring it. |
+| 2:29–2:49 | `tests/sqliteRepositories.test.ts` | Sixty checks include migrations, account ownership and a thousand-record archive search. The installed Android build was separately exercised in airplane mode. |
 
 ## Local review cut
 
-The generated local review cut is `dist/cosmolog-demo.mp4`. It combines actual Android emulator footage with a code walkthrough and synthetic narration. The export was checked at 170.02 seconds with playable H.264 video and AAC audio. The student can review or replace the narration before submission.
+`dist/cosmolog-smart-reading-demo.mp4` uses Android emulator footage, screenshots, code excerpts, and synthetic narration. The student can use these cues to explain the decisions in their own words. Verify the uploaded submission plays with audio and stays under three minutes.

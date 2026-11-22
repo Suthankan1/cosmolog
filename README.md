@@ -54,6 +54,7 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 - [DummyJSON authentication](https://dummyjson.com/docs/auth)
 - [NASA Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/)
 - [Jupiter image credits](https://science.nasa.gov/wp-json/wp/v2/apod-basic/261122) · NASA/Juno/SwRI/MSSS, processing by Matt Brealey and Seán Doran · [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/)
+- [Cocoon Nebula Wide Field](https://apod.nasa.gov/apod/ap140918.html) · Federico Pelliccia
 
 ## Screenshots
 
@@ -61,9 +62,13 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 | --- | --- | --- |
 | ![Sign in](docs/screenshots/01-login.png) | ![Discover](docs/screenshots/02-discover.png) | ![Details](docs/screenshots/03-details.png) |
 
-| Field Shelf | Cold launch offline | Saved image and note |
+| Field Shelf | Cold launch offline | Offline field note |
 | --- | --- | --- |
 | ![Field Shelf](docs/screenshots/04-shelf.png) | ![Offline Discover](docs/screenshots/05-offline-banner.png) | ![Offline Field Journal](docs/screenshots/06-journal-offline.png) |
+
+| Plate opened by date | Continue Reading | Offline archive search |
+| --- | --- | --- |
+| ![Cocoon Nebula Wide Field](docs/screenshots/07-browse-by-date.png) | ![Continue Reading card](docs/screenshots/08-continue-reading.png) | ![Offline search results](docs/screenshots/09-offline-search.png) |
 
 ## Architecture and state
 
@@ -76,7 +81,7 @@ flowchart LR
   State --> Session[DummyJSON and SecureStore]
   Sources --> Repositories[SQLite repositories]
   State --> Repositories
-  Repositories --> SQLite[(Snapshots, favourites, notes)]
+  Repositories --> SQLite[(Snapshots, favourites, notes, reading checkpoints)]
   State --> Files[Durable image files]
 ```
 
@@ -97,4 +102,4 @@ npm run typecheck
 npm test -- --runInBand
 ```
 
-Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver, reconnect and source failure behavior, route validation, media normalization, and the journal. A GitHub Actions workflow repeats the JS checks on a clean install. The verified Android run covered cold airplane-mode restore, editing and searching the note offline, automatic reconnect, four screen widths at 1.3× font size, and durable sign-out. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
+Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver, reconnect and source failure behavior, route validation, media normalization, checkpoints, and archive search. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The Smart Reading Android run verified paragraph restore and local search after an airplane-mode cold launch, date lookup, and automatic recovery for an uncached plate on reconnect. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
