@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '../../src/store';
 import {
   loadCachedFeedThunk,
   setIsOffline,
+  setSearchQuery,
   setSelectedCategory,
   syncRemoteFeedThunk,
 } from '../../src/store/slices/feedSlice';
@@ -27,6 +28,7 @@ import { OfflineBanner } from '../../src/components/common/OfflineBanner';
 import { DailyPlateCard } from '../../src/components/discovery/DailyPlateCard';
 import { DispatchRow } from '../../src/components/discovery/DispatchRow';
 import { CategoryChips } from '../../src/components/discovery/CategoryChips';
+import { SearchBar } from '../../src/components/discovery/SearchBar';
 import { EmptyState } from '../../src/components/common/EmptyState';
 import { DiscoveryItem } from '../../src/database/models';
 
@@ -40,6 +42,7 @@ export default function DiscoverScreen() {
     dailyPlate,
     dispatches,
     selectedCategory,
+    searchQuery,
     isLoading,
     isRefreshing,
     isOffline,
@@ -71,12 +74,39 @@ export default function DiscoverScreen() {
   };
 
   const filteredDispatches = useMemo(() => {
-    if (selectedCategory === 'all') return dispatches;
+    let list: DiscoveryItem[] = dispatches;
     if (selectedCategory === 'nasa-apod') {
-      return items.filter((i) => i.source === 'nasa-apod');
+      list = items.filter((i) => i.source === 'nasa-apod');
+    } else if (selectedCategory === 'spaceflight-news') {
+      list = dispatches.filter((i) => i.source === 'spaceflight-news');
     }
-    return dispatches.filter((i) => i.source === 'spaceflight-news');
-  }, [items, dispatches, selectedCategory]);
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          i.summary.toLowerCase().includes(q) ||
+          (i.author && i.author.toLowerCase().includes(q)) ||
+          (i.attribution && i.attribution.toLowerCase().includes(q))
+      );
+    }
+
+    return list;
+  }, [items, dispatches, selectedCategory, searchQuery]);
+
+  const showDailyPlate = useMemo(() => {
+    if (!dailyPlate) return false;
+    if (selectedCategory === 'spaceflight-news') return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        dailyPlate.title.toLowerCase().includes(q) ||
+        dailyPlate.summary.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  }, [dailyPlate, selectedCategory, searchQuery]);
 
   const renderHeader = () => (
     <View style={styles.listHeader}>
@@ -87,7 +117,13 @@ export default function DiscoverScreen() {
         </View>
       </View>
 
-      {Boolean(dailyPlate) && (
+      <SearchBar
+        value={searchQuery}
+        onChangeText={(text) => dispatch(setSearchQuery(text))}
+        onClear={() => dispatch(setSearchQuery(''))}
+      />
+
+      {showDailyPlate && (
         <DailyPlateCard
           item={dailyPlate!}
           isSaved={Boolean(favouriteMap[dailyPlate!.localId])}
@@ -156,6 +192,17 @@ export default function DiscoverScreen() {
             />
           )}
           ListHeaderComponent={renderHeader}
+          ListEmptyComponent={
+            searchQuery.trim() ? (
+              <EmptyState
+                icon="search"
+                title="No Matches Found"
+                description={`No dispatches matched "${searchQuery}".`}
+                actionTitle="Clear Filter"
+                onAction={() => dispatch(setSearchQuery(''))}
+              />
+            ) : undefined
+          }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -189,7 +236,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing[5],
+    marginBottom: spacing[4],
   },
   brandTitle: {
     fontFamily: typography.display.fontFamily,

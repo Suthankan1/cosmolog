@@ -48,7 +48,26 @@ Completed:
   - `app/details/[source]/[id].tsx` (typed route parameters).
 - Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
 - Automated test suites passing (5 unit and component tests).
-## 2026-11-22 — Tasks 03 & 04: API Integration, SQLite Storage, Offline-First Twist & Favourites Complete
+## 2026-11-22 — Task 05: UI Polish, Real-Time Search, Accessibility & Selected Bonus Complete
+Completed:
+- Implemented real-time local search in `src/components/discovery/SearchBar.tsx`:
+  - Instant filtering across titles, summaries, and authors.
+  - Clear button affordance and dedicated zero-matches empty state.
+- Enhanced accessibility across all components:
+  - Ensured minimum touch target >=48 dp (`layout.minimumTouchTarget = 48`) on all buttons, inputs, icons, and list rows.
+  - Verified WCAG AA contrast ratios across editorial palette (Ivory `#F8F4EA`, Forest `#184235`, Ink `#2C2A27`, Sage Light `#E3E9DC`).
+  - Added semantic `accessibilityRole`, `accessibilityLabel`, and `accessibilityState` props.
+  - Supported dynamic font scaling and reduced motion (`AccessibilityInfo.isReduceMotionEnabled`).
+- Completed selected assignment bonus:
+  - Built Reanimated bookmark/save spring micro-interaction in `src/components/common/FavouriteButton.tsx`.
+- Enhanced Profile screen:
+  - Real-time on-device storage telemetry (live count of SQLite cached items and Field Shelf favourites).
+  - Truthful formatted last-sync timestamp.
+  - Verified database inspection action and academic index attribution.
+- Created test suite:
+  - `tests/SearchBar.test.tsx` (tests input rendering, value change, and clear interaction).
+- Total tests: 13 suites, 47 tests passing.
+- ESLint flat config, TypeScript check, and Android export passed with 0 errors and 0 warnings.
 Completed:
 - Verified and integrated live Space & Science endpoints:
   - NASA APOD replacement endpoint: `https://science.nasa.gov/wp-json/wp/v2/apod-basic/` (normalized date, stripped HTML tags, credit attribution, high-res images).

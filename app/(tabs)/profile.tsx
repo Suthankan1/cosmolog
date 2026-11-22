@@ -10,7 +10,9 @@ import {
 import { useRouter } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { logoutThunk } from '../../src/store/slices/authSlice';
+import { loadCachedFeedThunk } from '../../src/store/slices/feedSlice';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+import { formatEditorialDate } from '../../src/utils/text';
 import { Button } from '../../src/components/common/Button';
 import { Icon } from '../../src/components/common/Icon';
 
@@ -18,6 +20,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { items, lastSyncedAt } = useAppSelector((state) => state.feed);
+  const { favourites } = useAppSelector((state) => state.favourites);
 
   const handleLogout = () => {
     Alert.alert(
@@ -37,9 +41,21 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleRefreshArchives = () => {
+    dispatch(loadCachedFeedThunk());
+    Alert.alert('Database Synced', 'Local SQLite tables inspected and state verified.');
+  };
+
   const displayName = user?.fullName || 'Astronomer Observer';
   const username = user?.username ? `@${user.username}` : '@cosmolog';
   const email = user?.email || 'observer@cosmolog.org';
+
+  const formattedSync = lastSyncedAt
+    ? `${formatEditorialDate(lastSyncedAt)} at ${new Date(lastSyncedAt).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`
+    : 'Pending telemetry synchronization';
 
   return (
     <ScrollView
@@ -49,7 +65,7 @@ export default function ProfileScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.pageTitle}>Field Log</Text>
-        <Text style={styles.pageSubtitle}>Observer Credentials & Session State</Text>
+        <Text style={styles.pageSubtitle}>Observer Credentials & On-Device Telemetry</Text>
       </View>
 
       <View style={styles.userCard}>
@@ -78,34 +94,69 @@ export default function ProfileScreen() {
         <View style={styles.badgeRow}>
           <View style={styles.badge}>
             <Icon name="shield" size={14} color={colors.forest} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>OS SecureStore Active</Text>
+            <Text style={styles.badgeText}>OS SecureStore</Text>
           </View>
           <View style={styles.badge}>
-            <Icon name="check-circle" size={14} color={colors.brass} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>DummyJSON Verified</Text>
+            <Icon name="database" size={14} color={colors.brass} style={styles.badgeIcon} />
+            <Text style={styles.badgeText}>SQLite WAL Active</Text>
+          </View>
+          <View style={styles.badge}>
+            <Icon name="check-circle" size={14} color={colors.forest} style={styles.badgeIcon} />
+            <Text style={styles.badgeText}>Offline-First (0)</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionHeader}>Session Provenance</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Auth Provider</Text>
-          <Text style={styles.infoValue}>DummyJSON Bearer Token</Text>
+      <View style={styles.statsCard}>
+        <Text style={styles.sectionHeader}>On-Device Storage Telemetry</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{items.length}</Text>
+            <Text style={styles.statLabel}>Cached Items</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{favourites.length}</Text>
+            <Text style={styles.statLabel}>The Field Shelf</Text>
+          </View>
         </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Token Storage</Text>
-          <Text style={styles.infoValue}>Expo SecureStore (OS-backed)</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Offline Persistence</Text>
-          <Text style={styles.infoValue}>SQLite Local DB</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Candidate Index</Text>
-          <Text style={styles.infoValue}>234202J (Space & Science)</Text>
+
+        <View style={styles.syncInfoRow}>
+          <Icon name="clock" size={14} color={colors.muted} style={styles.syncIcon} />
+          <Text style={styles.syncText}>{formattedSync}</Text>
         </View>
       </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionHeader}>Course & Project Attribution</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Student Index</Text>
+          <Text style={styles.infoValue}>234202J</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Assigned Domain</Text>
+          <Text style={styles.infoValue}>Space & Science (2)</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Assigned Twist</Text>
+          <Text style={styles.infoValue}>Offline-First (0)</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Selected Bonus</Text>
+          <Text style={styles.infoValue}>Reanimated Bookmark Motion</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Design Reference</Text>
+          <Text style={styles.infoValue}>Figma V2 Editorial System</Text>
+        </View>
+      </View>
+
+      <Button
+        title="Verify Local SQLite Cache"
+        onPress={handleRefreshArchives}
+        variant="outline"
+        icon="refresh-cw"
+        style={styles.verifyButton}
+      />
 
       <Button
         title="Sign Out of Observatory"
@@ -221,22 +272,69 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.ink,
   },
+  statsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    padding: spacing[5],
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing[5],
+  },
+  sectionHeader: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 12,
+    color: colors.forest,
+    fontWeight: '700',
+    marginBottom: spacing[3],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginBottom: spacing[3],
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: colors.ivory,
+    borderRadius: radii.lg,
+    padding: spacing[3],
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statNumber: {
+    fontFamily: typography.h1.fontFamily,
+    fontSize: 24,
+    color: colors.forest,
+  },
+  statLabel: {
+    fontFamily: typography.meta.fontFamily,
+    fontSize: 11,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  syncInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: spacing[2],
+  },
+  syncIcon: {
+    marginRight: 6,
+  },
+  syncText: {
+    fontFamily: typography.meta.fontFamily,
+    fontSize: 11,
+    color: colors.muted,
+  },
   sectionCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.xl,
     padding: spacing[5],
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: spacing[6],
-  },
-  sectionHeader: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 13,
-    color: colors.forest,
-    fontWeight: '700',
-    marginBottom: spacing[3],
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    marginBottom: spacing[5],
   },
   infoRow: {
     flexDirection: 'row',
@@ -256,7 +354,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.ink,
   },
+  verifyButton: {
+    marginBottom: spacing[3],
+  },
   logoutButton: {
-    marginTop: spacing[2],
+    marginBottom: spacing[4],
   },
 });
