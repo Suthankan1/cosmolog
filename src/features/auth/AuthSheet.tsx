@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.forestDark },
   scroll: { flexGrow: 1 },
   masthead: {
-    backgroundColor: colors.forestDark, paddingHorizontal: layout.horizontalInset, paddingBottom: 96, alignItems: 'center',
+    backgroundColor: colors.forestDark, paddingHorizontal: layout.horizontalInset, paddingBottom: 132, alignItems: 'center',
   },
   compact: { paddingBottom: spacing[8] },
-  photo: { position: 'absolute', bottom: 0, height: 112, width: '100%' },
+  photo: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 128 },
   mark: { width: 72, height: 72, marginBottom: spacing[1] },
   wordmark: { ...typography.display, color: colors.ivory, letterSpacing: 2, textAlign: 'center' },
   tagline: { fontFamily: 'PlayfairDisplay-Italic', fontSize: 15, color: colors.ivory, textAlign: 'center' },

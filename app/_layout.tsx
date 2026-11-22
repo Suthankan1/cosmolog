@@ -35,6 +35,7 @@ function RootNavigator() {
       <StatusBar style={isAuthenticated && isBrandRevealed ? 'dark' : 'light'} />
       {!isInitialSessionLoading && (
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
+          <Stack.Screen name="index" />
           <Stack.Protected guard={isAuthenticated}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="details/[source]/[id]" />

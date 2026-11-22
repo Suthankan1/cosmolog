@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginFormData, loginSchema } from '../../src/services/auth/authSchemas';
 import { useAppDispatch, useAppSelector } from '../../src/store';
+import { subscribeToNetworkState, type Connection } from '../../src/services/network/networkObserver';
 import { clearAuthError, loginThunk } from '../../src/store/slices/authSlice';
 import { Button } from '../../src/components/common/Button';
 import { Input } from '../../src/components/common/Input';
@@ -15,6 +16,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector(state => state.auth);
+  const [connection, setConnection] = useState<Connection>('unknown');
+  useEffect(() => subscribeToNetworkState(setConnection), []);
   const { control, handleSubmit, setValue, clearErrors } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema), defaultValues: { username: '', password: '' },
   });
@@ -22,6 +25,7 @@ export default function LoginScreen() {
 
   return (
     <AuthSheet title="Welcome back." subtitle="Sign in to open your space and science archive." error={error}>
+      {connection === 'offline' && <Text accessibilityLiveRegion="polite" style={styles.offline}>Connect to sign in.</Text>}
       <Controller
         control={control}
         name="username"
@@ -61,6 +65,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   primary: { borderRadius: radii.pill },
   links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: spacing[3], marginTop: spacing[1] },
+  offline: { ...typography.body, color: colors.forest, marginBottom: spacing[3] },
   footnote: {
     ...typography.bodySmall, color: colors.muted, paddingTop: spacing[3], borderTopWidth: 1,
     borderTopColor: colors.border, marginTop: spacing[1],

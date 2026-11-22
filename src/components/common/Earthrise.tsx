@@ -10,7 +10,7 @@ export function Earthrise({ style }: { style?: StyleProp<ViewStyle> }) {
         source={require('../../../assets/editorial/earthrise.jpg')}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
-        contentPosition={{ top: '76%', left: '50%' }}
+        contentPosition={{ top: '67%', left: '50%' }}
         accessible={false}
       />
     </View>

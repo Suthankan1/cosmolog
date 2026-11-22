@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
     } else if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/discover');
     }
   };
 

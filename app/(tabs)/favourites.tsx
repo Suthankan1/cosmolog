@@ -91,7 +91,7 @@ export default function FavouritesScreen() {
         actionTitle="Clear filters" onAction={clearFilters} />
     ) : (
       <EmptyState icon="book-open" title="Keep a discovery close" description="Save a plate or dispatch to read it from your Shelf, even offline."
-        actionTitle="Explore discoveries" onAction={() => router.navigate('/(tabs)')} />
+        actionTitle="Explore discoveries" onAction={() => router.navigate('/(tabs)/discover')} />
     );
 
   return (
