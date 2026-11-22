@@ -41,3 +41,10 @@ export function formatEditorialDate(dateStr: string | null | undefined): string 
     return dateStr;
   }
 }
+
+export function formatSyncTimestamp(value: string | null | undefined): string {
+  if (!value || !Number.isFinite(Date.parse(value))) return 'No successful refresh yet';
+  return formatEditorialDate(value) + ' at ' + new Date(value).toLocaleTimeString([], {
+    hour: '2-digit', minute: '2-digit',
+  });
+}

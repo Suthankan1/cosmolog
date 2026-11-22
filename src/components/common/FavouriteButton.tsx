@@ -1,12 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-} from 'react-native-reanimated';
-import { colors, layout } from '../../theme/tokens';
+import Animated, { useReducedMotion, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
+import { colors, layout, radii } from '../../theme/tokens';
 import { Icon } from './Icon';
 
 export interface FavouriteButtonProps {
@@ -19,62 +14,44 @@ export interface FavouriteButtonProps {
   accessibilityLabel?: string;
 }
 
-export const FavouriteButton: React.FC<FavouriteButtonProps> = ({
-  isSaved,
-  pending = false,
-  onToggle,
-  size = 20,
-  activeColor = colors.terracotta,
-  inactiveColor = colors.muted,
-  accessibilityLabel,
-}) => {
+export function FavouriteButton({
+  isSaved, pending = false, onToggle, size = 20, activeColor = colors.forest,
+  inactiveColor = colors.muted, accessibilityLabel,
+}: FavouriteButtonProps) {
   const scale = useSharedValue(1);
+  const previous = useRef(isSaved);
+  const reducedMotion = useReducedMotion();
 
-  const handlePress = () => {
-    // Reanimated pulse interaction: scale down then spring overshoot
-    scale.value = withSequence(
-      withSpring(0.75, { damping: 10, stiffness: 400 }),
-      withSpring(1.25, { damping: 8, stiffness: 350 }),
-      withSpring(1.0, { damping: 12, stiffness: 300 })
-    );
-
-    onToggle();
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const label = accessibilityLabel || (isSaved ? 'Remove from The Field Shelf' : 'Save to The Field Shelf');
+  useEffect(() => {
+    if (isSaved && !previous.current && !reducedMotion) {
+      scale.value = withSequence(withSpring(1.2), withSpring(1));
+    }
+    previous.current = isSaved;
+  }, [isSaved, reducedMotion, scale]);
 
   return (
     <Pressable
-      onPress={handlePress}
-      style={styles.pressable}
+      onPress={onToggle}
+      style={[styles.pressable, isSaved && styles.selected]}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel || (isSaved ? 'Remove from The Field Shelf' : 'Save to The Field Shelf')}
       disabled={pending}
       accessibilityState={{ selected: isSaved, busy: pending, disabled: pending }}
-      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
     >
-      <Animated.View style={animatedStyle}>
-        <Icon
-          name="bookmark"
-          size={size}
-          color={isSaved ? activeColor : inactiveColor}
-        />
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Icon name={isSaved ? 'check' : 'bookmark'} size={size} color={isSaved ? activeColor : inactiveColor} />
       </Animated.View>
     </Pressable>
   );
-};
+}
 
 const styles = StyleSheet.create({
   pressable: {
-    minWidth: layout.minimumTouchTarget,
-    minHeight: layout.minimumTouchTarget,
+    width: layout.minimumTouchTarget,
+    height: layout.minimumTouchTarget,
+    borderRadius: radii.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  selected: { backgroundColor: colors.sageLight },
 });
-
-export default FavouriteButton;

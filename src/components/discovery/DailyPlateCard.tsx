@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
-import { DiscoveryItem } from '../../database/models';
+import type { DiscoveryItem } from '../../database/models';
 import { colors, radii, spacing, typography } from '../../theme/tokens';
 import { formatEditorialDate } from '../../utils/text';
 import { FavouriteButton } from '../common/FavouriteButton';
 import { Icon } from '../common/Icon';
+import { DiscoveryImage } from './DiscoveryImage';
 
 export interface DailyPlateCardProps {
   item: DiscoveryItem;
@@ -16,171 +16,36 @@ export interface DailyPlateCardProps {
   onToggleSave: () => void;
 }
 
-export const DailyPlateCard: React.FC<DailyPlateCardProps> = ({
-  item,
-  isSaved,
-  pending,
-  offline,
-  onPress,
-  onToggleSave,
-}) => {
-  const imageSource = item.imageLocalUri ? { uri: item.imageLocalUri } : !offline && item.imageRemoteUrl ? { uri: item.imageRemoteUrl } : null;
-
+export function DailyPlateCard({ item, isSaved, pending, offline, onPress, onToggleSave }: DailyPlateCardProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.cardContainer, pressed && styles.cardPressed]}
-      accessibilityRole="button"
-      accessibilityLabel={`Featured Daily Plate: ${item.title}`}
-    >
-      <View style={styles.imageWrapper}>
-        {imageSource ? (
-          <Image
-            source={imageSource}
-            style={styles.heroImage}
-            contentFit="cover"
-            transition={300}
-            accessibilityLabel={item.title}
-          />
-        ) : (
-          <View style={styles.imageFallback}>
-            <Icon name="sun" size={48} color={colors.brass} />
+    <View style={styles.card}>
+      <Pressable style={({ pressed }) => [styles.open, pressed && styles.pressed]} onPress={onPress}
+        accessibilityRole="button" accessibilityLabel={'Daily Plate, ' + item.title} testID="daily-plate">
+        <DiscoveryImage item={item} offline={offline} style={styles.photo} />
+        <View style={styles.caption}>
+          <View style={styles.captionText}>
+            <Text style={styles.date}>Daily Plate · {formatEditorialDate(item.publishedAt)}</Text>
+            <Text style={styles.title}>{item.title}</Text>
           </View>
-        )}
-
-        <View style={styles.gradientOverlay} />
-
-        <View style={styles.topBadgeRow}>
-          <View style={styles.plateBadge}>
-            <Text style={styles.plateBadgeText}>THE DAILY PLATE</Text>
-          </View>
-
-          <View style={styles.favouriteWrapper}>
-            <FavouriteButton
-              isSaved={isSaved}
-            pending={pending}
-              onToggle={onToggleSave}
-              activeColor={colors.terracotta}
-              inactiveColor={colors.white}
-            />
-          </View>
+          <View style={styles.arrow}><Icon name="arrow-right" size={19} color={colors.forestDark} /></View>
         </View>
-
-        <View style={styles.bottomContent}>
-          <Text style={styles.dateText}>{formatEditorialDate(item.publishedAt)}</Text>
-          <Text style={styles.titleText} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <View style={styles.provenanceRow}>
-            <Icon name="award" size={12} color={colors.brass} style={styles.provenanceIcon} />
-            <Text style={styles.creditText} numberOfLines={1}>
-              {item.attribution || 'NASA / APOD'}
-            </Text>
-          </View>
-        </View>
+      </Pressable>
+      <View style={styles.bookmark}>
+        <FavouriteButton isSaved={isSaved} pending={pending} onToggle={onToggleSave} inactiveColor={colors.forest} />
       </View>
-    </Pressable>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    borderRadius: radii.xl,
-    overflow: 'hidden',
-    backgroundColor: colors.forestDark,
-    marginBottom: spacing[6],
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  cardPressed: {
-    opacity: 0.95,
-    transform: [{ scale: 0.995 }],
-  },
-  imageWrapper: {
-    height: 245,
-    width: '100%',
-    position: 'relative',
-    justifyContent: 'space-between',
-  },
-  heroImage: {
-    ...StyleSheet.absoluteFill,
-  },
-  imageFallback: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: colors.forestDark,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gradientOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(16, 47, 38, 0.45)',
-  },
-  topBadgeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing[4],
-    zIndex: 2,
-  },
-  plateBadge: {
-    backgroundColor: colors.forest,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.brass,
-  },
-  plateBadgeText: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 10,
-    color: colors.ivory,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  favouriteWrapper: {
-    backgroundColor: 'rgba(24, 66, 53, 0.7)',
-    borderRadius: radii.pill,
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bottomContent: {
-    padding: spacing[4],
-    zIndex: 2,
-  },
-  dateText: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 11,
-    color: colors.brass,
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  titleText: {
-    fontFamily: typography.h2.fontFamily,
-    fontSize: 20,
-    lineHeight: 26,
-    color: colors.white,
-    marginBottom: 6,
-  },
-  provenanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  provenanceIcon: {
-    marginRight: 4,
-  },
-  creditText: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 11,
-    color: colors.ivory,
-    opacity: 0.85,
-    flex: 1,
-  },
+  card: { backgroundColor: colors.forestDark, borderRadius: radii.xl, overflow: 'hidden' },
+  open: { minHeight: 48 },
+  pressed: { opacity: 0.88 },
+  photo: { width: '100%', aspectRatio: 1.95 },
+  caption: { padding: spacing[4], gap: spacing[3], flexDirection: 'row', alignItems: 'center' },
+  captionText: { flex: 1 },
+  date: { ...typography.label, color: colors.brass, marginBottom: spacing[1] },
+  title: { ...typography.h2, color: colors.ivory },
+  arrow: { width: 36, height: 36, backgroundColor: colors.brass, borderRadius: radii.pill, alignItems: 'center', justifyContent: 'center' },
+  bookmark: { position: 'absolute', right: spacing[3], top: spacing[3], borderRadius: radii.pill, backgroundColor: colors.surface },
 });
-
-export default DailyPlateCard;

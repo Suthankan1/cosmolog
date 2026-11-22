@@ -1,362 +1,147 @@
-import React from 'react';
-import {
-  Alert,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { logoutThunk } from '../../src/store/slices/authSlice';
 import { refreshImagesThunk } from '../../src/store/slices/favouritesSlice';
+import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
-import { formatEditorialDate } from '../../src/utils/text';
 import { Button } from '../../src/components/common/Button';
-import { Icon } from '../../src/components/common/Icon';
+import { Earthrise } from '../../src/components/common/Earthrise';
+import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
+import { formatSyncTimestamp } from '../../src/utils/text';
+
+function Stat({ value, label, icon }: { value: string; label: string; icon: FeatherIconName }) {
+  return (
+    <View style={styles.stat}>
+      <Icon name={icon} size={19} color={colors.forest} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.secondary}>{label}</Text>
+    </View>
+  );
+}
+
+function formatBytes(bytes: number) {
+  if (!bytes) return '0 KB';
+  const divisor = bytes < 1024 ** 2 ? 1024 : 1024 ** 2;
+  return (bytes / divisor).toLocaleString(undefined, { maximumFractionDigits: 1 }) + (divisor === 1024 ? ' KB' : ' MB');
+}
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const { user, isLoading, error } = useAppSelector((state) => state.auth);
-  const { items, metadata, legacySyncedAt, connection } = useAppSelector((state) => state.feed);
-  const { favourites, isDownloading } = useAppSelector((state) => state.favourites);
+  const { user, isLoading, error } = useAppSelector(state => state.auth);
+  const { items, metadata, connection, isRefreshing } = useAppSelector(state => state.feed);
+  const { favourites, isDownloading, error: shelfError } = useAppSelector(state => state.favourites);
+  const [focused, setFocused] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const downloadCount = favourites.filter(item => item.mediaStatus === 'ready').length;
+  const pendingImages = favourites.filter(item => item.mediaStatus === 'waiting' || item.mediaStatus === 'failed').length;
+  const imageBytes = favourites.reduce((total, item) => total + item.imageBytes, 0);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to end your celestial field session?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            await dispatch(logoutThunk());
-          },
-        },
-      ]
-    );
+  useFocusEffect(useCallback(() => {
+    setFocused(true);
+    return () => setFocused(false);
+  }, []));
+
+  if (!user) return null;
+
+  const signOut = () => {
+    Alert.alert('Sign out?', 'Your saved library stays on this device for this account.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign out', style: 'destructive', onPress: () => { void dispatch(logoutThunk()); } },
+    ]);
   };
 
-  const lastSyncedAt = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt]
-    .filter((value): value is string => Boolean(value)).sort().at(-1) ?? legacySyncedAt;
-
-  const displayName = user?.fullName || 'Astronomer Observer';
-  const username = user?.username ? `@${user.username}` : '@cosmolog';
-  const email = user?.email || 'observer@cosmolog.org';
-
-  const formattedSync = lastSyncedAt
-    ? `${formatEditorialDate(lastSyncedAt)} at ${new Date(lastSyncedAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`
-    : 'Pending telemetry synchronization';
-
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <Text style={styles.pageTitle}>Field Log</Text>
-        <Text style={styles.pageSubtitle}>Observer Credentials & On-Device Telemetry</Text>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.scroll}>
+      {focused && <StatusBar style="light" />}
+      <View style={[styles.masthead, { paddingTop: insets.top + spacing[4] }]}>
+        <Earthrise style={styles.horizon} />
+        <Text accessibilityRole="header" style={styles.heading}>Profile</Text>
       </View>
-
-      <View style={styles.userCard}>
-        <View style={styles.avatarRow}>
-          {user?.image ? (
-            <Image
-              source={{ uri: user.image }}
-              style={styles.avatar}
-              accessibilityLabel={`${displayName}'s profile picture`}
-            />
-          ) : (
-            <View style={styles.avatarFallback}>
-              <Icon name="user" size={32} color={colors.forest} />
+      <View style={styles.content}>
+        <View style={styles.identity}>
+          <View style={styles.avatar}>
+            {user.image && !avatarFailed && connection !== 'offline'
+              ? <Image source={{ uri: user.image }} style={StyleSheet.absoluteFill} onError={() => setAvatarFailed(true)} />
+              : <Icon name="user" size={25} color={colors.forest} />}
+          </View>
+          <View style={styles.identityCopy}>
+            <Text style={styles.name}>{user.fullName}</Text>
+            <Text style={styles.secondary}>@{user.username}</Text>
+          </View>
+        </View>
+        <View style={styles.connection}>
+          <Icon name={connection === 'offline' ? 'wifi-off' : 'download-cloud'} color={colors.forest} size={21} />
+          <View style={styles.identityCopy}>
+            <Text style={styles.connectionTitle}>{connection === 'offline' ? 'You’re offline' : 'Offline library'}</Text>
+            <Text style={styles.secondary}>{items.length} cached discoveries · {downloadCount} downloaded images</Text>
+          </View>
+        </View>
+        <View style={styles.stats}>
+          <Stat label="Saved discoveries" value={String(favourites.length)} icon="bookmark" />
+          <Stat label="Downloaded images" value={formatBytes(imageBytes)} icon="hard-drive" />
+        </View>
+        <View style={styles.sources}>
+          <Text accessibilityRole="header" style={styles.section}>Source updates</Text>
+          {([
+            ['nasa-apod', 'NASA Daily Plate'],
+            ['spaceflight-news', 'Space Dispatches'],
+          ] as const).map(([id, label]) => (
+            <View key={id} style={styles.sourceRow}>
+              <Text style={styles.sourceLabel}>{label}</Text>
+              <Text style={styles.secondary}>{formatSyncTimestamp(metadata[id].lastSyncedAt)}</Text>
+              {metadata[id].error && <Text style={styles.error}>{metadata[id].error}</Text>}
             </View>
+          ))}
+          {connection === 'online' && <Button title="Refresh sources" icon="refresh-cw" variant="outline"
+            loading={isRefreshing} onPress={() => { void dispatch(refreshArchive()); }} />}
+          {pendingImages > 0 && (
+            <Button title="Retry downloads" icon="download" variant="outline"
+              loading={isDownloading} disabled={connection !== 'online'}
+              onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}
-
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{displayName}</Text>
-            <Text style={styles.userHandle}>{username}</Text>
-            <Text style={styles.userEmail}>{email}</Text>
-          </View>
+          {shelfError && <Text accessibilityRole="alert" style={styles.error}>{shelfError}</Text>}
         </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.badgeRow}>
-          <View style={styles.badge}>
-            <Icon name="shield" size={14} color={colors.forest} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>OS SecureStore</Text>
-          </View>
-          <View style={styles.badge}>
-            <Icon name="database" size={14} color={colors.brass} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>SQLite WAL Active</Text>
-          </View>
-          <View style={styles.badge}>
-            <Icon name="check-circle" size={14} color={colors.forest} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>Offline-First (0)</Text>
-          </View>
-        </View>
+        {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+        <Button loading={isLoading} title="Sign out" onPress={signOut} variant="danger" icon="log-out"
+          style={styles.signOut} testID="profile-logout-button" />
+        <Text style={styles.secondary}>Earthrise photograph · NASA / Bill Anders</Text>
       </View>
-
-      <View style={styles.statsCard}>
-        <Text style={styles.sectionHeader}>On-Device Storage Telemetry</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{items.length}</Text>
-            <Text style={styles.statLabel}>Cached Items</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{favourites.length}</Text>
-            <Text style={styles.statLabel}>The Field Shelf</Text>
-          </View>
-        </View>
-
-        <View style={styles.syncInfoRow}>
-          <Icon name="clock" size={14} color={colors.muted} style={styles.syncIcon} />
-          <Text style={styles.syncText}>{formattedSync}</Text>
-        </View>
-      </View>
-
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionHeader}>Course & Project Attribution</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Student Index</Text>
-          <Text style={styles.infoValue}>234202J</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Assigned Domain</Text>
-          <Text style={styles.infoValue}>Space & Science (2)</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Assigned Twist</Text>
-          <Text style={styles.infoValue}>Offline-First (0)</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Selected Bonus</Text>
-          <Text style={styles.infoValue}>Reanimated Bookmark Motion</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Design Reference</Text>
-          <Text style={styles.infoValue}>Figma V2 Editorial System</Text>
-        </View>
-      </View>
-
-      <Button
-        title="Retry downloads"
-        disabled={connection !== 'online'}
-        loading={isDownloading}
-        onPress={() => { void dispatch(refreshImagesThunk()); }}
-        variant="outline"
-        icon="refresh-cw"
-        style={styles.verifyButton}
-      />
-
-      {error && <Text accessibilityRole="alert">{error}</Text>}
-      <Button
-        loading={isLoading}
-        title="Sign Out of Observatory"
-        onPress={handleLogout}
-        variant="danger"
-        icon="log-out"
-        style={styles.logoutButton}
-        testID="profile-logout-button"
-      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.ivory,
-  },
-  content: {
-    paddingHorizontal: layout.horizontalInset,
-    paddingTop: spacing[10],
-    paddingBottom: spacing[8],
-  },
-  header: {
-    marginBottom: spacing[6],
-  },
-  pageTitle: {
-    fontFamily: typography.h1.fontFamily,
-    fontSize: typography.h1.fontSize,
-    lineHeight: typography.h1.lineHeight,
-    color: colors.forest,
-  },
-  pageSubtitle: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 13,
-    color: colors.muted,
-    marginTop: spacing[1],
-  },
-  userCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    padding: spacing[5],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing[5],
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  screen: { flex: 1, backgroundColor: colors.ivory },
+  scroll: { paddingBottom: spacing[8] },
+  masthead: { backgroundColor: colors.forestDark, paddingHorizontal: layout.horizontalInset, paddingBottom: 68 },
+  horizon: { ...StyleSheet.absoluteFill },
+  heading: { ...typography.display, color: colors.ivory },
+  content: { paddingHorizontal: layout.horizontalInset, gap: spacing[4], paddingTop: spacing[3] },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  identityCopy: { flex: 1 },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.sageLight,
+    width: 58, height: 58, borderRadius: radii.pill, backgroundColor: colors.sageLight, alignItems: 'center',
+    justifyContent: 'center', overflow: 'hidden', borderWidth: 2, borderColor: colors.surface,
   },
-  avatarFallback: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.sageLight,
-    justifyContent: 'center',
-    alignItems: 'center',
+  name: { ...typography.h1, color: colors.ink },
+  secondary: { ...typography.bodySmall, color: colors.muted },
+  connection: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing[3], backgroundColor: colors.sageLight,
+    padding: spacing[4], borderRadius: radii.md,
   },
-  userInfo: {
-    marginLeft: spacing[4],
-    flex: 1,
-  },
-  userName: {
-    fontFamily: typography.h2.fontFamily,
-    fontSize: 20,
-    lineHeight: 24,
-    color: colors.ink,
-  },
-  userHandle: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 12,
-    color: colors.forest,
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  userEmail: {
-    fontFamily: typography.bodySmall.fontFamily,
-    fontSize: 12,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing[4],
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.ivory,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  badgeIcon: {
-    marginRight: 4,
-  },
-  badgeText: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 11,
-    color: colors.ink,
-  },
-  statsCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    padding: spacing[5],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing[5],
-  },
-  sectionHeader: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 12,
-    color: colors.forest,
-    fontWeight: '700',
-    marginBottom: spacing[3],
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: spacing[3],
-    marginBottom: spacing[3],
-  },
-  statBox: {
-    flex: 1,
-    backgroundColor: colors.ivory,
-    borderRadius: radii.lg,
-    padding: spacing[3],
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  statNumber: {
-    fontFamily: typography.h1.fontFamily,
-    fontSize: 24,
-    color: colors.forest,
-  },
-  statLabel: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 11,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  syncInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: spacing[2],
-  },
-  syncIcon: {
-    marginRight: 6,
-  },
-  syncText: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 11,
-    color: colors.muted,
-  },
-  sectionCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    padding: spacing[5],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing[5],
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing[2],
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0EBE1',
-  },
-  infoLabel: {
-    fontFamily: typography.bodySmall.fontFamily,
-    fontSize: 12,
-    color: colors.muted,
-  },
-  infoValue: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.ink,
-  },
-  verifyButton: {
-    marginBottom: spacing[3],
-  },
-  logoutButton: {
-    marginBottom: spacing[4],
-  },
+  connectionTitle: { ...typography.label, color: colors.forest, fontSize: 14, lineHeight: 20 },
+  stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[3] },
+  stat: { flexGrow: 1, flexBasis: 116, backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing[4], gap: spacing[1] },
+  statValue: { ...typography.h2, color: colors.ink },
+  sources: { gap: spacing[2] },
+  section: { ...typography.h2, color: colors.forest },
+  sourceRow: { paddingVertical: spacing[2], borderBottomWidth: 1, borderColor: colors.border },
+  sourceLabel: { ...typography.body, color: colors.ink },
+  signOut: { borderRadius: radii.pill },
+  error: { ...typography.bodySmall, color: colors.danger },
 });

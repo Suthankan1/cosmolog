@@ -99,7 +99,8 @@ const styles = StyleSheet.create({
   buttonBase: {
     minHeight: layout.primaryButtonHeight,
     minWidth: layout.minimumTouchTarget,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
+    paddingVertical: 8,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -123,7 +124,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.82,
-    transform: [{ scale: 0.99 }],
   },
   contentRow: {
     flexDirection: 'row',
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   buttonText: {
+    flexShrink: 1,
     fontFamily: typography.label.fontFamily,
     fontSize: 14,
     lineHeight: 18,

@@ -2,16 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import {
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_400Regular_Italic,
-} from '@expo-google-fonts/playfair-display';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
+import { PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display/400Regular';
+import { PlayfairDisplay_400Regular_Italic } from '@expo-google-fonts/playfair-display/400Regular_Italic';
+import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
+import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
+import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { store, useAppDispatch, useAppSelector } from '../src/store';
@@ -36,7 +32,7 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={isAuthenticated && isBrandRevealed ? 'dark' : 'light'} />
       {!isInitialSessionLoading && (
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
           <Stack.Protected guard={isAuthenticated}>

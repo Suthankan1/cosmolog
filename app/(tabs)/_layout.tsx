@@ -1,17 +1,21 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../../src/components/common/Icon';
 import { colors, layout, typography } from '../../src/theme/tokens';
 
 export default function TabLayout() {
+  const { bottom } = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.forest,
         tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { height: Math.max(60, 48 + 14 * fontScale) + bottom }],
+        tabBarAllowFontScaling: true,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarItemStyle: styles.tabBarItem,
       }}
@@ -21,25 +25,25 @@ export default function TabLayout() {
         options={{
           title: 'Discover',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="compass" color={color} size={size} accessibilityLabel="Discover tab" />
+            <Icon name="home" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
         name="favourites"
         options={{
-          title: 'The Shelf',
+          title: 'Favourites',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="bookmark" color={color} size={size} accessibilityLabel="Favourites tab" />
+            <Icon name="book-open" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Field Log',
+          title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="user" color={color} size={size} accessibilityLabel="Profile tab" />
+            <Icon name="user" color={color} size={size} />
           ),
         }}
       />
@@ -52,10 +56,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopColor: colors.border,
     borderTopWidth: 1,
-    height: Platform.OS === 'ios' ? layout.bottomNavHeight + 10 : layout.bottomNavHeight,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    paddingTop: 8,
-    elevation: 4,
+    paddingTop: 4,
+    elevation: 0,
   },
   tabBarItem: {
     minHeight: layout.minimumTouchTarget,

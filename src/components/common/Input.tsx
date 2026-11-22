@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type TextInputProps,
   View,
   ViewStyle,
 } from 'react-native';
@@ -17,6 +18,9 @@ export interface InputProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  autoComplete?: TextInputProps['autoComplete'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  onInputBlur?: () => void;
   error?: string;
   secureTextEntry?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
@@ -31,6 +35,9 @@ export const Input: React.FC<InputProps> = ({
   value,
   onChangeText,
   placeholder,
+  autoComplete,
+  onSubmitEditing,
+  onInputBlur,
   error,
   secureTextEntry = false,
   autoCapitalize = 'none',
@@ -61,9 +68,12 @@ export const Input: React.FC<InputProps> = ({
           placeholderTextColor={colors.muted}
           secureTextEntry={isPassword && !isPasswordVisible}
           autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          autoCorrect={false}
+          onSubmitEditing={onSubmitEditing}
           keyboardType={keyboardType}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={() => { setIsFocused(false); onInputBlur?.(); }}
           style={styles.textInput}
           accessibilityLabel={accessibilityLabel || label}
           testID={testID}
@@ -84,7 +94,7 @@ export const Input: React.FC<InputProps> = ({
           </Pressable>
         )}
       </View>
-      {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
+      {Boolean(error) && <Text accessibilityLiveRegion="polite" style={styles.errorText}>{error}</Text>}
     </View>
   );
 };
@@ -105,7 +115,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: layout.inputHeight,
+    minHeight: layout.inputHeight,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -122,7 +132,8 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    height: '100%',
+    minHeight: layout.inputHeight,
+    paddingVertical: spacing[2],
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
     color: colors.ink,
@@ -131,8 +142,8 @@ const styles = StyleSheet.create({
     padding: spacing[1],
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 32,
-    minHeight: 32,
+    minWidth: layout.minimumTouchTarget,
+    minHeight: layout.minimumTouchTarget,
   },
   errorText: {
     fontFamily: typography.bodySmall.fontFamily,

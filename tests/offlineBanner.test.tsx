@@ -8,8 +8,8 @@ describe('OfflineBanner Component', () => {
       <OfflineBanner lastSyncedAt="2026-11-22T14:00:00.000Z" />
     );
 
-    expect(screen.getByText('Offline Field Mode')).toBeTruthy();
-    expect(screen.getByText(/Last synchronized:/)).toBeTruthy();
+    expect(screen.getByText('You’re offline')).toBeTruthy();
+    expect(screen.getByText(/Last source update/)).toBeTruthy();
   });
 
   it('triggers onRetry callback when user taps retry button', async () => {

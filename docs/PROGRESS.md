@@ -189,3 +189,7 @@ Verified-session restore now opens the app directly from SecureStore. The online
 SQLite now migrates existing data to source snapshots and account-owned bookmarks. Source commits replace membership and advance timestamps atomically, including a valid empty response. A failed feed retains its last successful collection. The app hydrates before synchronizing, and reconnection is coordinated from the authenticated shell.
 
 Bookmarks commit before media work. Durable downloads use bounded streaming, temporary files, format checks, and explicit waiting/ready/failed states. NASA's live November 22 APOD included a Creative Commons license, which is now retained and exposed with its credit. Verified HTTP 200 for both configured feeds and NASA's direct date lookup. Jest (51 tests, including actual SQLite migrations and rollback), ESLint, and TypeScript passed.
+
+## 2026-11-23 — Editorial UI and accessibility
+
+The shipped layouts now follow the approved v2 compositions. The dark launch and authentication mastheads use the approved ivory mark and credited NASA Earthrise photography. Discover and Details use live source photos with stable search, separated open/save targets, and useful error and offline states. Profile shows real source and storage values. Confirmed saves drive the reduced-motion-aware bookmark animation. TypeScript, ESLint, 51 Jest tests, and an Android bundle export passed. The bundle now lists the six used editorial font faces and Feather.

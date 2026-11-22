@@ -60,10 +60,13 @@ export default function DiscoverScreen() {
         </View>
       ) : null}
       {saveError ? <Text accessibilityRole="alert" style={styles.noticeText}>{saveError}</Text> : null}
+      {isRefreshing && items.length > 0 && (
+        <Text accessibilityLiveRegion="polite" style={styles.subtitle}>Updating sources. Your collection is available.</Text>
+      )}
       {hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       <Text accessibilityRole="header" style={styles.sectionTitle}>
-        {searchQuery.trim() ? 'Search results' : selectedCategory === 'nasa-apod' ? 'Daily Plates' : 'Space Dispatches'}
+        {searchQuery.trim() ? 'Search results' : selectedCategory === 'nasa-apod' || (rows.length > 0 && rows.every(item => item.source === 'nasa-apod')) ? 'Daily Plates' : 'Space Dispatches'}
       </Text>
     </View>
   );

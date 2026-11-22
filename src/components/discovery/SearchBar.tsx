@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    minHeight: 48,
     backgroundColor: colors.surface,
     borderRadius: radii.md,
     borderWidth: 1,
@@ -63,15 +63,15 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    height: '100%',
+    minHeight: 48,
     fontFamily: typography.body.fontFamily,
     fontSize: 13,
     color: colors.ink,
   },
   clearButton: {
     padding: spacing[1],
-    minWidth: 28,
-    minHeight: 28,
+    minWidth: 48,
+    minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },

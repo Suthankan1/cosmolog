@@ -9,9 +9,9 @@ export interface CategoryChipsProps {
 }
 
 const CATEGORIES: { label: string; value: 'all' | DiscoverySource }[] = [
-  { label: 'All Dispatches', value: 'all' },
-  { label: 'The Daily Plate (NASA)', value: 'nasa-apod' },
-  { label: 'Spaceflight Missions', value: 'spaceflight-news' },
+  { label: 'All sources', value: 'all' },
+  { label: 'Daily Plates', value: 'nasa-apod' },
+  { label: 'Dispatches', value: 'spaceflight-news' },
 ];
 
 export const CategoryChips: React.FC<CategoryChipsProps> = ({
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     gap: spacing[2],
   },
   chip: {
-    minHeight: 36,
+    minHeight: 48,
     minWidth: layout.minimumTouchTarget,
     paddingHorizontal: 14,
     paddingVertical: 8,

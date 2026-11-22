@@ -132,9 +132,13 @@ export default function DetailsScreen() {
 
 const styles = StyleSheet.create({
   screen: { backgroundColor: colors.ivory, flex: 1 },
-  content: { paddingTop: spacing[3] },
+  content: { paddingTop: 0 },
   image: { width: '100%', aspectRatio: 1.55 },
-  article: { paddingHorizontal: layout.horizontalInset, paddingTop: spacing[5], gap: spacing[3] },
+  article: {
+    paddingHorizontal: layout.horizontalInset, paddingTop: spacing[5], gap: spacing[3],
+    backgroundColor: colors.ivory, borderTopLeftRadius: radii.xxl, borderTopRightRadius: radii.xxl,
+    marginTop: -spacing[3],
+  },
   title: { ...typography.display, color: colors.forest },
   byline: { ...typography.body, color: colors.muted },
   metadata: { ...typography.bodySmall, color: colors.muted },

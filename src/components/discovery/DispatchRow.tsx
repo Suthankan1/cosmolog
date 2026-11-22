@@ -1,155 +1,55 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
-import { DiscoveryItem } from '../../database/models';
+import type { DiscoveryItem } from '../../database/models';
 import { colors, radii, spacing, typography } from '../../theme/tokens';
 import { formatEditorialDate } from '../../utils/text';
 import { FavouriteButton } from '../common/FavouriteButton';
-import { Icon } from '../common/Icon';
+import { DiscoveryImage } from './DiscoveryImage';
 
 export interface DispatchRowProps {
   item: DiscoveryItem;
   isSaved: boolean;
   pending?: boolean;
   offline?: boolean;
+  notePreview?: string | null;
+  availability?: string;
   onPress: () => void;
   onToggleSave: () => void;
 }
 
-export const DispatchRow: React.FC<DispatchRowProps> = ({
-  item,
-  isSaved,
-  pending,
-  offline,
-  onPress,
-  onToggleSave,
-}) => {
-  const imageSource = item.imageLocalUri
-    ? { uri: item.imageLocalUri }
-    : !offline && item.imageRemoteUrl
-    ? { uri: item.imageRemoteUrl }
-    : null;
-
+export function DispatchRow({
+  item, isSaved, pending, offline, notePreview, availability, onPress, onToggleSave,
+}: DispatchRowProps) {
+  const publisher = item.source === 'nasa-apod' ? 'NASA APOD' : item.attribution || 'Spaceflight News';
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.rowContainer, pressed && styles.rowPressed]}
-      accessibilityRole="button"
-      accessibilityLabel={`Dispatch: ${item.title}`}
-    >
-      <View style={styles.thumbnailWrapper}>
-        {imageSource ? (
-          <Image
-            source={imageSource}
-            style={styles.thumbnail}
-            contentFit="cover"
-            transition={200}
-            accessibilityLabel={item.title}
-          />
-        ) : (
-          <View style={styles.thumbnailFallback}>
-            <Icon name="file-text" size={24} color={colors.forest} />
-          </View>
-        )}
-      </View>
-
-      <View style={styles.contentColumn}>
-        <View style={styles.provenanceRow}>
-          <Text style={styles.sourceBadge}>{item.attribution || 'Space Dispatch'}</Text>
-          <Text style={styles.metaDot}>•</Text>
-          <Text style={styles.dateText}>{formatEditorialDate(item.publishedAt)}</Text>
+    <View style={styles.row}>
+      <Pressable onPress={onPress} style={({ pressed }) => [styles.open, pressed && styles.pressed]}
+        accessibilityRole="button">
+        <DiscoveryImage item={item} offline={offline} style={styles.thumbnail} />
+        <View style={styles.copy}>
+          <Text style={styles.meta}>{publisher} · {formatEditorialDate(item.publishedAt)}</Text>
+          <Text style={styles.title}>{item.title}</Text>
+          {availability && <Text style={styles.availability}>{availability}</Text>}
+          {notePreview ? <Text style={styles.summary} numberOfLines={2}>{notePreview}</Text>
+            : !availability && item.summary ? <Text style={styles.summary} numberOfLines={2}>{item.summary}</Text> : null}
         </View>
-
-        <Text style={styles.titleText} numberOfLines={2}>
-          {item.title}
-        </Text>
-      </View>
-
-      <View style={styles.actionColumn}>
-        <FavouriteButton
-          isSaved={isSaved}
-            pending={pending}
-          onToggle={onToggleSave}
-          size={18}
-          activeColor={colors.terracotta}
-          inactiveColor={colors.muted}
-        />
-      </View>
-    </Pressable>
+      </Pressable>
+      <FavouriteButton
+        isSaved={isSaved} pending={pending} onToggle={onToggleSave}
+        accessibilityLabel={(isSaved ? 'Remove ' : 'Save ') + item.title}
+      />
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: spacing[3],
-    marginBottom: spacing[3],
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 84,
-  },
-  rowPressed: {
-    backgroundColor: '#FAF5EC',
-  },
-  thumbnailWrapper: {
-    width: 68,
-    height: 68,
-    borderRadius: radii.md,
-    overflow: 'hidden',
-    backgroundColor: colors.sageLight,
-    marginRight: spacing[3],
-  },
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-  thumbnailFallback: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.sageLight,
-  },
-  contentColumn: {
-    flex: 1,
-    justifyContent: 'center',
-    marginRight: spacing[2],
-  },
-  provenanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  sourceBadge: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 10,
-    color: colors.forest,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  metaDot: {
-    marginHorizontal: 4,
-    color: colors.muted,
-    fontSize: 10,
-  },
-  dateText: {
-    fontFamily: typography.meta.fontFamily,
-    fontSize: 10,
-    color: colors.muted,
-  },
-  titleText: {
-    fontFamily: typography.h2.fontFamily,
-    fontSize: 14,
-    lineHeight: 19,
-    color: colors.ink,
-  },
-  actionColumn: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  row: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderColor: colors.border },
+  open: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', paddingVertical: spacing[3], gap: spacing[3] },
+  pressed: { opacity: 0.75 },
+  thumbnail: { width: 64, height: 64, borderRadius: radii.md },
+  copy: { flex: 1, gap: spacing[1] },
+  meta: { ...typography.bodySmall, color: colors.muted },
+  title: { fontFamily: typography.h2.fontFamily, fontSize: 18, lineHeight: 24, color: colors.ink },
+  summary: { ...typography.bodySmall, color: colors.muted },
+  availability: { ...typography.bodySmall, color: colors.forest },
 });
-
-export default DispatchRow;
