@@ -48,7 +48,21 @@ Completed:
   - `app/details/[source]/[id].tsx` (typed route parameters).
 - Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
 - Automated test suites passing (5 unit and component tests).
-## 2026-11-22 — Task 01: DummyJSON Authentication & SecureStore Session Complete
+## 2026-11-22 — Task 02: Navigation Architecture, App Shell & Brand Motion Complete
+Completed:
+- Designed and implemented `src/navigation/types.ts`:
+  - Enforced strict typed routing parameters: `{ source: 'nasa-apod' | 'spaceflight-news', id: string }`.
+  - Added parameter normalization and decoding to prevent passing entire serialized objects across routes.
+- Created `src/components/common/BrandReveal.tsx`:
+  - Implemented the three-phase in-app reveal motion per `docs/LAUNCH_MOTION.md` using React Native Reanimated.
+  - Added native `AccessibilityInfo.isReduceMotionEnabled()` check to immediately resolve when user has enabled reduced motion.
+  - Eliminated wrong-route flashing and blank splash screens during initial session hydration.
+- Implemented `src/components/common/Header.tsx`:
+  - Accessible editorial screen header with `PlayfairDisplay` titles, safe area insets handling, and accessible back navigation with >=48dp touch targets.
+- Created test suites:
+  - `tests/navigationParams.test.ts` (verifies valid parameters, decodes encoded IDs, rejects unsupported sources/empty IDs).
+  - `tests/Header.test.tsx` (verifies title, subtitle rendering, and back button interaction).
+- All 8 test suites (30 tests), ESLint flat config, TypeScript check, and Android export passed with 0 errors and 0 warnings.
 Completed:
 - Implemented `src/services/storage/secureStore.ts`:
   - Token storage strictly isolated to OS-backed `expo-secure-store`.

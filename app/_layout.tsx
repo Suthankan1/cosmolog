@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -17,6 +17,7 @@ import { Provider } from 'react-redux';
 import { store, useAppDispatch, useAppSelector } from '../src/store';
 import { restoreSessionThunk } from '../src/store/slices/authSlice';
 import { colors } from '../src/theme/tokens';
+import { BrandReveal } from '../src/components/common/BrandReveal';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -25,13 +26,14 @@ function RootNavigator() {
   const segments = useSegments();
   const dispatch = useAppDispatch();
   const { isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
+  const [isBrandRevealed, setIsBrandRevealed] = useState(false);
 
   useEffect(() => {
     dispatch(restoreSessionThunk());
   }, [dispatch]);
 
   useEffect(() => {
-    if (isInitialSessionLoading) return;
+    if (!isBrandRevealed || isInitialSessionLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -40,7 +42,7 @@ function RootNavigator() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isInitialSessionLoading, segments, router]);
+  }, [isAuthenticated, isInitialSessionLoading, isBrandRevealed, segments, router]);
 
   return (
     <>
@@ -62,6 +64,10 @@ function RootNavigator() {
           }}
         />
       </Stack>
+
+      {!isBrandRevealed && (
+        <BrandReveal onFinish={() => setIsBrandRevealed(true)} />
+      )}
     </>
   );
 }
