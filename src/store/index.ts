@@ -5,6 +5,8 @@ import feedReducer, { type FeedState } from './slices/feedSlice';
 import favouritesReducer, { type FavouritesState } from './slices/favouritesSlice';
 
 export const store = configureStore({
+  // Field notes are private. Avoid exposing state and action snapshots to DevTools.
+  devTools: false,
   reducer: {
     auth: authReducer,
     feed: feedReducer,

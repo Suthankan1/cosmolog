@@ -5,15 +5,17 @@ import { Icon } from '../common/Icon';
 
 export interface SearchBarProps {
   value: string;
-  onChangeText: (text: string) => void;
   placeholder?: string;
+  accessibilityLabel?: string;
+  onChangeText: (text: string) => void;
   onClear?: () => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
-  onChangeText,
   placeholder = 'Search celestial observations...',
+  accessibilityLabel = 'Search observation archive',
+  onChangeText,
   onClear,
 }) => {
   return (
@@ -26,7 +28,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         placeholderTextColor={colors.muted}
         style={styles.textInput}
         accessibilityRole="search"
-        accessibilityLabel="Search observation archive"
+        accessibilityLabel={accessibilityLabel}
         autoCapitalize="none"
         autoCorrect={false}
         clearButtonMode="never"

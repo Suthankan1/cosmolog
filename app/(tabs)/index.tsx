@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { setSearchQuery, setSelectedCategory } from '../../src/store/slices/feedSlice';
-import { toggleFavouriteThunk } from '../../src/store/slices/favouritesSlice';
+import { useToggleFavourite } from '../../src/features/journal/useToggleFavourite';
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { selectFeed } from '../../src/features/discovery/selectFeed';
 import { navigateToDetails } from '../../src/navigation/types';
@@ -21,6 +21,7 @@ export default function DiscoverScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const toggleFavourite = useToggleFavourite();
   const { items, selectedCategory, searchQuery, cacheStatus, connection, metadata, legacySyncedAt, isRefreshing, refreshError } =
     useAppSelector(state => state.feed);
   const { favourites, pending, error: saveError } = useAppSelector(state => state.favourites);
@@ -42,7 +43,7 @@ export default function DiscoverScreen() {
     pending: Boolean(pending[item.localId]),
     offline,
     onPress: () => navigateToDetails(router, item.source, item.externalId),
-    onToggleSave: () => { void dispatch(toggleFavouriteThunk(item.localId)); },
+    onToggleSave: () => toggleFavourite(item.localId),
   });
 
   const header = (

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../../src/store';
-import { refreshImagesThunk, toggleFavouriteThunk } from '../../../src/store/slices/favouritesSlice';
+import { refreshImagesThunk, saveFieldNoteThunk } from '../../../src/store/slices/favouritesSlice';
 import { parseDetailsParams } from '../../../src/navigation/types';
 import { colors, layout, radii, spacing, typography } from '../../../src/theme/tokens';
 import { formatEditorialDate } from '../../../src/utils/text';
@@ -13,6 +13,8 @@ import { EmptyState } from '../../../src/components/common/EmptyState';
 import { OfflineBanner } from '../../../src/components/common/OfflineBanner';
 import { DiscoveryImage } from '../../../src/components/discovery/DiscoveryImage';
 import { useDiscoveryRecord } from '../../../src/features/discovery/useDiscoveryRecord';
+import { useToggleFavourite } from '../../../src/features/journal/useToggleFavourite';
+import { FieldNote } from '../../../src/features/journal/FieldNote';
 import { mediaLabel } from '../../../src/features/discovery/mediaLabel';
 import { httpsUrl } from '../../../src/services/api/mediaPolicy';
 
@@ -22,6 +24,7 @@ export default function DetailsScreen() {
   const { result, retry } = useDiscoveryRecord(parsed);
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const toggleFavourite = useToggleFavourite();
   const { connection, metadata, legacySyncedAt } = useAppSelector(state => state.feed);
   const { favourites, pending, error, isDownloading } = useAppSelector(state => state.favourites);
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -71,7 +74,7 @@ export default function DetailsScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {header}
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: spacing[8] + insets.bottom }]}
@@ -87,7 +90,7 @@ export default function DetailsScreen() {
             icon="bookmark"
             variant={saved ? 'outline' : 'primary'}
             loading={Boolean(pending[item.localId])}
-            onPress={() => { void dispatch(toggleFavouriteThunk(item.localId)); }}
+            onPress={() => toggleFavourite(item.localId)}
           />
           {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
           {saved && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(saved.mediaStatus, offline)}</Text>}
@@ -95,6 +98,7 @@ export default function DetailsScreen() {
             <Button title="Retry image download" variant="outline" icon="refresh-cw" loading={isDownloading}
               onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}
+          {saved && <FieldNote key={item.localId} note={saved.note} onSave={text => dispatch(saveFieldNoteThunk(item.localId, text))} />}
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             {item.source === 'nasa-apod' ? 'About this observation' : 'Publisher summary'}
           </Text>
@@ -126,7 +130,7 @@ export default function DetailsScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

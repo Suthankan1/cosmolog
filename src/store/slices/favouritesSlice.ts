@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { AppThunk, RootState } from '..';
 import {
-  FavouriteDiscoveryItem, getFavourites, getLegacyFavouriteCount, importLegacyFavourites, setFavourite,
+  FavouriteDiscoveryItem, getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFieldNote, setFavourite,
 } from '../../database/repositories/favouritesRepository';
 import { finishImage, getPendingImages, reconcileSavedImages } from '../../database/repositories/mediaRepository';
 import { deleteImageFile, downloadImage, pruneImageFiles } from '../../services/storage/imageStorage';
@@ -98,11 +98,12 @@ export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch
   return mediaWork;
 };
 
-export const toggleFavouriteThunk = (localId: string): AppThunk<Promise<void>> => async (dispatch, getState) => {
+export const toggleFavouriteThunk = (localId: string, confirmNoteRemoval = false): AppThunk<Promise<void>> => async (dispatch, getState) => {
   const { accountId, favourites } = getState().favourites;
   if (!accountId) return;
-  const saved = favourites.some(item => item.localId === localId);
-  const result = await dispatch(putFavourite({ localId, saved: !saved, accountId }));
+  const bookmark = favourites.find(item => item.localId === localId);
+  if (bookmark?.note && !confirmNoteRemoval) return;
+  const result = await dispatch(putFavourite({ localId, saved: !bookmark, accountId }));
   if (putFavourite.fulfilled.match(result)) {
     await dispatch(loadFavouritesThunk(accountId));
     dispatch(favouriteOperationFinished({ accountId, localId }));
@@ -110,10 +111,32 @@ export const toggleFavouriteThunk = (localId: string): AppThunk<Promise<void>> =
   }
 };
 
+export const saveFieldNoteThunk = (localId: string, text: string | null): AppThunk<Promise<void>> => async (dispatch, getState) => {
+  const { accountId, pending } = getState().favourites;
+  if (!accountId || pending[localId]) throw new Error('Another bookmark operation is in progress');
+  dispatch(fieldNoteStarted(localId));
+  try {
+    const note = await saveFieldNote(accountId, localId, text);
+    dispatch(fieldNoteCommitted({ accountId, localId, note }));
+    await dispatch(loadFavouritesThunk(accountId));
+  } finally {
+    dispatch(favouriteOperationFinished({ accountId, localId }));
+  }
+};
+
 const slice = createSlice({
   name: 'favourites',
   initialState,
   reducers: {
+    fieldNoteStarted(state, action: PayloadAction<string>) {
+      state.pending[action.payload] = true;
+    },
+    fieldNoteCommitted(state, action: PayloadAction<{ accountId: number; localId: string; note: string | null }>) {
+      if (state.accountId !== action.payload.accountId) return;
+      const item = state.favourites.find(entry => entry.localId === action.payload.localId);
+      if (item) item.note = action.payload.note;
+      state.loadRequestId = null;
+    },
     favouriteOperationFinished(state, action: PayloadAction<{ accountId: number; localId: string }>) {
       if (state.accountId === action.payload.accountId) delete state.pending[action.payload.localId];
     },
@@ -163,5 +186,5 @@ const slice = createSlice({
     }),
 });
 
-const { favouriteOperationFinished, imageWorkChanged, imageWorkFailed } = slice.actions;
+const { favouriteOperationFinished, fieldNoteStarted, fieldNoteCommitted, imageWorkChanged, imageWorkFailed } = slice.actions;
 export default slice.reducer;

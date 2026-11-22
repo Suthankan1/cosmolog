@@ -95,4 +95,5 @@ export async function saveFieldNote(accountId: number, localId: string, input: s
     );
     if (!result.changes) throw new Error('Save this discovery before adding a note');
   });
+  return note;
 }
