@@ -84,7 +84,7 @@ Feature-oriented React Native client:
 - UI/screens/components
 - navigation (Expo Router)
 - state (Redux Toolkit)
-- remote data adapters (RTK Query)
+- remote data adapters (Redux Toolkit thunks, see ADR-008)
 - local persistence (SQLite repositories)
 - secure session (SecureStore)
 - network observer (NetInfo)
@@ -93,16 +93,6 @@ Feature-oriented React Native client:
 
 No custom backend in the assignment baseline. No secrets or permanent API credentials embedded in the app.
 
-## Important unresolved decisions
-- Confirm current NASA replacement endpoint response shape and rate policy before coding.
-- Confirm Spaceflight News API current availability, pagination and image licensing/attribution.
-- Decide exact cache retention limit and refresh cadence after measuring payload size.
-- Decide whether to use one unified RTK Query API slice or separate API slices based on endpoint/cache needs.
-- Validate DM Serif Display and DM Sans licensing/availability for app bundling.
-- Confirm device-specific launcher asset export requirements for Expo configuration.
+## Current implementation
 
-## Current implementation status
-- Figma file created in Suthankan Balenthiran's team.
-- Figma brand mark, tokens, typography, components, five screens and system-state board authored.
-- Project context/docs/package being prepared.
-- No application code implementation has started.
+The Expo app implements verified offline session restoration, protected routes, SQLite source snapshots, account-owned favourites and notes, and verified durable image downloads. Discover, Details, Favourites, and Profile follow the v2 design specifications. See `docs/PROGRESS.md` for the current build and device verification evidence.

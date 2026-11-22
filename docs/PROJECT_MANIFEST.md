@@ -11,6 +11,4 @@ This archive is intended to be the root folder opened in Claude, Codex, Antigrav
 - `tasks/`: ordered implementation tasks.
 - `assets/brand/`: SVG mark, lockup and launcher icon sources.
 - `source_materials/`: original assignment brief and six lecture PDFs.
-- `src/`, `tests/`: intentional placeholders; app implementation not started.
-
-Do not treat this package as a completed application. The Figma design and project context are prepared; the student should review them before the first code slice.
+- `app/`, `src/`, `tests/`: Expo Router screens, feature and persistence code, and automated verification.

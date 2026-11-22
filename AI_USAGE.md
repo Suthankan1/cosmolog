@@ -22,3 +22,9 @@ AI-generated code must be understood, run, reviewed and tested by the student. T
 
 ## 2026-11-22 — Figma redesign iteration
 The original generated Figma v1 was criticised as unacceptable. ChatGPT rebuilt a v2 visual identity and multiple screens from the newer image references, corrected identified typography collisions, and changed the documented theme to Playfair/Inter and the reference palette. This is an actual AI-iteration record. Before submitting AI_USAGE.md, the student must review it, add their own precise corrections and supporting evidence, and keep only claims they can verify.
+
+## 2026-11-23 — Offline-first hardening and Field Journal
+
+Codex audited the existing startup, data and UI flows, implemented the feature slices, and wrote regression tests. One correction followed live API inspection. The working image policy originally recognized only NASA-owned credits. NASA’s current Jupiter APOD returned an explicit Creative Commons license in its credit HTML. The adapter now preserves a validated license URL, and the media worker can download licensed images while keeping their credit and license visible. This also avoided treating a NASA host as proof of image rights.
+
+Native testing also exposed two shortcomings in the AI-assisted implementation. Protected routes left a signed-out cold launch at an unmatched root URL, so an explicit entry route now redirects after session restore. The inline note input could open below Android's keyboard, so editing now uses its own safe-area-aware compose view. Both corrections were retested on the release build.

@@ -1,77 +1,17 @@
 # Local data model
 
-## DiscoveryItem
-Suggested normalized shape:
-```ts
-type DiscoverySource = 'nasa-apod' | 'spaceflight-news';
+SQLite owns public discovery records, feed membership, source metadata, bookmarks, private notes, and image status. SecureStore owns the verified session and tokens. The two stores have independent failure paths.
 
-type DiscoveryItem = {
-  localId: string;           // `${source}:${externalId}`
-  source: DiscoverySource;
-  externalId: string;
-  title: string;
-  summary: string;
-  body: string;
-  publishedAt: string | null; // ISO timestamp/date from source
-  imageRemoteUrl: string | null;
-  imageLocalUri: string | null;
-  canonicalUrl: string | null;
-  attribution: string | null;
-  author: string | null;
-  mediaType: 'image' | 'video' | 'article' | 'unknown';
-  fetchedAt: string;          // successful fetch timestamp
-  updatedAt: string;          // local upsert timestamp
-};
-```
+| Table | Identity | Purpose |
+| --- | --- | --- |
+| `cached_items` | `local_id`, built as `source:externalId` | Text, publication date, source and credit, validated HTTPS URLs, optional image license, fetch and update time |
+| `feed_membership` | `source, local_id` | Latest successfully loaded list and source ordering |
+| `sync_metadata` | source key | Last attempt, last committed success, and sanitized error |
+| `favourites` | `account_id, local_id` | Saved date and one trimmed field note of up to 1,000 characters |
+| `saved_media` | `local_id` | Waiting, ready, or failed state, relative app-private filename, and byte count |
 
-## SQLite tables
-### `cached_items`
-- `local_id TEXT PRIMARY KEY`
-- `source TEXT NOT NULL`
-- `external_id TEXT NOT NULL`
-- `title TEXT NOT NULL`
-- `summary TEXT NOT NULL`
-- `body TEXT NOT NULL`
-- `published_at TEXT`
-- `image_remote_url TEXT`
-- `image_local_uri TEXT`
-- `canonical_url TEXT`
-- `attribution TEXT`
-- `author TEXT`
-- `media_type TEXT NOT NULL`
-- `fetched_at TEXT NOT NULL`
-- `updated_at TEXT NOT NULL`
-- Unique constraint `(source, external_id)`.
+## Migration and ownership
 
-### `favourites`
-- `local_id TEXT PRIMARY KEY REFERENCES cached_items(local_id)`
-- `added_at TEXT NOT NULL`
-- Optional local annotation field only if scope remains stable.
-- Favourite is a relationship, not a duplicated copy of the entire API record.
+The original unversioned schema migrates through three versions in a transaction. Version 1 introduces source membership, account ownership, and media status. Version 2 adds notes. Version 3 retains image license URLs. Legacy bookmarks start unassigned under account zero. Import explicitly assigns them to the active account; orphan relationships are excluded.
 
-### `sync_metadata`
-- `feed_key TEXT PRIMARY KEY`
-- `last_synced_at TEXT`
-- `last_attempt_at TEXT`
-- `last_error_code TEXT`
-- `cursor_or_page TEXT` only if source pagination requires it.
-
-## Repository contracts
-- `getCachedFeed(feedKey)`
-- `getItem(localId)`
-- `upsertItems(items)` — transaction + conflict update
-- `addFavourite(localId)`
-- `removeFavourite(localId)`
-- `getFavourites()`
-- `isFavourite(localId)`
-- `updateSyncMetadata(...)`
-- `getLastSuccessfulSync(feedKey)`
-
-## Invariants
-- Never overwrite favourite state during feed upsert.
-- No duplicate `local_id`.
-- Only set `last_synced_at` after validated data is committed.
-- Store source attribution/canonical URL.
-- Keep auth tokens out of this schema.
-- Use bound parameters for every SQL query.
-- Migrations must be versioned and tested.
+The reader and writer use separate SQLite connections. The writer enables foreign keys and serializes transactions. Feed membership, media, and bookmarks refer to a cached item. Only unreferenced records older than 30 days are eligible for pruning. File cleanup retains a validated file until its last bookmark is removed. A missing file is shown as unavailable while it awaits a retry.

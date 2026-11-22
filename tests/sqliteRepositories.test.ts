@@ -6,6 +6,7 @@ import { CREATE_TABLES_SQL } from '../src/database/schema';
 import { commitFeedSnapshot, getCachedFeed, getDiscoveryItemById, upsertDiscoveryItems } from '../src/database/repositories/discoveryRepository';
 import { getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFieldNote, setFavourite } from '../src/database/repositories/favouritesRepository';
 import { getSyncMetadata, recordSyncFailure } from '../src/database/repositories/syncMetadataRepository';
+import { finishImage, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
 import { writeDatabase } from '../src/database/db';
 import type { DiscoveryItem } from '../src/database/models';
 
@@ -108,4 +109,23 @@ it('stores notes privately, preserves them during refresh and deletes them with 
   expect((await getFavourites(1)).find(entry => entry.localId === item.localId)?.note).toBe('Look up the mission timeline.');
   await setFavourite(1, item.localId, false);
   await expect(saveFieldNote(1, item.localId, 'Missing bookmark')).rejects.toThrow();
+});
+
+it('keeps the bookmark when an image fails, and rejects a finished file for a changed source URL', async () => {
+  const nasa: DiscoveryItem = {
+    ...item, source: 'nasa-apod', localId: legacyId, externalId: '2026-11-22',
+    attribution: 'NASA', imageRemoteUrl: 'https://nasa.gov/first.jpg',
+  };
+  await upsertDiscoveryItems([nasa]);
+  await setFavourite(2, nasa.localId, true);
+  await finishImage(nasa.localId, nasa.imageRemoteUrl!, null);
+  expect((await getFavourites(2)).find(entry => entry.localId === nasa.localId)?.mediaStatus).toBe('failed');
+
+  await upsertDiscoveryItems([{ ...nasa, imageRemoteUrl: 'https://nasa.gov/second.jpg' }]);
+  expect(await finishImage(nasa.localId, nasa.imageRemoteUrl!, { fileName: 'abandoned.jpg', bytes: 12 })).toBe(false);
+  await reconcileSavedImages();
+  expect(await getPendingImages(2)).toContainEqual(expect.objectContaining({
+    local_id: nasa.localId,
+    image_remote_url: 'https://nasa.gov/second.jpg',
+  }));
 });

@@ -1,44 +1,23 @@
-# Architecture proposal
+# COSMOLOG architecture
+
+Expo Router protects the main tabs and the direct Details route. A root lifecycle hook starts only for a verified account. It hydrates the local store, observes NetInfo and AppState, and coalesces network events before asking Redux Toolkit to refresh.
 
 ```mermaid
 flowchart TD
-  UI[Expo Router screens] --> Store[Redux Toolkit store]
-  UI --> Repo[SQLite repositories]
-  Store --> RTK[RTK Query API layer]
-  RTK --> NASA[NASA APOD adapter]
-  RTK --> SN[Spaceflight News adapter]
-  RTK --> Auth[DummyJSON auth adapter]
-  RTK --> Normalizer[Validation and normalization]
-  Normalizer --> Repo
-  Repo --> DB[(SQLite)]
-  UI --> Net[NetInfo connectivity observer]
-  UI --> Secure[Expo SecureStore]
-  UI --> Images[Expo FileSystem saved images]
+  Shell[Protected application shell] --> Life[Authenticated archive lifecycle]
+  Life --> Thunks[Redux Toolkit thunks]
+  Screens[Discover, Details, Shelf, Profile] --> Thunks
+  Thunks --> Session[SecureStore and DummyJSON]
+  Thunks --> Adapters[NASA APOD and Spaceflight News adapters]
+  Adapters --> Validate[Zod and normalization]
+  Validate --> SQLite[(SQLite snapshots and records)]
+  Thunks --> SQLite
+  Thunks --> Files[Verified app-private image files]
+  SQLite --> Screens
 ```
 
-## Responsibilities
-- Screens/components: render UI, accessibility, interaction.
-- Expo Router: auth flow, tabs, typed details route.
-- Redux Toolkit: app/session/request state.
-- RTK Query: remote request lifecycle, retries and cache tags.
-- API adapters: source-specific transport and mapping.
-- Zod: validate untrusted remote/auth payloads and form inputs.
-- SQLite repositories: durable cached items, favourites and sync metadata.
-- SecureStore: access/refresh token if provided by DummyJSON; no other persistence layer.
-- NetInfo: online/offline transition events.
-- FileSystem: persist image files explicitly saved for offline use.
-
-## Data loading strategy
-1. On app start, initialize/migrate SQLite.
-2. Read local feed/favourites and render immediately.
-3. Read secure session.
-4. If authenticated and online, fetch remote feeds.
-5. Validate + normalize.
-6. Upsert in a transaction.
-7. Update UI from local repository/query invalidation.
-8. Record successful sync only after commit.
-
-Do not let RTK Query's in-memory cache be the only offline source.
-
-## No custom backend
-No backend is required for the assignment baseline. DummyJSON and public science APIs satisfy the specified external integrations. A custom backend is out of scope unless a concrete requirement emerges.
+- **Session** reads the verified record from SecureStore during boot. Background validation can renew or revoke it. A signed-out marker and conditional writes prevent stale requests restoring a signed-out session.
+- **Feed** reads SQLite without waiting for NetInfo. Each source atomically replaces its own membership and timestamp after validation. A failure preserves previous rows and time. The display combines source-specific results.
+- **Details** reads by composite key on its own. It requests the direct source endpoint on an online miss. A Details lookup can populate the record cache without inserting the item into a feed snapshot.
+- **Shelf** owns bookmarks and notes per DummyJSON user ID. Media availability is derived from checked files, and an interrupted save of an image cannot undo the bookmark.
+- **State choice** uses Redux Toolkit thunks for remote and local orchestration. The project chose this permitted option because the coordinator owns the durable reconciliation. See [decision records](../docs/DECISIONS.md).

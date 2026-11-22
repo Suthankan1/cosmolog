@@ -197,3 +197,11 @@ The shipped layouts now follow the approved v2 compositions. The dark launch and
 ## 2026-11-23 — Offline Field Journal
 
 An account-owned favourite can carry one private field note. Notes can be added, searched, edited, and removed through the app without a network request. The Shelf also filters by notes and confirmed downloaded images, and sorts by saved or publication date. Removing a bookmark with a note asks for confirmation. Runtime Redux inspection is disabled for private state. TypeScript, ESLint, and 53 Jest tests passed.
+
+## 2026-11-23 — Release verification and submission evidence
+
+A device test exposed an unmatched root route before sign-in. An explicit public entry route now resolves the locally restored session and opens the permitted stack. The note editor uses a keyboard-safe compose view after the inline editor fell below the Android keyboard.
+
+Verified on a self-contained ARM64 Android release with Metro stopped. A fresh offline launch reached sign-in. Three favourites and a licensed Jupiter image survived force-stop, reinstall, and an airplane-mode relaunch. The note reopened, was edited, and was found by text search while offline. Both source timestamps advanced on reconnect. Discover rendered at 320/360/390/430 dp at 1.3× font scale. Sign-out survived a further force-stop.
+
+Clean npm installation, final ESLint, strict TypeScript, 57 Jest tests, Android native release build and lint, and the iOS bundle export passed. No native iOS simulator runtime was available. Six device screenshots replaced the previous captures. The local narrated review cut is 170.02 seconds and passed full video/audio decoding.

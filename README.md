@@ -1,343 +1,94 @@
 # COSMOLOG
 
-**A pocket archive of the universe.**
+COSMOLOG is an editorial space and science archive for IN3210 Assignment 2. Read NASA Astronomy Picture of the Day and Spaceflight News dispatches, save discoveries to the Field Shelf, and leave private notes for later. A previously verified account can reopen the archive in airplane mode.
 
-COSMOLOG is a production-quality, offline-first Space & Science discovery mobile application developed for **IN3210 Mobile Applications Development Assignment 2** at the University of Moratuwa.
+**Assignment mapping** · Index 234202J · Space & Science (2) · Offline-first (0)
 
-- **Student Index:** `234202J`
-- **Assigned Domain:** Space & Science (Last numeric digit: `2`)
-- **Assigned Twist:** Offline-first (Second-last numeric digit: `0`)
-- **Selected Bonus:** Smooth React Native Reanimated save/favourite micro-interaction (+5 marks)
-- **Framework & Runtime:** React Native 0.88 + Expo SDK 58 + TypeScript Strict Mode
-- **Design System:** COSMOLOG Editorial V2 (Playfair Display + Inter typography, Ivory `#F8F4EA`, Forest `#184235`, Terracotta `#C1654A`, Brass `#C79B4D`, Sage `#A8B89A`)
+**Selected bonus** · Reanimated bookmark feedback on a confirmed save, with reduced-motion support
 
-> *"Discover with curiosity. Keep what matters."*
+## Run locally
 
----
+Use the Node version in [`.nvmrc`](.nvmrc), a JDK 21 installation and Android Studio with the SDK/NDK required by the checked-in Android project. For iOS, install a compatible full Xcode and its simulators.
 
-## Table of Contents
-1. [Core Features & Assignment Coverage](#core-features--assignment-coverage)
-2. [Visual Design & Editorial Identity (Figma V2)](#visual-design--editorial-identity-figma-v2)
-3. [Architecture & System Design](#architecture--system-design)
-4. [State Management & Durable Offline Storage Choice](#state-management--durable-offline-storage-choice)
-5. [Key Architectural Decisions](#key-architectural-decisions)
-6. [API Provenance & Data Normalization](#api-provenance--data-normalization)
-7. [Installation & Setup](#installation--setup)
-8. [Automated Verification & Test Suites](#automated-verification--test-suites)
-9. [Demonstration Video Script](#demonstration-video-script)
+```sh
+nvm use
+npm ci
+npm run android
+```
 
----
+For iOS use `npm run ios`. No API key or `.env` is required. Tap **Use demo account** on the sign-in screen. Registration exercises the DummyJSON simulation and returns to sign-in. The public demo account signs in independently.
 
-## Core Features & Assignment Coverage
+### Self-contained Android build
 
-| Requirement | Implementation Details |
-|---|---|
-| **Domain: Space & Science** | Integrates verified live NASA Astronomy Picture of the Day (APOD) and Spaceflight News API v4. |
-| **Twist: Offline-First** | SQLite-first hydration on startup. Previously loaded feeds, details, and favourites survive process death and airplane mode without internet. Automatic re-sync on network reconnection. |
-| **Authentication & Secure Storage** | DummyJSON authentication (`POST /auth/login`), simulated registration (`POST /users/add`), input validation with Zod + React Hook Form, and token storage strictly in OS-backed **Expo SecureStore**. |
-| **Navigation & Route Protection** | File-based **Expo Router** with distinct `(auth)` and `(tabs)` route groups. Typed Details navigation (`details/[source]/[id]`) passing only ID and source—never entire serialized objects. |
-| **State Management** | **Redux Toolkit** managing UI, authentication session, feed filtering, and favourites, backed by durable SQLite repositories. |
-| **The Field Shelf (Favourites)** | Relational favourites join in SQLite. Automatically downloads and caches high-res image files to local storage for guaranteed offline visual access. |
-| **Visual Polish & Design System** | Faithful implementation of approved Figma V2 editorial design: Ivory canvas, Forest Green brand, Brass accents, vector Feather icons, dynamic safe areas, and dynamic font scaling. |
-| **Brand Launch Reveal** | Three-phase in-app motion sequence with Reanimated following native splash screen, with automatic bypass when reduced motion is requested. |
-| **Selected Bonus (+5 Marks)** | Custom Reanimated bookmark/save spring micro-interaction with damping and overshoot on every save action. |
-| **Code Quality & Testing** | Strict TypeScript, modern ESLint 9 flat config, 0 warnings, 0 errors, and **13 Jest test suites with 47 automated unit and component tests**. |
+A Gradle release build embeds the JavaScript bundle and assets. For an installable build, supply the local keystore path and its credentials using `COSMOLOG_SIGNING_STORE`, `COSMOLOG_SIGNING_STORE_PASSWORD`, `COSMOLOG_SIGNING_KEY_ALIAS`, and `COSMOLOG_SIGNING_KEY_PASSWORD`. Keep signing secrets outside the repository. With the Android SDK and JDK configured, run:
 
----
+```sh
+cd android
+./gradlew :app:assembleRelease
+```
 
-## Visual Design & Editorial Identity (Figma V2)
+Use the existing debug key only for local QA. Avoid Metro when validating airplane-mode cold starts.
 
-COSMOLOG rejects the generic dark sci-fi/neon-blue AI template in favor of an **editorial field journal** aesthetic inspired by classical astronomical notebooks:
+## Offline walkthrough
 
-- **Primary Colors:**
-  - `Ivory (#F8F4EA)`: Warm, accessible canvas background.
-  - `Forest Green (#184235)`: Brand primary, headers, primary buttons.
-  - `Forest Dark (#102F26)`: Splash reveal and high-contrast hero backgrounds.
-  - `Brass (#C79B4D)`: Orbital arc, observation ticks, and key focal accents.
-  - `Terracotta (#C1654A)`: Secondary highlights, active saved state, and destructive actions.
-  - `Sage Light (#E3E9DC)`: Offline field mode banner and supportive surfaces.
-  - `Charcoal Ink (#2C2A27)`: High-legibility editorial text.
-- **Typography:**
-  - **Playfair Display**: Classical serif for editorial headlines, wordmark, and daily plate titles.
-  - **Inter**: Neutral, accessible grotesque sans-serif for controls, metadata, and reading prose.
-- **Iconography:** Pure vector **Feather icons** (`@expo/vector-icons/Feather`) for all controls; zero emoji icons.
-- **Touch Targets:** Minimum 48 dp Android / 44 pt iOS touch targets strictly enforced on all buttons, chips, and links.
+1. Sign in online and wait for the two sources to populate Discover.
+2. Open a discovery and save it. Text and provenance are available immediately. For a licensed image, wait for **Image available offline** before relying on the file.
+3. Add a note in Details. Open Favourites to find the record by its title, publisher, or note. Use the **With notes** and **Image downloaded** filters.
+4. Force-stop the app, turn on airplane mode, then launch it. Open Discover and the saved discovery, including any downloaded image. Edit the note and reopen the record.
+5. Restore connectivity. Discover refreshes automatically. Profile shows the last successful timestamp for each source.
 
-Figma Source of Truth: [COSMOLOG Product & Visual Design V2](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N)
+A fresh install needs connectivity for the first sign-in. A returning user with a verified SecureStore session can read locally during a network or account service outage. A legacy token-only install needs one verification online. If earlier device bookmarks exist, the Shelf offers a one-time import to the current account.
 
----
+### Media and provenance
 
-## Application Screenshots (Captured from Live Android Emulator)
+NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
 
-| 01. Login & Auth | 02. Discover Feed | 03. Reading Room |
-| :---: | :---: | :---: |
-| <img src="docs/screenshots/01-login.png" width="240" alt="COSMOLOG Login Screen" /> | <img src="docs/screenshots/02-discover.png" width="240" alt="Discover Feed" /> | <img src="docs/screenshots/03-details.png" width="240" alt="Observation Reading Room" /> |
-| *Editorial login with autofill helper* | *Live APOD hero & dispatches* | *Full typography & provenance* |
+- [NASA APOD API](https://api.nasa.gov/assets/files/apod/APOD-APIs-and-RSS-info.pdf)
+- [Spaceflight News API v4](https://api.spaceflightnewsapi.net/v4/docs/)
+- [DummyJSON authentication](https://dummyjson.com/docs/auth)
+- [NASA Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/)
+- [Jupiter image credits](https://science.nasa.gov/wp-json/wp/v2/apod-basic/261122) · NASA/Juno/SwRI/MSSS, processing by Matt Brealey and Seán Doran · [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/)
 
-| 04. The Field Shelf | 05. Offline Field Mode |
-| :---: | :---: |
-| <img src="docs/screenshots/04-shelf.png" width="240" alt="The Field Shelf" /> | <img src="docs/screenshots/05-offline-banner.png" width="240" alt="Offline Mode with Truthful Timestamp" /> |
-| *Preserved offline discoveries* | *Truthful SQLite sync timestamp & retry* |
+## Screenshots
 
----
+| Sign in | Discover | Details |
+| --- | --- | --- |
+| ![Sign in](docs/screenshots/01-login.png) | ![Discover](docs/screenshots/02-discover.png) | ![Details](docs/screenshots/03-details.png) |
 
-## Architecture & System Design
+| Field Shelf | Cold launch offline | Saved image and note |
+| --- | --- | --- |
+| ![Field Shelf](docs/screenshots/04-shelf.png) | ![Offline Discover](docs/screenshots/05-offline-banner.png) | ![Offline Field Journal](docs/screenshots/06-journal-offline.png) |
+
+## Architecture and state
+
+Expo Router protects the main stack and passes a source and ID to Details. A Redux Toolkit coordinator loads SQLite before starting remote refresh. It shares connection, request, and save state across the screens. Validated and normalized source responses become SQLite transactions. Each transaction updates a source snapshot and its last successful timestamp together.
 
 ```mermaid
-flowchart TD
-  subgraph UI Layer [Expo Router Navigation & Screens]
-    Splash[Brand Launch Reveal - Reanimated] --> AuthGate{Authenticated?}
-    AuthGate -- No --> Login[Login / Register Screen]
-    AuthGate -- Yes --> Tabs[(tabs) Bottom Navigation]
-    Tabs --> Discover[Discover Feed Screen]
-    Tabs --> Shelf[The Field Shelf / Favourites]
-    Tabs --> Profile[Field Log & Telemetry]
-    Discover --> Details[Discovery Details Screen]
-    Shelf --> Details
-  end
-
-  subgraph State Layer [Redux Toolkit Store]
-    AuthSlice[authSlice: Session State]
-    FeedSlice[feedSlice: Feed & Search]
-    FavSlice[favouritesSlice: Favourites Map]
-  end
-
-  subgraph Persistence Layer [Durable On-Device Storage]
-    Secure[Expo SecureStore: Access Tokens ONLY]
-    SQLite[(Expo SQLite: cached_items, favourites, sync_metadata)]
-    FS[Expo FileSystem: Downloaded Offline Images]
-  end
-
-  subgraph Remote Layer [External APIs & Services]
-    NetInfo[NetInfo Connectivity Observer]
-    NASA[NASA APOD Replacement Endpoint]
-    SN[Spaceflight News API v4]
-    DJ[DummyJSON Auth Services]
-  end
-
-  Login --> AuthSlice
-  AuthSlice --> Secure
-  AuthSlice --> DJ
-
-  Discover --> FeedSlice
-  FeedSlice --> SQLite
-  FeedSlice --> NASA
-  FeedSlice --> SN
-  NetInfo -. Auto Refresh .-> FeedSlice
-
-  Shelf --> FavSlice
-  FavSlice --> SQLite
-  FavSlice --> FS
+flowchart LR
+  Screens[Expo Router screens] --> State[Redux Toolkit thunks]
+  State --> Sources[NASA APOD and Spaceflight News]
+  State --> Session[DummyJSON and SecureStore]
+  Sources --> Repositories[SQLite repositories]
+  State --> Repositories
+  Repositories --> SQLite[(Snapshots, favourites, notes)]
+  State --> Files[Durable image files]
 ```
 
-### Architectural Separation
-1. **Presentation Layer (`app/`, `src/components/`):** Stateless and connected React components strictly isolated from raw network protocols.
-2. **State Management (`src/store/`):** Redux Toolkit slices handling transient UI state, search queries, active category filters, and optimistic updates.
-3. **Storage Abstraction (`src/database/`, `src/services/storage/`):** High-level repositories encapsulating SQLite queries and SecureStore tokens behind typed TypeScript interfaces.
-4. **Network Adapters (`src/services/api/`):** Source-specific transport adapters that validate untrusted remote payloads with **Zod** and normalize them into a uniform `DiscoveryItem` domain model.
+See [Architecture](design/ARCHITECTURE.md), [Data model](design/DATA_MODEL.md), and [Decision records](docs/DECISIONS.md).
 
----
+### Key decisions
 
-## State Management & Durable Offline Storage Choice
+1. **Restore the verified session locally.** A network profile check made an offline restart look like a logout. SecureStore now holds the verified identity and tokens. Online validation can refresh or revoke them while the archive remains available during a temporary service failure.
+2. **Use SQLite and one sync coordinator.** Cached items, source membership, and refresh metadata are durable together. Redux Toolkit thunks were retained so the app has one place that controls request ordering and reconciles results with SQLite. The trade-off is that the coordinator owns deduplication and retry behavior.
+3. **Separate bookmarking from downloading.** A file server can be slow or down, so the bookmark is committed first. Image status becomes ready only after the validated local file exists. The journal has useful text and notes even when the image is unavailable.
+4. **Own bookmarks and notes by account.** Feed records are public, so the database can reuse them across accounts. The SQLite favourite relationship carries ownership and the field note. A legacy bookmark has no owner until a signed-in person imports it.
 
-### Redux Toolkit + RTK Architecture
-The assignment mandates Redux Toolkit. We utilize Redux Toolkit slices with async thunks for:
-- Managing session authentication state (`authSlice`).
-- Managing real-time search queries and category filters (`feedSlice`).
-- Maintaining an in-memory O(1) favourite lookup map (`favouritesSlice`) for instant list item rendering without database latency.
+## Verification
 
-### Why Redux Persistence Alone is Insufficient for the Twist
-In-memory Redux state and transient image caches do **not** survive operating system process death. To genuinely satisfy the **Offline-first (0)** twist:
-1. **SQLite as the Durable Read Path:** On application boot, the UI immediately reads from on-device SQLite (`getCachedFeed()`). Cached dispatches render in under 50ms without waiting for network timeouts.
-2. **Atomic Upsert Transactions:** When online, incoming feeds are validated via Zod, normalized, and upserted inside an atomic SQLite transaction (`upsertDiscoveryItems`). If the device loses connection mid-sync, the database rolls back cleanly.
-3. **No Fabricated Freshness:** `sync_metadata` stores truthful ISO timestamps recorded only after database commit. Device clock time is never substituted as a fake sync time.
-4. **Relational Integrity for Favourites:** Favourites are stored in a dedicated relational table (`favourites`) with foreign key constraints. Refreshing remote feeds updates article metadata but **never overwrites or erases user favourites**.
-5. **Persistent Offline Images:** When an item is favourited, `persistImageLocally` copies the remote image into persistent document storage via `expo-file-system/legacy`, updating `image_local_uri` in SQLite. When offline, high-resolution imagery remains visible.
-
----
-
-## Key Architectural Decisions
-
-*(Required by Assignment 2 Specification — Written in student's own words)*
-
-### 1. Token Isolation in OS SecureStore (ADR-003)
-**Decision:** Store JWT authentication tokens exclusively in OS-backed hardware-encrypted storage using `expo-secure-store`. Never use AsyncStorage, MMKV, SQLite, or plain Redux persistence for credentials.  
-**Reasoning:** Storing tokens in plain unencrypted local storage exposes user credentials to token-exfiltration attacks on rooted devices or via rogue dependencies. Using Expo SecureStore delegates encryption to Android KeyStore and iOS Keychain. Furthermore, SQLite holds public science content, so segregating sensitive credentials from content caching prevents accidental data leakage during database inspection or export.
-
-### 2. SQLite-First Hydration over Memory Cache (ADR-002)
-**Decision:** Make local SQLite the primary read path on application launch before dispatching any network request.  
-**Reasoning:** In an offline-first mobile app, waiting for a network request to fail or timeout (which can take 10–30 seconds on flaky 3G or cellular networks) creates a frustrating user experience. By reading directly from SQLite first, returning users immediately see their last-synced feed and saved Field Shelf. A background sync (`syncRemoteFeedThunk`) then checks connectivity and silently updates the database if online.
-
-### 3. Route Decoupling via Typed Identifiers (ADR-007)
-**Decision:** Pass only `{ source, id }` as typed navigation route parameters to the Details screen (`details/[source]/[id]`), strictly forbidding the serialization of entire article objects in route params.  
-**Reasoning:** Passing large serialized objects in navigation routes creates state synchronization bugs (e.g. favourite state toggled in details does not reflect in list), bloats URL history, and breaks deep linking. By passing only the identifier, the Details screen loads its own data directly from SQLite, guaranteeing that the user views the authoritative, persisted record regardless of how the route was pushed.
-
----
-
-## API Provenance & Data Normalization
-
-External API data is untrusted and varies in schema and HTML formatting. Both services are normalized into a unified domain model:
-
-```typescript
-export interface DiscoveryItem {
-  localId: string;           // Composite key: `${source}:${externalId}`
-  source: 'nasa-apod' | 'spaceflight-news';
-  externalId: string;
-  title: string;
-  summary: string;
-  body: string;
-  publishedAt: string | null;
-  imageRemoteUrl: string | null;
-  imageLocalUri: string | null;
-  canonicalUrl: string | null;
-  attribution: string | null;
-  author: string | null;
-  mediaType: 'image' | 'video' | 'article' | 'unknown';
-  fetchedAt: string;
-  updatedAt: string;
-}
-```
-
-1. **NASA APOD Replacement Endpoint (`https://science.nasa.gov/wp-json/wp/v2/apod-basic/`):**
-   - Validated via `nasaApodResponseSchema`.
-   - Strips embedded HTML tags (`<a href>`, `<strong>`, `<br>`) and entity codes (`&#039;`) using `stripHtml()`.
-   - Preserves high-resolution `hdurl` and credit attribution (`Matt Brealey, Seán Doran, NASA, Juno`).
-2. **Spaceflight News API v4 (`https://api.spaceflightnewsapi.net/v4/articles/`):**
-   - Validated via `spaceflightFeedResponseSchema`.
-   - Preserves canonical news site links, authors, and launch mission references.
-3. **DummyJSON Authentication (`https://dummyjson.com/auth/`):**
-   - Verified live demo credentials: username `emilys`, password `emilyspass`.
-   - Simulated account creation via `POST https://dummyjson.com/users/add` with explicit academic disclosure in UI.
-
----
-
-## Installation & Setup
-
-### Prerequisites
-- **Node.js:** v20.x or v22.x+ LTS (verified on Node v24.22)
-- **Package Manager:** `npm` (v10+)
-- **Mobile Environment:** Android Studio (SDK 34+) or Xcode (macOS), or Expo Go app on physical device.
-- **Java:** JDK 21 (LTS) for Android native builds.
-
-### Step-by-Step Setup Commands
-
-```bash
-# 1. Clone repository
-git clone https://github.com/Suthankan-B/COSMOLOG.git
-cd COSMOLOG
-
-# 2. Install dependencies
-npm install
-
-# 3. Verify TypeScript strict check
-npm run typecheck
-
-# 4. Verify ESLint 9 (flat config)
+```sh
 npm run lint
-
-# 5. Run all 47 automated tests
-npm test
-
-# 6. Start Expo development server
-npm start
-
-# 7. Run directly on connected Android device / emulator
-npm run android
-
-# 8. Run on iOS simulator (macOS only)
-npm run ios
+npm run typecheck
+npm test -- --runInBand
 ```
 
----
-
-## Automated Verification & Test Suites
-
-The project includes **13 automated test suites comprising 47 tests**, significantly exceeding the assignment minimum requirement of 3 tests:
-
-```
-PASS tests/foundation.test.ts
-  ✓ has valid editorial color palette matching Figma v2
-  ✓ provides required layout constants
-  ✓ defines consistent spacing and radii scales
-  ✓ defines editorial typography tokens
-
-PASS tests/Icon.test.tsx
-  ✓ renders a Feather icon with specified name and accessibilityLabel
-
-PASS tests/Header.test.tsx
-  ✓ renders title and optional subtitle
-  ✓ triggers onBack callback when back button is pressed
-
-PASS tests/SearchBar.test.tsx
-  ✓ renders input with placeholder
-  ✓ renders clear button when value is non-empty and triggers clear
-
-PASS tests/FavouriteButton.test.tsx (Bonus Interaction)
-  ✓ renders with appropriate accessibility state when not saved
-  ✓ renders with appropriate accessibility state when saved
-  ✓ triggers onToggle callback when pressed
-
-PASS tests/OfflineBanner.test.tsx
-  ✓ renders offline alert text and formatted sync timestamp
-  ✓ triggers onRetry callback when user taps retry button
-
-PASS tests/authValidation.test.ts
-  ✓ rejects blank username and password
-  ✓ accepts trimmed non-empty credentials
-  ✓ enforces minimum lengths and valid email
-  ✓ rejects mismatched passwords
-  ✓ accepts valid registration payload
-
-PASS tests/dummyJsonAuth.test.ts
-  ✓ correctly maps raw API user into domain AuthUser with full name
-  ✓ saves tokens to SecureStore and returns mapped user on success
-  ✓ throws INVALID_CREDENTIALS error on 400 response
-  ✓ throws NETWORK_ERROR on connection failure
-  ✓ returns simulated registration ID upon successful POST /users/add
-  ✓ clears secure tokens and returns null when token is invalid or 401
-
-PASS tests/secureStore.test.ts
-  ✓ persists access and refresh tokens to OS-backed secure storage
-  ✓ clears all tokens completely upon logout
-
-PASS tests/authSlice.test.ts
-  ✓ handles setAuthenticatedUser correctly
-  ✓ handles clearAuthError action
-  ✓ handles loginThunk.fulfilled lifecycle
-  ✓ handles loginThunk.rejected lifecycle
-  ✓ handles logoutThunk.fulfilled lifecycle by clearing session
-
-PASS tests/navigationParams.test.ts
-  ✓ parses valid NASA APOD parameters
-  ✓ parses valid Spaceflight News parameters and decodes encoded IDs
-  ✓ handles array parameters from Expo Router query parsing
-  ✓ rejects unsupported or arbitrary sources
-  ✓ rejects missing or empty identifiers
-
-PASS tests/discoveryNormalization.test.ts
-  ✓ validates schema from live NASA APOD replacement endpoint
-  ✓ normalizes NASA item into clean DiscoveryItem without HTML tags
-  ✓ rejects invalid NASA payload with missing required fields
-  ✓ validates Spaceflight News v4 response schema
-  ✓ normalizes Spaceflight News article into DiscoveryItem
-
-PASS tests/sqliteRepositories.test.ts
-  ✓ upserts discovery items idempotently without creating duplicate entries
-  ✓ retrieves individual discovery items by local ID
-  ✓ persists and deletes favourites accurately
-  ✓ preserves local offline image URI during feed refresh upserts
-  ✓ records and reads truthful sync metadata timestamps
-
-Test Suites: 13 passed, 13 total
-Tests:       47 passed, 47 total
-Snapshots:   0 total
-Time:        1.386 s
-```
-
----
-
-## Demonstration Video Script
-
-A concise, timed narration script under 3 minutes is provided in [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md):
-- **Part 1 (0:00 - 1:00):** App flow demonstration covering login, Discover feed, Daily Plate, Details screen, Reanimated bookmark bonus, Field Shelf, airplane mode offline cold-start, and automatic reconnection refresh.
-- **Part 2 (1:00 - 3:00):** Technical code walkthrough explaining Expo Router navigation, Redux Toolkit architecture, SQLite WAL schema, SecureStore token isolation, and offline image persistence.
+Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver, reconnect and source failure behavior, route validation, media normalization, and the journal. A GitHub Actions workflow repeats the JS checks on a clean install. The verified Android run covered cold airplane-mode restore, editing and searching the note offline, automatic reconnect, four screen widths at 1.3× font size, and durable sign-out. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).

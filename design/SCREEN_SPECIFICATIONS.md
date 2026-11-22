@@ -2,7 +2,7 @@
 
 [Figma file](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=11-5). V2 primary screens and five distinct offline/error states are editable in Figma.
 
-The Figma screens use illustrative example articles, profiles, counts and sync times. Production content must be populated from actual APIs/local database and must not present samples as live data.
+The production mastheads use NASA Earthrise. The Figma screens use illustrative example articles, profiles, counts and sync times. Production content must be populated from actual APIs/local database and must not present samples as live data.
 
 ## Primary screens (7)
 | Screen | Figma Node | Requirements |
@@ -11,8 +11,8 @@ The Figma screens use illustrative example articles, profiles, counts and sync t
 | Login | `16:25` | Username/password labels, validation, password reveal, DummyJSON login, SecureStore session, loading and error states |
 | Create Account | `16:70` | Simulated DummyJSON registration, inline disclosure, no fake persistent user |
 | Discover | `17:42` | Curated NASA image, space dispatch list, local search, offline banner, article cards, loading/retry/empty states, last refresh |
-| Article Details | `17:136` | Route by source+ID, own data loading, hero image, full explanation, favourite toggle, provenance/original link |
-| Favourites | `18:109` | Four sample saved entries as editable design; actual rows from durable SQLite, offline images, add/remove, empty state |
+| Article Details | `17:136` | Route by source+ID, own data loading, hero image, full explanation, favourite toggle, provenance/original link and a private field note for saved discoveries |
+| Favourites | `18:109` | Four sample saved entries as editable design; actual rows from durable SQLite, image status, note search, filters, sorting, add/remove, empty state |
 | Profile & Settings | `18:191` | Local storage stats, last-sync info, preferences, attribution, logout; no fictional cross-device syncing |
 
 ## States (5 additional screens)
