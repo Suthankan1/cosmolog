@@ -11,6 +11,7 @@ import { Icon } from './Icon';
 
 export interface FavouriteButtonProps {
   isSaved: boolean;
+  pending?: boolean;
   onToggle: () => void;
   size?: number;
   activeColor?: string;
@@ -20,6 +21,7 @@ export interface FavouriteButtonProps {
 
 export const FavouriteButton: React.FC<FavouriteButtonProps> = ({
   isSaved,
+  pending = false,
   onToggle,
   size = 20,
   activeColor = colors.terracotta,
@@ -51,7 +53,8 @@ export const FavouriteButton: React.FC<FavouriteButtonProps> = ({
       style={styles.pressable}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected: isSaved }}
+      disabled={pending}
+      accessibilityState={{ selected: isSaved, busy: pending, disabled: pending }}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
     >
       <Animated.View style={animatedStyle}>

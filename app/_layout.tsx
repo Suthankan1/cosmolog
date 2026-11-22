@@ -15,16 +15,16 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { store, useAppDispatch, useAppSelector } from '../src/store';
-import { revalidateSessionThunk, restoreSessionThunk } from '../src/store/slices/authSlice';
+import { restoreSessionThunk } from '../src/store/slices/authSlice';
 import { colors } from '../src/theme/tokens';
-import { subscribeToNetworkState } from '../src/services/network/networkObserver';
+import { useArchiveLifecycle } from '../src/store/archiveLifecycle';
 import { BrandReveal } from '../src/components/common/BrandReveal';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
   const dispatch = useAppDispatch();
-  const { isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
   const [isBrandRevealed, setIsBrandRevealed] = useState(false);
   const finishReveal = useCallback(() => setIsBrandRevealed(true), []);
 
@@ -32,12 +32,7 @@ function RootNavigator() {
     void dispatch(restoreSessionThunk());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    return subscribeToNetworkState((isOnline) => {
-      if (isOnline) void dispatch(revalidateSessionThunk());
-    });
-  }, [dispatch, isAuthenticated]);
+  useArchiveLifecycle(user?.id);
 
   return (
     <>

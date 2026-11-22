@@ -26,7 +26,7 @@ export function stripHtml(html: string): string {
  * Formats an ISO date or YYYY-MM-DD string into editorial date display (e.g. "22 Nov 2026").
  */
 export function formatEditorialDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Field observation';
+  if (!dateStr) return 'Date unavailable';
   try {
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
@@ -35,6 +35,7 @@ export function formatEditorialDate(dateStr: string | null | undefined): string 
       day: 'numeric',
       month: 'short',
       year: 'numeric',
+      timeZone: /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? 'UTC' : undefined,
     });
   } catch {
     return dateStr;

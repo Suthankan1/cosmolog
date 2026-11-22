@@ -1,8 +1,8 @@
 import { configureStore, type UnknownAction, type ThunkAction } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import authReducer from './slices/authSlice';
-import feedReducer from './slices/feedSlice';
-import favouritesReducer from './slices/favouritesSlice';
+import authReducer, { type AuthState } from './slices/authSlice';
+import feedReducer, { type FeedState } from './slices/feedSlice';
+import favouritesReducer, { type FavouritesState } from './slices/favouritesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,7 +12,11 @@ export const store = configureStore({
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export interface RootState {
+  auth: AuthState;
+  feed: FeedState;
+  favourites: FavouritesState;
+}
 export type AppThunk<Result> = ThunkAction<Result, RootState, undefined, UnknownAction>;
 export type AppDispatch = typeof store.dispatch;
 

@@ -10,6 +10,8 @@ import { Icon } from '../common/Icon';
 export interface DispatchRowProps {
   item: DiscoveryItem;
   isSaved: boolean;
+  pending?: boolean;
+  offline?: boolean;
   onPress: () => void;
   onToggleSave: () => void;
 }
@@ -17,12 +19,14 @@ export interface DispatchRowProps {
 export const DispatchRow: React.FC<DispatchRowProps> = ({
   item,
   isSaved,
+  pending,
+  offline,
   onPress,
   onToggleSave,
 }) => {
   const imageSource = item.imageLocalUri
     ? { uri: item.imageLocalUri }
-    : item.imageRemoteUrl
+    : !offline && item.imageRemoteUrl
     ? { uri: item.imageRemoteUrl }
     : null;
 
@@ -64,6 +68,7 @@ export const DispatchRow: React.FC<DispatchRowProps> = ({
       <View style={styles.actionColumn}>
         <FavouriteButton
           isSaved={isSaved}
+            pending={pending}
           onToggle={onToggleSave}
           size={18}
           activeColor={colors.terracotta}

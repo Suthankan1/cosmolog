@@ -1,26 +1,20 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 
-export type NetworkChangeCallback = (isConnected: boolean) => void;
+export type Connection = 'online' | 'offline' | 'unknown';
 
-/**
- * Checks current network connectivity.
- */
-export async function getNetworkState(): Promise<boolean> {
+function classifyConnection(state: NetInfoState): Connection {
+  if (state.isConnected === false || state.isInternetReachable === false) return 'offline';
+  return state.isConnected ? 'online' : 'unknown';
+}
+
+export async function getNetworkState(): Promise<Connection> {
   try {
-    const state = await NetInfo.fetch();
-    return Boolean(state.isConnected && state.isInternetReachable !== false);
+    return classifyConnection(await NetInfo.fetch());
   } catch {
-    return true; // Default to online if detector is unavailable
+    return 'unknown';
   }
 }
 
-/**
- * Listens for network transitions and executes callback.
- */
-export function subscribeToNetworkState(callback: NetworkChangeCallback): () => void {
-  const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-    const isOnline = Boolean(state.isConnected && state.isInternetReachable !== false);
-    callback(isOnline);
-  });
-  return unsubscribe;
+export function subscribeToNetworkState(callback: (state: Connection) => void): () => void {
+  return NetInfo.addEventListener(state => callback(classifyConnection(state)));
 }

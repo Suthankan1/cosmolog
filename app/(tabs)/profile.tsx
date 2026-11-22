@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { logoutThunk } from '../../src/store/slices/authSlice';
-import { loadCachedFeedThunk } from '../../src/store/slices/feedSlice';
+import { refreshImagesThunk } from '../../src/store/slices/favouritesSlice';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
 import { formatEditorialDate } from '../../src/utils/text';
 import { Button } from '../../src/components/common/Button';
@@ -18,8 +18,8 @@ import { Icon } from '../../src/components/common/Icon';
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
-  const { items, lastSyncedAt } = useAppSelector((state) => state.feed);
-  const { favourites } = useAppSelector((state) => state.favourites);
+  const { items, metadata, legacySyncedAt, connection } = useAppSelector((state) => state.feed);
+  const { favourites, isDownloading } = useAppSelector((state) => state.favourites);
 
   const handleLogout = () => {
     Alert.alert(
@@ -38,10 +38,8 @@ export default function ProfileScreen() {
     );
   };
 
-  const handleRefreshArchives = () => {
-    dispatch(loadCachedFeedThunk());
-    Alert.alert('Database Synced', 'Local SQLite tables inspected and state verified.');
-  };
+  const lastSyncedAt = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt]
+    .filter((value): value is string => Boolean(value)).sort().at(-1) ?? legacySyncedAt;
 
   const displayName = user?.fullName || 'Astronomer Observer';
   const username = user?.username ? `@${user.username}` : '@cosmolog';
@@ -148,8 +146,10 @@ export default function ProfileScreen() {
       </View>
 
       <Button
-        title="Verify Local SQLite Cache"
-        onPress={handleRefreshArchives}
+        title="Retry downloads"
+        disabled={connection !== 'online'}
+        loading={isDownloading}
+        onPress={() => { void dispatch(refreshImagesThunk()); }}
         variant="outline"
         icon="refresh-cw"
         style={styles.verifyButton}

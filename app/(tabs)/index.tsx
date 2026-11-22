@@ -1,27 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
-import {
-  loadCachedFeedThunk,
-  setIsOffline,
-  setSearchQuery,
-  setSelectedCategory,
-  syncRemoteFeedThunk,
-} from '../../src/store/slices/feedSlice';
-import {
-  loadFavouritesThunk,
-  toggleFavouriteThunk,
-} from '../../src/store/slices/favouritesSlice';
-import { subscribeToNetworkState } from '../../src/services/network/networkObserver';
+import { setSearchQuery, setSelectedCategory } from '../../src/store/slices/feedSlice';
+import { toggleFavouriteThunk } from '../../src/store/slices/favouritesSlice';
+import { refreshArchive } from '../../src/store/archiveLifecycle';
+import { selectFeed } from '../../src/features/discovery/selectFeed';
 import { navigateToDetails } from '../../src/navigation/types';
 import { colors, layout, spacing, typography } from '../../src/theme/tokens';
 import { OfflineBanner } from '../../src/components/common/OfflineBanner';
@@ -30,262 +15,100 @@ import { DispatchRow } from '../../src/components/discovery/DispatchRow';
 import { CategoryChips } from '../../src/components/discovery/CategoryChips';
 import { SearchBar } from '../../src/components/discovery/SearchBar';
 import { EmptyState } from '../../src/components/common/EmptyState';
-import { DiscoveryItem } from '../../src/database/models';
+import { Button } from '../../src/components/common/Button';
 
 export default function DiscoverScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const { items, selectedCategory, searchQuery, cacheStatus, connection, metadata, legacySyncedAt, isRefreshing, refreshError } =
+    useAppSelector(state => state.feed);
+  const { favourites, pending, error: saveError } = useAppSelector(state => state.favourites);
+  const savedItems = useMemo(() => new Map(favourites.map(item => [item.localId, item])), [favourites]);
+  const { hero, rows } = useMemo(() => selectFeed(items, selectedCategory, searchQuery), [items, selectedCategory, searchQuery]);
+  const refresh = () => { void dispatch(refreshArchive()); };
+  const offline = connection === 'offline';
+  const updatedAt = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt]
+    .filter((value): value is string => Boolean(value)).sort().at(-1) ?? legacySyncedAt;
+  const failedSources = [
+    metadata['nasa-apod'].error ? 'Daily Plate' : null,
+    metadata['spaceflight-news'].error ? 'Space Dispatches' : null,
+  ].filter(Boolean).join(' and ');
+  const busy = cacheStatus === 'idle' || cacheStatus === 'loading' || (isRefreshing && !items.length);
 
-  const {
-    items,
-    dailyPlate,
-    dispatches,
-    selectedCategory,
-    searchQuery,
-    isLoading,
-    isRefreshing,
-    isOffline,
-    lastSyncedAt,
-    error,
-  } = useAppSelector((state) => state.feed);
+  const cardProps = (item: typeof items[number]) => ({
+    item: savedItems.get(item.localId) ?? item,
+    isSaved: savedItems.has(item.localId),
+    pending: Boolean(pending[item.localId]),
+    offline,
+    onPress: () => navigateToDetails(router, item.source, item.externalId),
+    onToggleSave: () => { void dispatch(toggleFavouriteThunk(item.localId)); },
+  });
 
-  const { favouriteMap } = useAppSelector((state) => state.favourites);
-
-  // Initial load: render durable SQLite cache first
-  useEffect(() => {
-    dispatch(loadCachedFeedThunk());
-    dispatch(loadFavouritesThunk());
-    dispatch(syncRemoteFeedThunk());
-
-    // Listen to network transitions: automatically refresh when reconnecting
-    const unsubscribe = subscribeToNetworkState((isOnline) => {
-      dispatch(setIsOffline(!isOnline));
-      if (isOnline) {
-        dispatch(syncRemoteFeedThunk());
-      }
-    });
-
-    return () => unsubscribe();
-  }, [dispatch]);
-
-  const onRefresh = () => {
-    dispatch(syncRemoteFeedThunk());
-  };
-
-  const filteredDispatches = useMemo(() => {
-    let list: DiscoveryItem[] = dispatches;
-    if (selectedCategory === 'nasa-apod') {
-      list = items.filter((i) => i.source === 'nasa-apod');
-    } else if (selectedCategory === 'spaceflight-news') {
-      list = dispatches.filter((i) => i.source === 'spaceflight-news');
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (i) =>
-          i.title.toLowerCase().includes(q) ||
-          i.summary.toLowerCase().includes(q) ||
-          (i.author && i.author.toLowerCase().includes(q)) ||
-          (i.attribution && i.attribution.toLowerCase().includes(q))
-      );
-    }
-
-    return list;
-  }, [items, dispatches, selectedCategory, searchQuery]);
-
-  const showDailyPlate = useMemo(() => {
-    if (!dailyPlate) return false;
-    if (selectedCategory === 'spaceflight-news') return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      return (
-        dailyPlate.title.toLowerCase().includes(q) ||
-        dailyPlate.summary.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  }, [dailyPlate, selectedCategory, searchQuery]);
-
-  const renderHeader = () => (
-    <View style={styles.listHeader}>
-      <View style={styles.brandTitleRow}>
-        <View>
-          <Text style={styles.brandTitle}>COSMOLOG</Text>
-          <Text style={styles.brandSubtitle}>A pocket archive of the universe</Text>
-        </View>
-      </View>
-
-      <SearchBar
-        value={searchQuery}
-        onChangeText={(text) => dispatch(setSearchQuery(text))}
-        onClear={() => dispatch(setSearchQuery(''))}
-      />
-
-      {showDailyPlate && (
-        <DailyPlateCard
-          item={dailyPlate!}
-          isSaved={Boolean(favouriteMap[dailyPlate!.localId])}
-          onPress={() => navigateToDetails(router, dailyPlate!.source, dailyPlate!.externalId)}
-          onToggleSave={() => dispatch(toggleFavouriteThunk(dailyPlate!))}
-        />
-      )}
-
-      <View style={styles.sectionDividerRow}>
-        <Text style={styles.sectionHeading}>Space Dispatches</Text>
-      </View>
-
-      <CategoryChips
-        selectedCategory={selectedCategory}
-        onSelectCategory={(cat) => dispatch(setSelectedCategory(cat))}
-      />
-
-      {Boolean(error) && (
-        <View style={styles.errorNotice} accessibilityRole="alert">
-          <Text style={styles.errorNoticeText}>
-            Unable to update feeds: {error}. Showing saved observations.
+  const header = (
+    <View style={styles.header}>
+      <Text accessibilityRole="header" style={styles.title}>Discover</Text>
+      <Text style={styles.subtitle}>Astronomy and spaceflight, collected for reading anywhere.</Text>
+      <SearchBar value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
+      {(!offline && (failedSources || refreshError || cacheStatus === 'error')) ? (
+        <View style={styles.notice}>
+          <Text accessibilityRole="alert" style={styles.noticeText}>
+            {failedSources ? 'Could not refresh ' + failedSources + '.' : 'Could not read or refresh the archive.'}
+            {items.length ? ' Showing the cached collection.' : ''}
           </Text>
+          <Button title="Try again" onPress={refresh} variant="outline" loading={isRefreshing} />
         </View>
-      )}
+      ) : null}
+      {saveError ? <Text accessibilityRole="alert" style={styles.noticeText}>{saveError}</Text> : null}
+      {hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
+      <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
+      <Text accessibilityRole="header" style={styles.sectionTitle}>
+        {searchQuery.trim() ? 'Search results' : selectedCategory === 'nasa-apod' ? 'Daily Plates' : 'Space Dispatches'}
+      </Text>
     </View>
   );
 
-  return (
-    <View style={[styles.screenContainer, { paddingTop: Math.max(insets.top, 16) }]}>
-      {isOffline && (
-        <OfflineBanner
-          lastSyncedAt={lastSyncedAt}
-          onRetry={onRefresh}
-          isRetrying={isRefreshing}
-        />
-      )}
+  const empty = busy ? (
+    <View style={styles.loading}>
+      <ActivityIndicator accessibilityLabel="Loading discoveries" color={colors.forest} />
+    </View>
+  ) : searchQuery.trim() ? (
+    <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
+      actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
+  ) : offline && cacheStatus === 'error' ? (
+    <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
+      actionTitle="Try again" onAction={refresh} />
+  ) : offline && !items.length ? (
+    <EmptyState icon="cloud-off" title="Nothing downloaded yet" description="Connect to download your first collection." />
+  ) : failedSources || refreshError || cacheStatus === 'error' ? null : (
+    <EmptyState icon="compass" title="No discoveries in this section" description="Try a different source or pull to refresh." />
+  );
 
-      {isLoading && items.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.forest} />
-          <Text style={styles.loadingText}>Opening celestial archives...</Text>
-        </View>
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon="cloud-off"
-          title="No Local Observations Yet"
-          description={
-            isOffline
-              ? 'You are offline on first launch. Connect to the internet once to download your initial space archive.'
-              : 'Unable to reach science telemetry. Tap retry to attempt connecting.'
-          }
-          actionTitle="Retry Connection"
-          onAction={onRefresh}
-          loading={isRefreshing}
-        />
-      ) : (
-        <FlatList
-          data={filteredDispatches}
-          keyExtractor={(item) => item.localId}
-          renderItem={({ item }: { item: DiscoveryItem }) => (
-            <DispatchRow
-              item={item}
-              isSaved={Boolean(favouriteMap[item.localId])}
-              onPress={() => navigateToDetails(router, item.source, item.externalId)}
-              onToggleSave={() => dispatch(toggleFavouriteThunk(item))}
-            />
-          )}
-          ListHeaderComponent={renderHeader}
-          ListEmptyComponent={
-            searchQuery.trim() ? (
-              <EmptyState
-                icon="search"
-                title="No Matches Found"
-                description={`No dispatches matched "${searchQuery}".`}
-                actionTitle="Clear Filter"
-                onAction={() => dispatch(setSearchQuery(''))}
-              />
-            ) : undefined
-          }
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.forest}
-              colors={[colors.forest, colors.brass]}
-            />
-          }
-        />
-      )}
+  return (
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      {offline && <OfflineBanner lastSyncedAt={updatedAt} />}
+      <FlatList
+        data={rows}
+        keyExtractor={item => item.localId}
+        renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
+        ListHeaderComponent={header}
+        ListEmptyComponent={empty ?? undefined}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={connection === 'online' ? <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={colors.forest} /> : undefined}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: colors.ivory,
-  },
-  listContent: {
-    paddingHorizontal: layout.horizontalInset,
-    paddingBottom: spacing[8],
-  },
-  listHeader: {
-    paddingTop: spacing[4],
-    paddingBottom: spacing[3],
-  },
-  brandTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing[4],
-  },
-  brandTitle: {
-    fontFamily: typography.display.fontFamily,
-    fontSize: 28,
-    lineHeight: 34,
-    color: colors.forest,
-    letterSpacing: 1.5,
-  },
-  brandSubtitle: {
-    fontFamily: 'PlayfairDisplay-Italic',
-    fontSize: 13,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  sectionDividerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing[4],
-    marginBottom: spacing[2],
-  },
-  sectionHeading: {
-    fontFamily: typography.h2.fontFamily,
-    fontSize: 20,
-    lineHeight: 26,
-    color: colors.ink,
-  },
-  errorNotice: {
-    backgroundColor: '#FDF3EB',
-    borderRadius: 8,
-    padding: spacing[3],
-    marginVertical: spacing[3],
-    borderLeftWidth: 3,
-    borderLeftColor: colors.terracotta,
-  },
-  errorNoticeText: {
-    fontFamily: typography.bodySmall.fontFamily,
-    fontSize: 12,
-    color: colors.ink,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 14,
-    color: colors.muted,
-    marginTop: spacing[3],
-  },
+  screen: { flex: 1, backgroundColor: colors.ivory },
+  content: { paddingHorizontal: layout.horizontalInset, paddingBottom: spacing[8] },
+  header: { paddingTop: spacing[5], gap: spacing[3] },
+  title: { ...typography.display, color: colors.forest },
+  subtitle: { ...typography.body, color: colors.muted },
+  sectionTitle: { ...typography.h2, color: colors.ink, marginBottom: spacing[2] },
+  notice: { gap: spacing[2], backgroundColor: colors.sageLight, padding: spacing[3] },
+  noticeText: { ...typography.body, color: colors.ink },
+  loading: { padding: spacing[8] },
 });

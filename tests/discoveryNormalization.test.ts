@@ -80,3 +80,20 @@ describe('Discovery Normalization and Zod Validation', () => {
     });
   });
 });
+
+it('uses the APOD permalink as the source and preserves an explicit image license', () => {
+  const item = normalizeNasaApodItem({
+    date: '2026-11-22', post_id: 1, title: 'Jupiter', explanation: 'A view of Jupiter.',
+    url: 'https://science.nasa.gov/image-article/jupiter/', media_type: 'image',
+    copyright: 'Observer · <a href="https://creativecommons.org/licenses/by-nc/3.0/">License</a>',
+  });
+  expect(item.imageRemoteUrl).toBeNull();
+  expect(item.canonicalUrl).toBe('https://science.nasa.gov/image-article/jupiter/');
+  expect(item.imageLicenseUrl).toBe('https://creativecommons.org/licenses/by-nc/3.0/');
+});
+
+it('does not invent an undated dispatch date or accept a non-HTTPS source link', () => {
+  const article = normalizeSpaceflightArticle({ id: 1, title: 'Launch', summary: 'Update', url: 'http://example.com' });
+  expect(article.publishedAt).toBeNull();
+  expect(article.canonicalUrl).toBeNull();
+});

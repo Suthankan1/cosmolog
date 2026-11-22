@@ -10,7 +10,7 @@ import {
 import { getNetworkState } from '../../services/network/networkObserver';
 import { clearSession, readStoredSession, replaceSessionIfCurrent, saveSession } from '../../services/storage/secureStore';
 
-interface AuthState {
+export interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isInitialSessionLoading: boolean;
@@ -103,7 +103,7 @@ export const restoreSessionThunk = (): AppThunk<Promise<void>> => async (dispatc
       return;
     }
     if (stored.kind === 'legacy') {
-      if (!await getNetworkState()) {
+      if ((await getNetworkState()) !== 'online') {
         dispatch(operationFailed('Connect to upgrade your saved session, then sign in if requested.'));
         return;
       }
@@ -127,6 +127,7 @@ export const revalidateSessionThunk = (): AppThunk<Promise<void>> => async (disp
     if (stored.kind !== 'verified') return;
     const session = await verifySession(stored.session);
     if (session && session.user.id !== stored.session.user.id) return;
+    if (session && JSON.stringify(session) === JSON.stringify(stored.session)) return;
     if (getState().auth.isLoading || getState().auth.user?.id !== stored.session.user.id) return;
     if (await replaceSessionIfCurrent(stored.session.accessToken, session)) {
       if (!getState().auth.isLoading) dispatch(sessionChanged(session?.user ?? null));

@@ -10,6 +10,8 @@ import { Icon } from '../common/Icon';
 export interface DailyPlateCardProps {
   item: DiscoveryItem;
   isSaved: boolean;
+  pending?: boolean;
+  offline?: boolean;
   onPress: () => void;
   onToggleSave: () => void;
 }
@@ -17,10 +19,12 @@ export interface DailyPlateCardProps {
 export const DailyPlateCard: React.FC<DailyPlateCardProps> = ({
   item,
   isSaved,
+  pending,
+  offline,
   onPress,
   onToggleSave,
 }) => {
-  const imageSource = item.imageLocalUri ? { uri: item.imageLocalUri } : item.imageRemoteUrl ? { uri: item.imageRemoteUrl } : null;
+  const imageSource = item.imageLocalUri ? { uri: item.imageLocalUri } : !offline && item.imageRemoteUrl ? { uri: item.imageRemoteUrl } : null;
 
   return (
     <Pressable
@@ -54,6 +58,7 @@ export const DailyPlateCard: React.FC<DailyPlateCardProps> = ({
           <View style={styles.favouriteWrapper}>
             <FavouriteButton
               isSaved={isSaved}
+            pending={pending}
               onToggle={onToggleSave}
               activeColor={colors.terracotta}
               inactiveColor={colors.white}

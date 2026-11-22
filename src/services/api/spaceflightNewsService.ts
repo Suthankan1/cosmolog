@@ -1,88 +1,64 @@
 import { z } from 'zod';
 import { DiscoveryItem } from '../../database/models';
+import { isNewsId } from '../../navigation/types';
 import { stripHtml } from '../../utils/text';
-
-export const spaceflightArticleSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  summary: z.string(),
-  url: z.string().optional().nullable(),
-  image_url: z.string().optional().nullable(),
-  news_site: z.string().optional().nullable(),
-  published_at: z.string().optional().nullable(),
-  authors: z
-    .array(
-      z.object({
-        name: z.string(),
-      })
-    )
-    .optional()
-    .nullable(),
-});
-
-export const spaceflightFeedResponseSchema = z.object({
-  count: z.number().optional(),
-  results: z.array(spaceflightArticleSchema),
-});
-
-export type RawSpaceflightArticle = z.infer<typeof spaceflightArticleSchema>;
+import { fetchJson, HttpError } from '../http';
+import { httpsUrl } from './mediaPolicy';
 
 const SPACEFLIGHT_NEWS_URL = 'https://api.spaceflightnewsapi.net/v4/articles/';
 
-export function normalizeSpaceflightArticle(raw: RawSpaceflightArticle): DiscoveryItem {
-  const cleanSummary = stripHtml(raw.summary);
-  const authorName =
-    raw.authors && raw.authors.length > 0 ? raw.authors[0].name : raw.news_site || 'Spaceflight News';
+export const spaceflightArticleSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string().transform(stripHtml).pipe(z.string().min(1)),
+  summary: z.string(),
+  url: z.string().nullish(),
+  image_url: z.string().nullish(),
+  news_site: z.string().nullish(),
+  published_at: z.string().nullish(),
+  authors: z.array(z.object({ name: z.string() })).nullish(),
+});
 
-  const attribution = raw.news_site || 'Spaceflight News API';
+export const spaceflightFeedResponseSchema = z.object({ results: z.array(spaceflightArticleSchema) });
+type RawSpaceflightArticle = z.infer<typeof spaceflightArticleSchema>;
+
+export function normalizeSpaceflightArticle(raw: RawSpaceflightArticle): DiscoveryItem {
+  const summary = stripHtml(raw.summary);
+  const published = raw.published_at ? Date.parse(raw.published_at) : NaN;
   const now = new Date().toISOString();
 
   return {
-    localId: `spaceflight-news:${raw.id}`,
+    localId: 'spaceflight-news:' + raw.id,
     source: 'spaceflight-news',
     externalId: String(raw.id),
-    title: stripHtml(raw.title),
-    summary: cleanSummary,
-    body: cleanSummary,
-    publishedAt: raw.published_at || now,
-    imageRemoteUrl: raw.image_url || null,
+    title: raw.title,
+    summary,
+    body: summary,
+    publishedAt: Number.isFinite(published) ? new Date(published).toISOString() : null,
+    imageRemoteUrl: httpsUrl(raw.image_url),
     imageLocalUri: null,
-    canonicalUrl: raw.url || null,
-    attribution,
-    author: authorName,
+    canonicalUrl: httpsUrl(raw.url),
+    attribution: raw.news_site?.trim() || null,
+    author: raw.authors?.map(author => author.name.trim()).filter(Boolean).join(', ') || null,
     mediaType: 'article',
     fetchedAt: now,
     updatedAt: now,
   };
 }
 
-export async function fetchSpaceflightNewsFeed(limit: number = 15): Promise<DiscoveryItem[]> {
-  const response = await fetch(`${SPACEFLIGHT_NEWS_URL}?limit=${limit}`);
-  if (!response.ok) {
-    throw new Error(`Spaceflight News service returned HTTP ${response.status}`);
-  }
-
-  const json = await response.json();
-  const parsed = spaceflightFeedResponseSchema.safeParse(json);
-
-  if (!parsed.success) {
-    throw new Error('Spaceflight News response validation failed');
-  }
-
-  return parsed.data.results.map(normalizeSpaceflightArticle);
+export async function fetchSpaceflightNewsFeed(signal?: AbortSignal): Promise<DiscoveryItem[]> {
+  const json = await fetchJson(SPACEFLIGHT_NEWS_URL + '?limit=15&ordering=-published_at', { signal });
+  return spaceflightFeedResponseSchema.parse(json).results.map(normalizeSpaceflightArticle);
 }
 
-export async function fetchSpaceflightNewsItem(id: string): Promise<DiscoveryItem | null> {
-  const response = await fetch(`${SPACEFLIGHT_NEWS_URL}${id}/`);
-  if (!response.ok) {
-    return null;
+export async function fetchSpaceflightNewsItem(id: string, signal?: AbortSignal): Promise<DiscoveryItem | null> {
+  if (!isNewsId(id)) throw new Error('Invalid article ID');
+  try {
+    const json = await fetchJson(SPACEFLIGHT_NEWS_URL + id + '/', { signal });
+    const raw = spaceflightArticleSchema.parse(json);
+    if (String(raw.id) !== id) throw new Error('Unexpected article ID');
+    return normalizeSpaceflightArticle(raw);
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 404) return null;
+    throw error;
   }
-
-  const json = await response.json();
-  const parsed = spaceflightArticleSchema.safeParse(json);
-  if (!parsed.success) {
-    return null;
-  }
-
-  return normalizeSpaceflightArticle(parsed.data);
 }

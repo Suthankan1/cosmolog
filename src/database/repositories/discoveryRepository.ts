@@ -1,95 +1,74 @@
-import { getDatabase } from '../db';
+import type { SQLiteDatabase } from 'expo-sqlite';
+import { getDatabase, writeDatabase } from '../db';
 import { CachedItemRow, DiscoveryItem, mapRowToDiscoveryItem } from '../models';
 import { DiscoverySource } from '../../navigation/types';
 
-/**
- * Upserts an array of normalized DiscoveryItems into SQLite.
- * Uses parameterized queries and runs inside a transaction.
- * Preserves previously downloaded image_local_uri so refresh doesn't purge offline assets.
- */
+async function upsertItem(db: SQLiteDatabase, item: DiscoveryItem) {
+  await db.runAsync(
+    `INSERT INTO cached_items (
+       local_id, source, external_id, title, summary, body, published_at,
+       image_remote_url, image_license_url, canonical_url, attribution, author, media_type, fetched_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(local_id) DO UPDATE SET
+       title = excluded.title, summary = excluded.summary, body = excluded.body,
+       published_at = excluded.published_at, image_remote_url = excluded.image_remote_url,
+       image_license_url = excluded.image_license_url,
+       canonical_url = excluded.canonical_url, attribution = excluded.attribution,
+       author = excluded.author, media_type = excluded.media_type,
+       fetched_at = excluded.fetched_at, updated_at = excluded.updated_at`,
+    [
+      item.localId, item.source, item.externalId, item.title, item.summary, item.body,
+      item.publishedAt, item.imageRemoteUrl, item.imageLicenseUrl ?? null, item.canonicalUrl, item.attribution,
+      item.author, item.mediaType, item.fetchedAt, item.updatedAt,
+    ],
+  );
+}
+
 export async function upsertDiscoveryItems(items: DiscoveryItem[]): Promise<void> {
-  if (items.length === 0) return;
-
-  const db = await getDatabase();
-
-  await db.withTransactionAsync(async () => {
-    for (const item of items) {
-      await db.runAsync(
-        `INSERT INTO cached_items (
-          local_id, source, external_id, title, summary, body,
-          published_at, image_remote_url, image_local_uri, canonical_url,
-          attribution, author, media_type, fetched_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(local_id) DO UPDATE SET
-          title = excluded.title,
-          summary = excluded.summary,
-          body = excluded.body,
-          published_at = excluded.published_at,
-          image_remote_url = excluded.image_remote_url,
-          canonical_url = excluded.canonical_url,
-          attribution = excluded.attribution,
-          author = excluded.author,
-          media_type = excluded.media_type,
-          updated_at = excluded.updated_at;`,
-        [
-          item.localId,
-          item.source,
-          item.externalId,
-          item.title,
-          item.summary,
-          item.body,
-          item.publishedAt,
-          item.imageRemoteUrl,
-          item.imageLocalUri,
-          item.canonicalUrl,
-          item.attribution,
-          item.author,
-          item.mediaType,
-          item.fetchedAt,
-          item.updatedAt,
-        ]
-      );
-    }
+  await writeDatabase(async db => {
+    for (const item of items) await upsertItem(db, item);
   });
 }
 
-/**
- * Reads cached feed items from SQLite ordered by published_at DESC.
- */
-export async function getCachedFeed(source?: DiscoverySource): Promise<DiscoveryItem[]> {
+/** The list and timestamp become visible together, including a successful empty list. */
+export async function commitFeedSnapshot(source: DiscoverySource, items: DiscoveryItem[], time: string) {
+  const entries = [...new Map(items.map(item => [item.localId, item])).values()];
+  await writeDatabase(async db => {
+    await db.runAsync('DELETE FROM feed_membership WHERE source = ?', [source]);
+    for (const [position, item] of entries.entries()) {
+      if (item.source !== source) throw new Error('Item source does not match feed');
+      await upsertItem(db, item);
+      await db.runAsync('INSERT INTO feed_membership VALUES (?, ?, ?)', [source, item.localId, position]);
+    }
+    await db.runAsync(
+      `INSERT INTO sync_metadata VALUES (?, ?, ?, NULL)
+       ON CONFLICT(feed_key) DO UPDATE SET last_synced_at = excluded.last_synced_at,
+       last_attempt_at = excluded.last_attempt_at, last_error_code = NULL`,
+      [source, time, time],
+    );
+    const cutoff = new Date(new Date(time).getTime() - 30 * 86400_000).toISOString();
+    await db.runAsync(
+      `DELETE FROM cached_items WHERE fetched_at < ?
+       AND NOT EXISTS (SELECT 1 FROM feed_membership WHERE local_id = cached_items.local_id)
+       AND NOT EXISTS (SELECT 1 FROM favourites WHERE local_id = cached_items.local_id)
+       AND NOT EXISTS (SELECT 1 FROM saved_media WHERE local_id = cached_items.local_id)`,
+      [cutoff],
+    );
+  });
+}
+
+export async function getCachedFeed(): Promise<DiscoveryItem[]> {
   const db = await getDatabase();
-  let query = 'SELECT * FROM cached_items ORDER BY published_at DESC, fetched_at DESC';
-  const params: string[] = [];
-
-  if (source) {
-    query = 'SELECT * FROM cached_items WHERE source = ? ORDER BY published_at DESC, fetched_at DESC';
-    params.push(source);
-  }
-
-  const rows = await db.getAllAsync<CachedItemRow>(query, params);
+  const rows = await db.getAllAsync<CachedItemRow>(
+    `SELECT c.* FROM feed_membership f
+     JOIN cached_items c ON c.local_id = f.local_id
+     ORDER BY f.source, f.position, c.local_id`,
+  );
   return rows.map(mapRowToDiscoveryItem);
 }
 
-/**
- * Retrieves a single discovery item by localId (source:externalId).
- */
 export async function getDiscoveryItemById(localId: string): Promise<DiscoveryItem | null> {
   const db = await getDatabase();
-  const row = await db.getFirstAsync<CachedItemRow>(
-    'SELECT * FROM cached_items WHERE local_id = ?',
-    [localId]
-  );
-
+  const row = await db.getFirstAsync<CachedItemRow>('SELECT * FROM cached_items WHERE local_id = ?', [localId]);
   return row ? mapRowToDiscoveryItem(row) : null;
-}
-
-/**
- * Updates the local persistent filesystem URI for a discovery item.
- */
-export async function updateLocalImageUri(localId: string, localUri: string): Promise<void> {
-  const db = await getDatabase();
-  await db.runAsync(
-    'UPDATE cached_items SET image_local_uri = ? WHERE local_id = ?',
-    [localUri, localId]
-  );
 }

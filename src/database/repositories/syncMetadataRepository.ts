@@ -1,86 +1,33 @@
-import { getDatabase } from '../db';
+import { getDatabase, writeDatabase } from '../db';
+import type { DiscoverySource } from '../../navigation/types';
 
-export interface SyncMetadataRecord {
-  feedKey: string;
+export const LEGACY_FEED_KEY = 'discovery_feed';
+
+export interface SyncMetadata {
   lastSyncedAt: string | null;
   lastAttemptAt: string | null;
-  lastErrorCode: string | null;
+  error: string | null;
 }
 
-interface SyncMetadataRow {
-  feed_key: string;
-  last_synced_at: string | null;
-  last_attempt_at: string | null;
-  last_error_code: string | null;
-}
-
-/**
- * Updates the last successful sync timestamp in SQLite.
- * Per assignment rules: never fabricate timestamps; persist only after DB transaction commits.
- */
-export async function setLastSuccessfulSync(
-  feedKey: string,
-  timestamp: string = new Date().toISOString()
-): Promise<void> {
+export async function getSyncMetadata(source: DiscoverySource | typeof LEGACY_FEED_KEY): Promise<SyncMetadata> {
   const db = await getDatabase();
-  await db.runAsync(
-    `INSERT INTO sync_metadata (feed_key, last_synced_at, last_attempt_at, last_error_code)
-     VALUES (?, ?, ?, NULL)
-     ON CONFLICT(feed_key) DO UPDATE SET
-       last_synced_at = excluded.last_synced_at,
-       last_attempt_at = excluded.last_attempt_at,
-       last_error_code = NULL;`,
-    [feedKey, timestamp, timestamp]
-  );
-}
-
-/**
- * Records an attempt (successful or failed) for diagnostic and freshness display.
- */
-export async function recordSyncAttempt(
-  feedKey: string,
-  errorCode?: string
-): Promise<void> {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
-  await db.runAsync(
-    `INSERT INTO sync_metadata (feed_key, last_attempt_at, last_error_code)
-     VALUES (?, ?, ?)
-     ON CONFLICT(feed_key) DO UPDATE SET
-       last_attempt_at = excluded.last_attempt_at,
-       last_error_code = excluded.last_error_code;`,
-    [feedKey, now, errorCode || null]
-  );
-}
-
-/**
- * Gets the last confirmed sync timestamp for a feed.
- */
-export async function getLastSuccessfulSync(feedKey: string): Promise<string | null> {
-  const db = await getDatabase();
-  const row = await db.getFirstAsync<{ last_synced_at: string | null }>(
-    'SELECT last_synced_at FROM sync_metadata WHERE feed_key = ?',
-    [feedKey]
-  );
-  return row?.last_synced_at || null;
-}
-
-/**
- * Gets complete sync metadata for a feed.
- */
-export async function getSyncMetadata(feedKey: string): Promise<SyncMetadataRecord | null> {
-  const db = await getDatabase();
-  const row = await db.getFirstAsync<SyncMetadataRow>(
-    'SELECT * FROM sync_metadata WHERE feed_key = ?',
-    [feedKey]
-  );
-
-  if (!row) return null;
-
+  const row = await db.getFirstAsync<{
+    last_synced_at: string | null; last_attempt_at: string | null; last_error_code: string | null;
+  }>('SELECT * FROM sync_metadata WHERE feed_key = ?', [source]);
   return {
-    feedKey: row.feed_key,
-    lastSyncedAt: row.last_synced_at,
-    lastAttemptAt: row.last_attempt_at,
-    lastErrorCode: row.last_error_code,
+    lastSyncedAt: row?.last_synced_at ?? null,
+    lastAttemptAt: row?.last_attempt_at ?? null,
+    error: row?.last_error_code ?? null,
   };
+}
+
+export async function recordSyncFailure(source: DiscoverySource, error: string): Promise<void> {
+  await writeDatabase(async db => {
+    await db.runAsync(
+      `INSERT INTO sync_metadata (feed_key, last_attempt_at, last_error_code) VALUES (?, ?, ?)
+       ON CONFLICT(feed_key) DO UPDATE SET
+         last_attempt_at = excluded.last_attempt_at, last_error_code = excluded.last_error_code`,
+      [source, new Date().toISOString(), error],
+    );
+  });
 }

@@ -1,118 +1,167 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { AppThunk, RootState } from '..';
 import {
-  addFavourite,
-  FavouriteDiscoveryItem,
-  getFavouriteLocalIds,
-  getFavourites,
-  removeFavourite,
+  FavouriteDiscoveryItem, getFavourites, getLegacyFavouriteCount, importLegacyFavourites, setFavourite,
 } from '../../database/repositories/favouritesRepository';
-import { updateLocalImageUri } from '../../database/repositories/discoveryRepository';
-import { persistImageLocally } from '../../services/storage/imageStorage';
-import { DiscoveryItem } from '../../database/models';
+import { finishImage, getPendingImages, reconcileSavedImages } from '../../database/repositories/mediaRepository';
+import { deleteImageFile, downloadImage, pruneImageFiles } from '../../services/storage/imageStorage';
+import { sessionChanged } from './authSlice';
 
 export interface FavouritesState {
+  accountId: number | null;
+  loadRequestId: string | null;
   favourites: FavouriteDiscoveryItem[];
-  favouriteMap: Record<string, boolean>;
+  pending: Record<string, boolean>;
+  legacyCount: number;
   isLoading: boolean;
-  recentlyToggledId: string | null;
+  isDownloading: boolean;
+  error: string | null;
 }
 
 const initialState: FavouritesState = {
-  favourites: [],
-  favouriteMap: {},
-  isLoading: false,
-  recentlyToggledId: null,
+  accountId: null, loadRequestId: null, favourites: [], pending: {}, legacyCount: 0,
+  isLoading: false, isDownloading: false, error: null,
 };
 
-/**
- * Loads favourites from SQLite on app startup.
- */
 export const loadFavouritesThunk = createAsyncThunk(
   'favourites/load',
-  async () => {
-    const [items, ids] = await Promise.all([
-      getFavourites(),
-      getFavouriteLocalIds(),
-    ]);
-
-    const map: Record<string, boolean> = {};
-    for (const id of ids) {
-      map[id] = true;
-    }
-
-    return { items, map };
-  }
+  async (accountId: number) => {
+    const [favourites, legacyCount] = await Promise.all([getFavourites(accountId), getLegacyFavouriteCount()]);
+    return { favourites, legacyCount };
+  },
 );
 
-/**
- * Toggles favourite state in SQLite and downloads image locally if newly added.
- */
-export const toggleFavouriteThunk = createAsyncThunk(
-  'favourites/toggle',
-  async (item: DiscoveryItem, { getState }) => {
-    const state = (getState() as { favourites: FavouritesState }).favourites;
-    const isCurrentlySaved = Boolean(state.favouriteMap[item.localId]);
+const putFavourite = createAsyncThunk(
+  'favourites/set',
+  async ({ localId, saved, accountId }: { localId: string; saved: boolean; accountId: number }) => {
+    await setFavourite(accountId, localId, saved);
+  },
+  {
+    condition: ({ localId, accountId }, { getState }) => {
+      const { favourites } = getState() as RootState;
+      return favourites.accountId === accountId && !favourites.pending[localId];
+    },
+  },
+);
 
-    if (isCurrentlySaved) {
-      await removeFavourite(item.localId);
-    } else {
-      await addFavourite(item.localId);
+export const importFavouritesThunk = createAsyncThunk('favourites/import', async (accountId: number) => {
+  await importLegacyFavourites(accountId);
+});
 
-      // Download durable offline image file if not yet stored
-      if (item.imageRemoteUrl && !item.imageLocalUri) {
-        const localUri = await persistImageLocally(item.imageRemoteUrl, item.localId);
-        if (localUri) {
-          await updateLocalImageUri(item.localId, localUri);
+let mediaWork: Promise<void> | undefined;
+let mediaQueued = false;
+
+export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
+  mediaQueued = true;
+  if (mediaWork) return mediaWork;
+
+  mediaWork = (async () => {
+    while (mediaQueued) {
+      mediaQueued = false;
+      const accountId = getState().favourites.accountId;
+      if (!accountId) continue;
+      dispatch(imageWorkChanged({ accountId, busy: true }));
+      try {
+        pruneImageFiles(await reconcileSavedImages());
+        if (getState().feed.connection === 'online') {
+          for (const item of await getPendingImages(accountId)) {
+            const state = getState();
+            if (state.favourites.accountId !== accountId || state.feed.connection !== 'online') break;
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15_000);
+            let image: Awaited<ReturnType<typeof downloadImage>> | null = null;
+            try {
+              image = await downloadImage(item.image_remote_url, item.local_id, controller.signal);
+              if (!(await finishImage(item.local_id, item.image_remote_url, image))) {
+                deleteImageFile(image.fileName);
+              }
+            } catch {
+              if (image) deleteImageFile(image.fileName);
+              if (getState().feed.connection === 'online') {
+                await finishImage(item.local_id, item.image_remote_url, null);
+              }
+            } finally {
+              clearTimeout(timeout);
+            }
+            if (getState().favourites.accountId === accountId) await dispatch(loadFavouritesThunk(accountId));
+          }
         }
+      } catch {
+        dispatch(imageWorkFailed(accountId));
+      } finally {
+        if (getState().favourites.accountId === accountId) await dispatch(loadFavouritesThunk(accountId));
+        dispatch(imageWorkChanged({ accountId, busy: false }));
       }
     }
+  })().finally(() => { mediaWork = undefined; });
 
-    const [items, ids] = await Promise.all([
-      getFavourites(),
-      getFavouriteLocalIds(),
-    ]);
+  return mediaWork;
+};
 
-    const map: Record<string, boolean> = {};
-    for (const id of ids) {
-      map[id] = true;
-    }
-
-    return {
-      items,
-      map,
-      toggledId: item.localId,
-    };
+export const toggleFavouriteThunk = (localId: string): AppThunk<Promise<void>> => async (dispatch, getState) => {
+  const { accountId, favourites } = getState().favourites;
+  if (!accountId) return;
+  const saved = favourites.some(item => item.localId === localId);
+  const result = await dispatch(putFavourite({ localId, saved: !saved, accountId }));
+  if (putFavourite.fulfilled.match(result)) {
+    await dispatch(loadFavouritesThunk(accountId));
+    dispatch(favouriteOperationFinished({ accountId, localId }));
+    void dispatch(refreshImagesThunk());
   }
-);
+};
 
-export const favouritesSlice = createSlice({
+const slice = createSlice({
   name: 'favourites',
   initialState,
   reducers: {
-    clearRecentlyToggled(state) {
-      state.recentlyToggledId = null;
+    favouriteOperationFinished(state, action: PayloadAction<{ accountId: number; localId: string }>) {
+      if (state.accountId === action.payload.accountId) delete state.pending[action.payload.localId];
+    },
+    imageWorkChanged(state, action: PayloadAction<{ accountId: number; busy: boolean }>) {
+      if (state.accountId === action.payload.accountId) state.isDownloading = action.payload.busy;
+    },
+    imageWorkFailed(state, action: PayloadAction<number>) {
+      if (state.accountId === action.payload) state.error = 'Could not update offline images.';
     },
   },
-  extraReducers: (builder) => {
-    builder
-      .addCase(loadFavouritesThunk.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(loadFavouritesThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.favourites = action.payload.items;
-        state.favouriteMap = action.payload.map;
-      })
-      .addCase(loadFavouritesThunk.rejected, (state) => {
-        state.isLoading = false;
-      })
-      .addCase(toggleFavouriteThunk.fulfilled, (state, action) => {
-        state.favourites = action.payload.items;
-        state.favouriteMap = action.payload.map;
-        state.recentlyToggledId = action.payload.toggledId;
-      });
-  },
+  extraReducers: builder => builder
+    .addCase(sessionChanged, (state, action) => {
+      const accountId = action.payload?.id ?? null;
+      if (state.accountId !== accountId) return { ...initialState, accountId, isLoading: Boolean(accountId) };
+    })
+    .addCase(loadFavouritesThunk.pending, (state, action) => {
+      if (state.accountId !== action.meta.arg) return;
+      state.loadRequestId = action.meta.requestId;
+      if (!state.favourites.length) state.isLoading = true;
+    })
+    .addCase(loadFavouritesThunk.fulfilled, (state, action) => {
+      if (state.loadRequestId !== action.meta.requestId) return;
+      Object.assign(state, action.payload, { isLoading: false, loadRequestId: null });
+    })
+    .addCase(loadFavouritesThunk.rejected, (state, action) => {
+      if (state.loadRequestId !== action.meta.requestId) return;
+      state.isLoading = false;
+      state.loadRequestId = null;
+      state.error = 'Could not read your saved discoveries.';
+    })
+    .addCase(putFavourite.pending, (state, action) => {
+      state.pending[action.meta.arg.localId] = true;
+      state.error = null;
+    })
+    .addCase(putFavourite.rejected, (state, action) => {
+      if (state.accountId !== action.meta.arg.accountId) return;
+      delete state.pending[action.meta.arg.localId];
+      state.error = 'Could not update your bookmark. Try again.';
+    })
+    .addCase(importFavouritesThunk.fulfilled, (state, action) => {
+      if (state.accountId !== action.meta.arg) return;
+      state.legacyCount = 0;
+      state.error = null;
+    })
+    .addCase(importFavouritesThunk.rejected, (state, action) => {
+      if (state.accountId === action.meta.arg) state.error = 'Could not import your earlier bookmarks.';
+    }),
 });
 
-export const { clearRecentlyToggled } = favouritesSlice.actions;
-export default favouritesSlice.reducer;
+const { favouriteOperationFinished, imageWorkChanged, imageWorkFailed } = slice.actions;
+export default slice.reducer;

@@ -9,6 +9,7 @@ export interface DiscoveryItem {
   body: string;
   publishedAt: string | null;
   imageRemoteUrl: string | null;
+  imageLicenseUrl?: string | null;
   imageLocalUri: string | null;
   canonicalUrl: string | null;
   attribution: string | null;
@@ -27,7 +28,7 @@ export interface CachedItemRow {
   body: string;
   published_at: string | null;
   image_remote_url: string | null;
-  image_local_uri: string | null;
+  image_license_url: string | null;
   canonical_url: string | null;
   attribution: string | null;
   author: string | null;
@@ -46,7 +47,8 @@ export function mapRowToDiscoveryItem(row: CachedItemRow): DiscoveryItem {
     body: row.body,
     publishedAt: row.published_at,
     imageRemoteUrl: row.image_remote_url,
-    imageLocalUri: row.image_local_uri,
+    imageLicenseUrl: row.image_license_url,
+    imageLocalUri: null,
     canonicalUrl: row.canonical_url,
     attribution: row.attribution,
     author: row.author,
