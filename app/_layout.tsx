@@ -19,6 +19,14 @@ import { BrandReveal } from '../src/components/common/BrandReveal';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
+  const [fontsLoaded, fontError] = useFonts({
+    'PlayfairDisplay-Regular': PlayfairDisplay_400Regular,
+    'PlayfairDisplay-Italic': PlayfairDisplay_400Regular_Italic,
+    'Inter-Regular': Inter_400Regular,
+    'Inter-Medium': Inter_500Medium,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
+  });
   const dispatch = useAppDispatch();
   const { user, isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
   const [isBrandRevealed, setIsBrandRevealed] = useState(false);
@@ -29,6 +37,16 @@ function RootNavigator() {
   }, [dispatch]);
 
   useArchiveLifecycle(user?.id);
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <>
@@ -51,25 +69,6 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    'PlayfairDisplay-Regular': PlayfairDisplay_400Regular,
-    'PlayfairDisplay-Italic': PlayfairDisplay_400Regular_Italic,
-    'Inter-Regular': Inter_400Regular,
-    'Inter-Medium': Inter_500Medium,
-    'Inter-SemiBold': Inter_600SemiBold,
-    'Inter-Bold': Inter_700Bold,
-  });
-
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => {});
-    }
-  }, [fontsLoaded, fontError]);
-
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-
   return (
     <Provider store={store}>
       <RootNavigator />

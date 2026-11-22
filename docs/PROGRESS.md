@@ -213,3 +213,13 @@ Routine foreground refresh now uses a 15-minute freshness window. Reconnect and 
 ## 2026-11-23 — Smart Reading slice
 
 Discover now offers Continue Reading, offline library search, and Browse by date. Reading progress stores a semantic paragraph anchor per account. A dated lookup populates only the local archive. Private note search remains in the Field Shelf. A date-entry modal keeps the action accessible while the keyboard is open. The new regression tests cover checkpoint ownership and retention, accent folding and title ranking, exclusion of private notes, and a thousand-record search. TypeScript, ESLint, and 60 Jest tests passed.
+
+## 2026-11-23 — Smart Reading release verification
+
+Android kept all three bookmarks on upgrade. An airplane-mode cold launch restored the current library and the Cocoon Nebula reading checkpoint. Offline search found the same plate. An uncached date initially showed the offline state and opened automatically when the connection returned. The dated lookup, resume card, search results, and offline journal have refreshed screenshots.
+
+The first set of five cached cold launches had a 3.08-second median on the emulator. Session restore now starts alongside font loading. The branded reveal and protected routes continue to run after the font state resolves. Clean-install ESLint, TypeScript, 60 Jest tests, and the updated iOS bundle export passed.
+
+Android native lint and the optimized release build passed. The final signed ARM64 APK retained three bookmarks and supported offline search and marking a plate as read after a cold start. The five-run median was 3.14 seconds on the emulator, so the 2.5-second target remains open. Larger-text checks covered Discover, Shelf, Details, the note editor and Profile at four widths. TalkBack focus reached Discover search and Details back.
+
+The revised narrated demo lasts 169.02 seconds. It includes Android screenshots and footage followed by a code walkthrough. Full audio and video decoding succeeded. See [verification scenarios and release checks](TEST_PLAN.md).
