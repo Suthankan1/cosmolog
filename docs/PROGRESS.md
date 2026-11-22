@@ -48,7 +48,44 @@ Completed:
   - `app/details/[source]/[id].tsx` (typed route parameters).
 - Verified Android bundle compilation via `npx expo export --platform android` (1,194 modules bundled cleanly).
 - Automated test suites passing (5 unit and component tests).
-## 2026-11-22 — Task 02: Navigation Architecture, App Shell & Brand Motion Complete
+## 2026-11-22 — Tasks 03 & 04: API Integration, SQLite Storage, Offline-First Twist & Favourites Complete
+Completed:
+- Verified and integrated live Space & Science endpoints:
+  - NASA APOD replacement endpoint: `https://science.nasa.gov/wp-json/wp/v2/apod-basic/` (normalized date, stripped HTML tags, credit attribution, high-res images).
+  - Spaceflight News API v4: `https://api.spaceflightnewsapi.net/v4/articles/` (normalized articles, authors, news sites).
+  - Zod schemas validating remote payloads: `nasaApodResponseSchema`, `spaceflightFeedResponseSchema`.
+- Implemented robust durable SQLite layer (`src/database/`):
+  - `schema.ts`: WAL mode, parameterized queries, indexes on source/published_at/added_at.
+  - `discoveryRepository.ts`: transactional upsert, conflict resolution preserving local offline image URIs, cached feed reader, single item by ID.
+  - `favouritesRepository.ts`: persistent relational favourites join, instant local ID map.
+  - `syncMetadataRepository.ts`: truthful lastSyncedAt and attempt tracking (never fabricated device time).
+- Implemented persistent offline image caching (`src/services/storage/imageStorage.ts`):
+  - Downloads remote image assets to app document directory when an item is favourited.
+  - Stores `imageLocalUri` in SQLite; preferred for offline viewing.
+- Implemented network observer (`src/services/network/networkObserver.ts`):
+  - Monitors connectivity with `@react-native-community/netinfo`.
+  - Automatically triggers feed refresh upon reconnection without duplicating items or erasing favourites.
+- Implemented Redux Toolkit slices (`src/store/slices/`):
+  - `feedSlice.ts`: SQLite-first initialization (`loadCachedFeedThunk`), remote synchronization (`syncRemoteFeedThunk`), category filtering, search.
+  - `favouritesSlice.ts`: SQLite favourites management and image download orchestration.
+- Built editorial UI components:
+  - `OfflineBanner.tsx`: sage-themed banner displaying truthful sync timestamp and retry action.
+  - `DailyPlateCard.tsx`: 342x245 hero card with overlay, brass badge, credit attribution.
+  - `DispatchRow.tsx`: compact article row with thumbnail, editorial serif title, source badge.
+  - `CategoryChips.tsx`: accessible filter tabs.
+  - `EmptyState.tsx`: empty field shelf and first-launch offline screens.
+  - `FavouriteButton.tsx`: selected assignment bonus using React Native Reanimated bounce/spring animation.
+- Implemented full screens:
+  - `app/(tabs)/index.tsx`: Discover feed with pull-to-refresh, offline banner, Daily Plate hero, Space Dispatches list.
+  - `app/details/[source]/[id].tsx`: Loads directly from SQLite before remote fallback; full provenance, notes, and canonical link.
+  - `app/(tabs)/favourites.tsx`: The Field Shelf with persistent favourites and offline asset display.
+- Created test suites:
+  - `tests/discoveryNormalization.test.ts` (NASA APOD & Spaceflight News Zod validation and HTML stripping).
+  - `tests/sqliteRepositories.test.ts` (idempotent upserts, duplicate prevention, favourite persistence across refresh, sync metadata).
+  - `tests/offlineBanner.test.tsx` (offline alert, formatted timestamp, retry button).
+  - `tests/favouriteButton.test.tsx` (accessibility states and animated toggle interaction).
+- Total tests: 12 suites, 45 tests passing.
+- ESLint flat config, TypeScript check, and Android export passed with 0 errors and 0 warnings.
 Completed:
 - Designed and implemented `src/navigation/types.ts`:
   - Enforced strict typed routing parameters: `{ source: 'nasa-apod' | 'spaceflight-news', id: string }`.

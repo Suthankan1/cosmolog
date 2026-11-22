@@ -13,7 +13,8 @@ The assignment requires at least one example where AI output was corrected or ch
 | Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
 |---|---|---|---|---|---|
 | 2026-11-22 | Antigravity | Suggested synchronous RNTL `render(<Icon ... />)` in unit tests | Updated test to `await render(...)` for React Native Testing Library v14 | In RNTL v14 with React 19, `render()` is an asynchronous function returning a Promise. Synchronous invocation returned an empty unmounted object. | `tests/Icon.test.tsx` |
-| 2026-11-22 | Antigravity | Assumed legacy DummyJSON password `emilyspassword` | Verified live endpoint response and corrected default demo password to `emilyspass` | DummyJSON updated its mock user dataset credentials; using the outdated string returned 400 Invalid credentials. | `src/services/auth/dummyJsonAuth.ts`, `app/(auth)/login.tsx` |
+| 2026-11-22 | Antigravity | Attempted calling `FileSystem.documentDirectory` on root `expo-file-system` import | Switched import to `expo-file-system/legacy` for document directory and downloadAsync | In Expo SDK 58, `expo-file-system` restructured the default export around class-based `Paths` and `Directory`; the legacy export retains stable URI-based methods. | `src/services/storage/imageStorage.ts` |
+| 2026-11-22 | Antigravity | Reanimated 4 Jest runner threw `[Reanimated] setCSSEventHandler is not available in JSReanimated` | Configured a self-contained Reanimated Jest mock in `tests/setup.ts` | Reanimated 4 introduces Worklet CSS event handlers that crash under Node test environments without native bindings. | `tests/setup.ts` |
 | 2026-11-22 | Antigravity | Jest failed loading Immer ESM dependency inside Redux Toolkit | Added `immer|redux|@reduxjs` to `transformIgnorePatterns` in `jest.config.js` | Jest required transform configuration to process ESM modules bundled by Redux Toolkit in modern Node. | `jest.config.js` |
 
 ## Student responsibility
