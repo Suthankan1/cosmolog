@@ -43,7 +43,7 @@ export async function getPendingImages(accountId: number) {
   }>(
     `SELECT c.local_id, c.image_remote_url, c.source, c.attribution, c.image_license_url FROM saved_media m
      JOIN cached_items c ON c.local_id = m.local_id JOIN favourites f ON f.local_id = c.local_id
-     WHERE f.account_id = ? AND m.status IN ('waiting', 'failed') AND c.image_remote_url IS NOT NULL
+     WHERE f.account_id = ? AND (m.status IN ('waiting', 'failed') OR m.source_url IS NOT c.image_remote_url OR m.license_url IS NOT c.image_license_url) AND c.image_remote_url IS NOT NULL
      ORDER BY f.added_at DESC`,
     [accountId],
   );
@@ -51,15 +51,33 @@ export async function getPendingImages(accountId: number) {
 }
 
 export async function finishImage(
-  localId: string, sourceUrl: string, image: { fileName: string; bytes: number } | null,
+  localId: string, sourceUrl: string, image: { fileName: string; bytes: number } | null, licenseUrl: string | null = null,
 ) {
   return writeDatabase(async db => {
     const result = await db.runAsync(
-      `UPDATE saved_media SET status = ?, file_name = ?, bytes = ?
+      `UPDATE saved_media SET status = ?,
+       file_name = COALESCE(?, file_name), bytes = COALESCE(?, bytes),
+       source_url = CASE WHEN ? = 'ready' THEN ? ELSE source_url END,
+       license_url = CASE WHEN ? = 'ready' THEN ? ELSE license_url END
        WHERE local_id = ? AND EXISTS (SELECT 1 FROM favourites WHERE local_id = ?)
-       AND EXISTS (SELECT 1 FROM cached_items WHERE local_id = ? AND image_remote_url = ?)`,
-      [image ? 'ready' : 'failed', image?.fileName ?? null, image?.bytes ?? 0, localId, localId, localId, sourceUrl],
+       AND EXISTS (SELECT 1 FROM cached_items WHERE local_id = ? AND image_remote_url = ? AND image_license_url IS ?)`,
+      [image ? 'ready' : 'failed', image?.fileName ?? null, image?.bytes ?? null,
+       image ? 'ready' : 'failed', sourceUrl, image ? 'ready' : 'failed', licenseUrl, localId, localId, localId, sourceUrl, licenseUrl],
     );
     return result.changes > 0;
+  });
+}
+
+export async function invalidateSavedImage(localId: string, uri: string) {
+  await writeDatabase(async db => {
+    const row = await db.getFirstAsync<{ file_name: string | null }>(
+      'SELECT file_name FROM saved_media WHERE local_id = ?', [localId],
+    );
+    if (row?.file_name && uri.endsWith('/' + row.file_name)) {
+      await db.runAsync(
+        "UPDATE saved_media SET status = 'failed', file_name = NULL, bytes = 0 WHERE local_id = ?",
+        [localId],
+      );
+    }
   });
 }

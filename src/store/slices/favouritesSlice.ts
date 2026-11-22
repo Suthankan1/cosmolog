@@ -3,7 +3,7 @@ import type { AppThunk, RootState } from '..';
 import {
   FavouriteDiscoveryItem, getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFieldNote, setFavourite,
 } from '../../database/repositories/favouritesRepository';
-import { finishImage, getPendingImages, reconcileSavedImages } from '../../database/repositories/mediaRepository';
+import { finishImage, invalidateSavedImage, getPendingImages, reconcileSavedImages } from '../../database/repositories/mediaRepository';
 import { deleteImageFile, downloadImage, pruneImageFiles } from '../../services/storage/imageStorage';
 import { sessionChanged } from './authSlice';
 
@@ -72,13 +72,13 @@ export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch
             let image: Awaited<ReturnType<typeof downloadImage>> | null = null;
             try {
               image = await downloadImage(item.image_remote_url, item.local_id, controller.signal);
-              if (!(await finishImage(item.local_id, item.image_remote_url, image))) {
+              if (!(await finishImage(item.local_id, item.image_remote_url, image, item.image_license_url))) {
                 deleteImageFile(image.fileName);
               }
             } catch {
               if (image) deleteImageFile(image.fileName);
               if (getState().feed.connection === 'online') {
-                await finishImage(item.local_id, item.image_remote_url, null);
+                await finishImage(item.local_id, item.image_remote_url, null, item.image_license_url);
               }
             } finally {
               clearTimeout(timeout);
@@ -96,6 +96,17 @@ export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch
   })().finally(() => { mediaWork = undefined; });
 
   return mediaWork;
+};
+
+export const reportImageFailure = (localId: string, uri: string): AppThunk<Promise<void>> => async (dispatch, getState) => {
+  const { accountId } = getState().favourites;
+  if (!accountId) return;
+  try {
+    await invalidateSavedImage(localId, uri);
+    if (getState().favourites.accountId === accountId) await dispatch(loadFavouritesThunk(accountId));
+  } catch {
+    dispatch(imageWorkFailed(accountId));
+  }
 };
 
 export const toggleFavouriteThunk = (localId: string, confirmNoteRemoval = false): AppThunk<Promise<void>> => async (dispatch, getState) => {

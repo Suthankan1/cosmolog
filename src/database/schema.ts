@@ -93,3 +93,13 @@ export const MIGRATE_TO_IMAGE_LICENSES_SQL = `
   ALTER TABLE cached_items ADD COLUMN image_license_url TEXT;
   PRAGMA user_version = 3;
 `;
+
+export const MIGRATE_TO_MEDIA_PROVENANCE_SQL = `
+  ALTER TABLE saved_media ADD COLUMN source_url TEXT;
+  ALTER TABLE saved_media ADD COLUMN license_url TEXT;
+  UPDATE saved_media
+    SET source_url = (SELECT image_remote_url FROM cached_items WHERE local_id = saved_media.local_id),
+        license_url = (SELECT image_license_url FROM cached_items WHERE local_id = saved_media.local_id)
+    WHERE file_name IS NOT NULL;
+  PRAGMA user_version = 4;
+`;

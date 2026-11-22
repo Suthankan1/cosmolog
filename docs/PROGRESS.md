@@ -205,3 +205,7 @@ A device test exposed an unmatched root route before sign-in. An explicit public
 Verified on a self-contained ARM64 Android release with Metro stopped. A fresh offline launch reached sign-in. Three favourites and a licensed Jupiter image survived force-stop, reinstall, and an airplane-mode relaunch. The note reopened, was edited, and was found by text search while offline. Both source timestamps advanced on reconnect. Discover rendered at 320/360/390/430 dp at 1.3× font scale. Sign-out survived a further force-stop.
 
 Clean npm installation, final ESLint, strict TypeScript, 57 Jest tests, Android native release build and lint, and the iOS bundle export passed. No native iOS simulator runtime was available. Six device screenshots replaced the previous captures. The local narrated review cut is 170.02 seconds and passed full video/audio decoding.
+
+## 2026-11-23 — Smart Reading reliability slice
+
+Routine foreground refresh now uses a 15-minute freshness window. Reconnect and explicit retry still refresh immediately. An offline Details miss can retry when the focused reader reconnects. Saved images record their source revision and license. The reader reports failed local decoding and can show an earlier licensed file while a replacement is pending. Local archive failures take precedence over empty search results. TypeScript, ESLint, and 57 Jest tests passed.

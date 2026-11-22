@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getDiscoveryItemById, upsertDiscoveryItems } from '../../database/repositories/discoveryRepository';
 import type { DiscoveryItem } from '../../database/models';
 import type { DetailsRouteParams } from '../../navigation/types';
 import { fetchNasaApodItem } from '../../services/api/nasaApodService';
 import { fetchSpaceflightNewsItem } from '../../services/api/spaceflightNewsService';
+import { useFocusEffect } from 'expo-router';
+import { useAppSelector } from '../../store';
 import { getNetworkState } from '../../services/network/networkObserver';
 
 type Result = { status: 'loading' | 'offline' | 'missing' | 'error' } | { status: 'ready'; item: DiscoveryItem };
@@ -51,10 +53,21 @@ export function useDiscoveryRecord(params: DetailsRouteParams | null) {
     return () => abort.abort();
   }, [source, id, key, attempt]);
 
-  const retry = () => {
+  const retry = useCallback(() => {
     setRecord(null);
     setAttempt(value => value + 1);
-  };
-
-  return { result: key && key === record?.key ? record.result : { status: 'loading' } as const, retry };
+  }, []);
+  const connection = useAppSelector(state => state.feed.connection);
+  const retried = useRef<string | null>(null);
+  const result = key && key === record?.key ? record.result : { status: 'loading' } as const;
+  useEffect(() => {
+    if (connection !== 'online') retried.current = null;
+  }, [connection]);
+  useFocusEffect(useCallback(() => {
+    if (key && connection === 'online' && result.status === 'offline' && retried.current !== key) {
+      retried.current = key;
+      retry();
+    }
+  }, [connection, key, result.status, retry]));
+  return { result, retry };
 }

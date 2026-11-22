@@ -3,7 +3,7 @@ import { CachedItemRow, DiscoveryItem, mapRowToDiscoveryItem } from '../models';
 import { getLocalImage } from '../../services/storage/imageStorage';
 import { mayDownloadImage } from '../../services/api/mediaPolicy';
 
-export type MediaStatus = 'ready' | 'waiting' | 'failed' | 'text-only';
+export type MediaStatus = 'ready' | 'previous' | 'waiting' | 'failed' | 'text-only';
 export const NOTE_LIMIT = 1000;
 
 export interface FavouriteDiscoveryItem extends DiscoveryItem {
@@ -18,6 +18,8 @@ interface FavouriteRow extends CachedItemRow {
   note: string | null;
   status: Exclude<MediaStatus, 'text-only'> | null;
   file_name: string | null;
+  source_url: string | null;
+  license_url: string | null;
 }
 
 export async function setFavourite(accountId: number, localId: string, saved: boolean) {
@@ -44,7 +46,7 @@ export async function setFavourite(accountId: number, localId: string, saved: bo
 export async function getFavourites(accountId: number): Promise<FavouriteDiscoveryItem[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<FavouriteRow>(
-    `SELECT c.*, f.added_at, f.note, m.status, m.file_name FROM favourites f
+    `SELECT c.*, f.added_at, f.note, m.status, m.file_name, m.source_url, m.license_url FROM favourites f
      JOIN cached_items c ON c.local_id = f.local_id
      LEFT JOIN saved_media m ON m.local_id = c.local_id
      WHERE f.account_id = ? ORDER BY f.added_at DESC, c.local_id`,
@@ -52,9 +54,10 @@ export async function getFavourites(accountId: number): Promise<FavouriteDiscove
   );
   return rows.map(row => {
     const eligible = mayDownloadImage(row.source, row.image_remote_url, row.attribution, row.image_license_url);
-    const image = eligible && row.status === 'ready' ? getLocalImage(row.file_name) : null;
+    const image = eligible && row.license_url === row.image_license_url &&
+      mayDownloadImage(row.source, row.source_url, row.attribution, row.license_url) ? getLocalImage(row.file_name) : null;
     const mediaStatus: MediaStatus = eligible
-      ? image ? 'ready' : row.status === 'failed' ? 'failed' : 'waiting'
+      ? image ? (row.source_url === row.image_remote_url ? 'ready' : 'previous') : row.status === 'failed' ? 'failed' : 'waiting'
       : 'text-only';
     return {
       ...mapRowToDiscoveryItem(row),

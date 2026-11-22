@@ -94,7 +94,7 @@ export default function DetailsScreen() {
           />
           {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
           {saved && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(saved.mediaStatus, offline)}</Text>}
-          {saved?.mediaStatus === 'failed' && connection === 'online' && (
+          {(saved?.mediaStatus === 'failed' || saved?.mediaStatus === 'previous') && connection === 'online' && (
             <Button title="Retry image download" variant="outline" icon="refresh-cw" loading={isDownloading}
               onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}

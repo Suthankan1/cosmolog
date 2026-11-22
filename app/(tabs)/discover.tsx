@@ -76,15 +76,15 @@ export default function DiscoverScreen() {
     <View style={styles.loading}>
       <ActivityIndicator accessibilityLabel="Loading discoveries" color={colors.forest} />
     </View>
+  ) : cacheStatus === 'error' ? (
+    <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
+      actionTitle="Try again" onAction={refresh} />
   ) : searchQuery.trim() ? (
     <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
       actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
-  ) : offline && cacheStatus === 'error' ? (
-    <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
-      actionTitle="Try again" onAction={refresh} />
   ) : offline && !items.length ? (
     <EmptyState icon="cloud-off" title="Nothing downloaded yet" description="Connect to download your first collection." />
-  ) : failedSources || refreshError || cacheStatus === 'error' ? null : (
+  ) : failedSources || refreshError ? null : (
     <EmptyState icon="compass" title="No discoveries in this section" description="Try a different source or pull to refresh." />
   );
 

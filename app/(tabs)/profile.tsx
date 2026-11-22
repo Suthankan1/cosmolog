@@ -38,7 +38,7 @@ export default function ProfileScreen() {
   const [focused, setFocused] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const downloadCount = favourites.filter(item => item.mediaStatus === 'ready').length;
-  const pendingImages = favourites.filter(item => item.mediaStatus === 'waiting' || item.mediaStatus === 'failed').length;
+  const pendingImages = favourites.filter(item => item.mediaStatus === 'waiting' || item.mediaStatus === 'failed' || item.mediaStatus === 'previous').length;
   const imageBytes = favourites.reduce((total, item) => total + item.imageBytes, 0);
 
   useFocusEffect(useCallback(() => {

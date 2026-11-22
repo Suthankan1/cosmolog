@@ -51,3 +51,7 @@ Favourites and notes use the verified DummyJSON user ID as their owner. Shared s
 ## ADR-010 — Verified and licensed offline media
 
 The bookmark transaction completes independently of the image download. The worker validates file type, size, and local presence, and only downloads content with supported image rights. Store publisher links, credits, and available license URLs with the item so users can see the original context.
+
+## ADR-011 — Smart Reading on the local archive
+
+Keep SQLite and the existing Redux Toolkit thunks. Store the image's source revision alongside its file and store one paragraph checkpoint per verified account. Keep dated lookups separate from feed membership. Start with a bounded local search so reader progress, search, and date lookup work offline without a new library or backend.

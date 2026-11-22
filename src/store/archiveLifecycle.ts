@@ -6,9 +6,12 @@ import { revalidateSessionThunk } from './slices/authSlice';
 import { loadCachedFeedThunk, setConnection, syncRemoteFeedThunk } from './slices/feedSlice';
 import { loadFavouritesThunk, refreshImagesThunk } from './slices/favouritesSlice';
 
-export const refreshArchive = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
+export const refreshArchive = (force = true): AppThunk<Promise<void>> => async (dispatch, getState) => {
   if (getState().feed.cacheStatus !== 'ready') await dispatch(loadCachedFeedThunk());
-  if (getState().feed.connection === 'online') {
+  const { connection, metadata, refreshError } = getState().feed;
+  const due = Object.values(metadata).some(source => source.error || !source.lastSyncedAt ||
+    Date.now() - Date.parse(source.lastSyncedAt) >= 15 * 60_000);
+  if (connection === 'online' && (force || due || refreshError)) {
     await dispatch(syncRemoteFeedThunk());
     void dispatch(refreshImagesThunk());
   }
@@ -24,12 +27,12 @@ export function useArchiveLifecycle(accountId: number | undefined) {
     let connection = 'unknown' as Connection;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const schedule = () => {
+    const schedule = (force = true) => {
       clearTimeout(timer);
       if (connection !== 'online' || !hydrated) return false;
       timer = setTimeout(() => {
         void dispatch(revalidateSessionThunk());
-        void dispatch(refreshArchive());
+        void dispatch(refreshArchive(force));
       }, 300);
       return true;
     };
@@ -45,8 +48,8 @@ export function useArchiveLifecycle(accountId: number | undefined) {
     const onForeground = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
       void getNetworkState().then(next => {
-        updateConnection(next);
-        if (mounted) schedule();
+        if (next !== connection) updateConnection(next);
+        else if (mounted) schedule(false);
       });
     });
 
