@@ -11,7 +11,7 @@ export function selectShelf(entries: FavouriteDiscoveryItem[], filters: {
   const query = filters.query.trim().toLocaleLowerCase();
   const matches = entries.filter(entry => (
     (!filters.withNotes || Boolean(entry.note)) &&
-    (!filters.downloaded || entry.mediaStatus === 'ready') &&
+    (!filters.downloaded || (entry.mediaStatus === 'ready' || entry.mediaStatus === 'previous')) &&
     (!query || [entry.title, entry.attribution, entry.note, entry.source === 'nasa-apod' ? 'NASA APOD' : null]
       .some(field => field?.toLocaleLowerCase().includes(query)))
   ));

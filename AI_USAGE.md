@@ -28,3 +28,7 @@ The original generated Figma v1 was criticised as unacceptable. ChatGPT rebuilt 
 Codex audited the existing startup, data and UI flows, implemented the feature slices, and wrote regression tests. One correction followed live API inspection. The working image policy originally recognized only NASA-owned credits. NASA’s current Jupiter APOD returned an explicit Creative Commons license in its credit HTML. The adapter now preserves a validated license URL, and the media worker can download licensed images while keeping their credit and license visible. This also avoided treating a NASA host as proof of image rights.
 
 Native testing also exposed two shortcomings in the AI-assisted implementation. Protected routes left a signed-out cold launch at an unmatched root URL, so an explicit entry route now redirects after session restore. The inline note input could open below Android's keyboard, so editing now uses its own safe-area-aware compose view. Both corrections were retested on the release build.
+
+## 2026-11-23 — Smart Reading refinement
+
+Codex implemented the checkpoint, search and APOD date lookup. During Android testing the date form's action could sit below the keyboard inside the Discover list header. The form moved into a dedicated keyboard-aware modal. A second adjustment records the paragraph visible inside the viewport so short articles can also establish a checkpoint.

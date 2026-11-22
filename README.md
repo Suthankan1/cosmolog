@@ -39,6 +39,12 @@ Use the existing debug key only for local QA. Avoid Metro when validating airpla
 
 A fresh install needs connectivity for the first sign-in. A returning user with a verified SecureStore session can read locally during a network or account service outage. A legacy token-only install needs one verification online. If earlier device bookmarks exist, the Shelf offers a one-time import to the current account.
 
+### Smart Reading
+
+Scroll into a story to save a reading position. **Continue Reading** on Discover reopens the most recent unfinished story at its saved paragraph. **Mark as read** or **Dismiss** clears it. Changing the source text starts the reader at the top; changing text size preserves the paragraph anchor.
+
+**Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
+
 ### Media and provenance
 
 NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.

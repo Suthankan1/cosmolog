@@ -51,7 +51,8 @@ export async function commitFeedSnapshot(source: DiscoverySource, items: Discove
       `DELETE FROM cached_items WHERE fetched_at < ?
        AND NOT EXISTS (SELECT 1 FROM feed_membership WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM favourites WHERE local_id = cached_items.local_id)
-       AND NOT EXISTS (SELECT 1 FROM saved_media WHERE local_id = cached_items.local_id)`,
+       AND NOT EXISTS (SELECT 1 FROM saved_media WHERE local_id = cached_items.local_id)
+       AND NOT EXISTS (SELECT 1 FROM reading_checkpoint WHERE local_id = cached_items.local_id)`,
       [cutoff],
     );
   });

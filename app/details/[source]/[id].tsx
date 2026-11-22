@@ -12,6 +12,7 @@ import { Button } from '../../../src/components/common/Button';
 import { EmptyState } from '../../../src/components/common/EmptyState';
 import { OfflineBanner } from '../../../src/components/common/OfflineBanner';
 import { DiscoveryImage } from '../../../src/components/discovery/DiscoveryImage';
+import { useReadingPosition } from '../../../src/features/discovery/useReadingPosition';
 import { useDiscoveryRecord } from '../../../src/features/discovery/useDiscoveryRecord';
 import { useToggleFavourite } from '../../../src/features/journal/useToggleFavourite';
 import { FieldNote } from '../../../src/features/journal/FieldNote';
@@ -22,6 +23,10 @@ export default function DetailsScreen() {
   const params = useLocalSearchParams<{ source?: string; id?: string }>();
   const parsed = parseDetailsParams(params);
   const { result, retry } = useDiscoveryRecord(parsed);
+  const accountId = useAppSelector(state => state.auth.user?.id);
+  const { scroll, paragraphs, beginScroll, trackScroll, markRead, status: readingStatus, completeScroll,
+    measureViewport, measureContent, measureArticle, measureBody, measureParagraph } =
+    useReadingPosition(accountId, result.status === 'ready' ? result.item : undefined);
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const toggleFavourite = useToggleFavourite();
@@ -41,11 +46,11 @@ export default function DetailsScreen() {
   if (!parsed || result.status !== 'ready') {
     const isLoading = Boolean(parsed && result.status === 'loading');
     const canRetry = Boolean(parsed && (result.status === 'error' || result.status === 'offline'));
-    const message = result.status === 'offline'
+    const message = !parsed ? 'This discovery link has an invalid source or identifier.' : result.status === 'offline'
       ? 'This discovery is not on this device yet. Reconnect to open it.'
       : result.status === 'error'
         ? 'The source or local archive could not be read. Try again.'
-        : 'This discovery link is invalid or the source could not find it.';
+        : 'The source could not find this discovery.';
     return (
       <View style={styles.screen}>
         {header}
@@ -77,11 +82,19 @@ export default function DetailsScreen() {
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {header}
       <ScrollView
+        ref={scroll}
+        onLayout={measureViewport}
+        onContentSizeChange={measureContent}
+        onScrollBeginDrag={beginScroll}
+        onScroll={trackScroll}
+        onScrollEndDrag={completeScroll}
+        onMomentumScrollEnd={completeScroll}
+        scrollEventThrottle={32}
         contentContainerStyle={[styles.content, { paddingBottom: spacing[8] + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
         <DiscoveryImage item={saved ?? item} offline={offline} style={styles.image} labelled />
-        <View style={styles.article}>
+        <View style={styles.article} onLayout={measureArticle}>
           <Text style={styles.metadata}>{formatEditorialDate(item.publishedAt)}</Text>
           <Text accessibilityRole="header" style={styles.title}>{item.title}</Text>
           {item.author && <Text style={styles.byline}>{item.author}</Text>}
@@ -98,13 +111,18 @@ export default function DetailsScreen() {
             <Button title="Retry image download" variant="outline" icon="refresh-cw" loading={isDownloading}
               onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}
-          {saved && <FieldNote key={item.localId} note={saved.note} onSave={text => dispatch(saveFieldNoteThunk(item.localId, text))} />}
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             {item.source === 'nasa-apod' ? 'About this observation' : 'Publisher summary'}
           </Text>
-          {(item.body || 'The source did not provide a summary.').split(/\n\n+/).map((paragraph, index) =>
-            <Text key={index} style={styles.body}>{paragraph}</Text>
-          )}
+          <View onLayout={measureBody} style={styles.paragraphs}>
+            {paragraphs.length ? paragraphs.map((paragraph, index) =>
+              <Text key={index} onLayout={event => measureParagraph(index, event)} style={styles.body}>{paragraph}</Text>
+            ) : <Text style={styles.body}>The source did not provide a summary.</Text>}
+          </View>
+          {paragraphs.length > 0 && <Button title="Mark as read" icon="check" variant="outline"
+            onPress={() => { void markRead(); }} />}
+          {readingStatus && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{readingStatus}</Text>}
+          {saved && <FieldNote key={item.localId} note={saved.note} onSave={text => dispatch(saveFieldNoteThunk(item.localId, text))} />}
           <View style={styles.source}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>Original source</Text>
             <Text style={styles.body}>{sourceName}</Text>
@@ -146,6 +164,7 @@ const styles = StyleSheet.create({
   title: { ...typography.display, color: colors.forest },
   byline: { ...typography.body, color: colors.muted },
   metadata: { ...typography.bodySmall, color: colors.muted },
+  paragraphs: { gap: spacing[3] },
   sectionTitle: { ...typography.h2, color: colors.forest },
   body: { ...typography.body, fontSize: 16, lineHeight: 25, color: colors.ink },
   error: { ...typography.bodySmall, color: colors.danger },

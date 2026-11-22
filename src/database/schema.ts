@@ -103,3 +103,15 @@ export const MIGRATE_TO_MEDIA_PROVENANCE_SQL = `
     WHERE file_name IS NOT NULL;
   PRAGMA user_version = 4;
 `;
+
+export const MIGRATE_TO_READING_CHECKPOINT_SQL = `
+  CREATE TABLE reading_checkpoint (
+    account_id INTEGER PRIMARY KEY CHECK (account_id > 0),
+    local_id TEXT NOT NULL REFERENCES cached_items(local_id) ON DELETE CASCADE,
+    paragraph INTEGER NOT NULL CHECK (paragraph >= 0),
+    fingerprint TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE INDEX idx_checkpoint_item ON reading_checkpoint(local_id);
+  PRAGMA user_version = 5;
+`;

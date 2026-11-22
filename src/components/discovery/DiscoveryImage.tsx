@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { useAppDispatch } from '../../store';
 import { reportImageFailure } from '../../store/slices/favouritesSlice';
@@ -38,6 +38,11 @@ export function DiscoveryImage({ item, offline, style, labelled }: DiscoveryImag
           accessible={Boolean(labelled)}
           accessibilityLabel={labelled ? 'Image for ' + item.title : undefined}
         />
+      ) : uri && uri === failed && !offline && labelled ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="Retry image" style={styles.retry}
+          onPress={() => setFailed(null)}>
+          <Icon name="refresh-cw" size={20} color={colors.forest} />
+        </Pressable>
       ) : (
         <Icon name={item.mediaType === 'video' ? 'play-circle' : 'image'} size={25} color={colors.forest} />
       )}
@@ -46,5 +51,6 @@ export function DiscoveryImage({ item, offline, style, labelled }: DiscoveryImag
 }
 
 const styles = StyleSheet.create({
+  retry: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   frame: { backgroundColor: colors.sageLight, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
 });

@@ -1,12 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { setSearchQuery, setSelectedCategory } from '../../src/store/slices/feedSlice';
 import { useToggleFavourite } from '../../src/features/journal/useToggleFavourite';
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { selectFeed } from '../../src/features/discovery/selectFeed';
+import { BrowseByDate } from '../../src/features/discovery/BrowseByDate';
+import { useLibrarySearch } from '../../src/features/discovery/useLibrarySearch';
+import { clearReadingCheckpoint, getReadingCheckpoint } from '../../src/database/repositories/readingRepository';
 import { navigateToDetails } from '../../src/navigation/types';
 import { colors, layout, spacing, typography } from '../../src/theme/tokens';
 import { OfflineBanner } from '../../src/components/common/OfflineBanner';
@@ -26,7 +29,34 @@ export default function DiscoverScreen() {
     useAppSelector(state => state.feed);
   const { favourites, pending, error: saveError } = useAppSelector(state => state.favourites);
   const savedItems = useMemo(() => new Map(favourites.map(item => [item.localId, item])), [favourites]);
-  const { hero, rows } = useMemo(() => selectFeed(items, selectedCategory, searchQuery), [items, selectedCategory, searchQuery]);
+  const accountId = useAppSelector(state => state.auth.user?.id);
+  const searching = Boolean(searchQuery.trim());
+  const revision = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt].join('|');
+  const library = useLibrarySearch(accountId, selectedCategory, searchQuery, revision);
+  const { hero, rows: feedRows } = useMemo(() => selectFeed(items, selectedCategory), [items, selectedCategory]);
+  const rows = searching ? library.data?.items ?? [] : feedRows;
+  const [checkpoint, setCheckpoint] = useState<{ accountId: number; data: Awaited<ReturnType<typeof getReadingCheckpoint>> }>();
+  const [checkpointError, setCheckpointError] = useState(false);
+  useFocusEffect(useCallback(() => {
+    if (!accountId) return;
+    let active = true;
+    void getReadingCheckpoint(accountId).then(
+      data => { if (active) setCheckpoint({ accountId, data }); },
+      () => { if (active) setCheckpointError(true); },
+    );
+    return () => { active = false; };
+  }, [accountId]));
+  const resume = checkpoint && checkpoint.accountId === accountId ? checkpoint.data : null;
+  const dismissResume = async () => {
+    if (!accountId || !resume) return;
+    try {
+      await clearReadingCheckpoint(accountId, resume.item.localId);
+      setCheckpoint({ accountId, data: null });
+      setCheckpointError(false);
+    } catch {
+      setCheckpointError(true);
+    }
+  };
   const refresh = () => { void dispatch(refreshArchive()); };
   const offline = connection === 'offline';
   const updatedAt = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt]
@@ -50,7 +80,7 @@ export default function DiscoverScreen() {
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.title}>Discover</Text>
       <Text style={styles.subtitle}>Astronomy and spaceflight, collected for reading anywhere.</Text>
-      <SearchBar value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
+      <SearchBar placeholder="Search offline library" accessibilityLabel="Search offline library" value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
       {(!offline && (failedSources || refreshError || cacheStatus === 'error')) ? (
         <View style={styles.notice}>
           <Text accessibilityRole="alert" style={styles.noticeText}>
@@ -64,10 +94,24 @@ export default function DiscoverScreen() {
       {isRefreshing && items.length > 0 && (
         <Text accessibilityLiveRegion="polite" style={styles.subtitle}>Updating sources. Your collection is available.</Text>
       )}
-      {hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
+      {!searching && resume && (
+        <View style={styles.notice}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>Continue Reading</Text>
+          <Text style={styles.noticeText}>{resume.item.title}</Text>
+          <Button title="Resume reading" icon="book-open"
+            onPress={() => navigateToDetails(router, resume.item.source, resume.item.externalId)} />
+          <Button title="Dismiss" variant="outline" onPress={() => { void dismissResume(); }} />
+        </View>
+      )}
+      {checkpointError && <Text accessibilityRole="alert" style={styles.noticeText}>Could not update your reading position.</Text>}
+      {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
+      {!searching && selectedCategory !== 'spaceflight-news' && <BrowseByDate />}
+      {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
+        {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
+      </Text>}
       <Text accessibilityRole="header" style={styles.sectionTitle}>
-        {searchQuery.trim() ? 'Search results' : selectedCategory === 'nasa-apod' || (rows.length > 0 && rows.every(item => item.source === 'nasa-apod')) ? 'Daily Plates' : 'Space Dispatches'}
+        {searching ? 'Search results' : selectedCategory === 'nasa-apod' || (rows.length > 0 && rows.every(item => item.source === 'nasa-apod')) ? 'Daily Plates' : 'Space Dispatches'}
       </Text>
     </View>
   );
@@ -79,7 +123,12 @@ export default function DiscoverScreen() {
   ) : cacheStatus === 'error' ? (
     <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
       actionTitle="Try again" onAction={refresh} />
-  ) : searchQuery.trim() ? (
+  ) : searching && library.error ? (
+    <EmptyState icon="alert-circle" title="Could not search the archive" description="Try searching the local collection again."
+      actionTitle="Try again" onAction={library.retry} />
+  ) : searching && library.pending ? (
+    <ActivityIndicator accessibilityLabel="Searching offline library" color={colors.forest} style={styles.loading} />
+  ) : searching ? (
     <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
       actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
   ) : offline && !items.length ? (

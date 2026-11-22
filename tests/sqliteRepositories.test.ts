@@ -8,6 +8,8 @@ import { getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFie
 import { getSyncMetadata, recordSyncFailure } from '../src/database/repositories/syncMetadataRepository';
 import { finishImage, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
 import { writeDatabase } from '../src/database/db';
+import { clearReadingCheckpoint, getReadingCheckpoint, saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
+import { searchLibrary } from '../src/features/discovery/librarySearch';
 import type { DiscoveryItem } from '../src/database/models';
 
 jest.mock('../src/services/storage/imageStorage', () => ({ getLocalImage: () => null }));
@@ -128,4 +130,44 @@ it('keeps the bookmark when an image fails, and rejects a finished file for a ch
     local_id: nasa.localId,
     image_remote_url: 'https://nasa.gov/second.jpg',
   }));
+});
+
+it('keeps a reading checkpoint private, protects its cached item and clears only the matching item', async () => {
+  const older = { ...item, localId: 'spaceflight-news:299', externalId: '299' };
+  await upsertDiscoveryItems([older]);
+  await saveReadingCheckpoint(11, older.localId, 3, 'original');
+  expect(await getReadingCheckpoint(12)).toBeNull();
+  await commitFeedSnapshot(item.source, [], '2027-01-23T00:00:00.000Z');
+  expect(await getReadingCheckpoint(11)).toMatchObject({
+    item: { localId: older.localId }, paragraph: 3, fingerprint: 'original',
+  });
+  await clearReadingCheckpoint(11, item.localId);
+  expect(await getReadingCheckpoint(11)).not.toBeNull();
+  await clearReadingCheckpoint(11, older.localId);
+  expect(await getReadingCheckpoint(11)).toBeNull();
+});
+
+it('searches the cached public article text, ranks title matches first and excludes private notes', async () => {
+  const now = new Date().toISOString();
+  const title = { ...item, localId: 'spaceflight-news:401', externalId: '401', title: 'Café astronomy', fetchedAt: now };
+  const body = { ...item, localId: 'spaceflight-news:402', externalId: '402', body: 'A café observation', fetchedAt: now };
+  await upsertDiscoveryItems([title, body]);
+  await setFavourite(21, title.localId, true);
+  await saveFieldNote(21, title.localId, 'private keyword');
+  expect((await searchLibrary(21, 'all', 'cafe')).items.map(entry => entry.localId)).toEqual([title.localId, body.localId]);
+  expect(await searchLibrary(21, 'all', 'private keyword')).toEqual({ total: 0, items: [] });
+  expect(await searchLibrary(21, 'nasa-apod', 'cafe')).toEqual({ total: 0, items: [] });
+});
+
+it('searches a thousand local records within the bounded result window', async () => {
+  const fixture = Array.from({ length: 1000 }, (_, index) => ({
+    ...item, localId: 'spaceflight-news:' + (10000 + index), externalId: String(10000 + index),
+    title: 'Archive benchmark', fetchedAt: new Date().toISOString(),
+  }));
+  await upsertDiscoveryItems(fixture);
+  const start = performance.now();
+  const result = await searchLibrary(21, 'all', 'archive benchmark');
+  expect(result.total).toBe(1000);
+  expect(result.items).toHaveLength(100);
+  expect(performance.now() - start).toBeLessThan(1500);
 });
