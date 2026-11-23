@@ -119,7 +119,7 @@ export default function DetailsScreen() {
           {item.author && <Text style={styles.byline}>{item.author}</Text>}
           <Button
             title={saved ? 'Remove from Favourites' : 'Save to Favourites'}
-            icon="bookmark"
+            icon={saved ? 'check' : 'bookmark'}
             variant={saved ? 'outline' : 'primary'}
             loading={Boolean(pending[item.localId])}
             onPress={() => toggleFavourite(item.localId)}
@@ -192,6 +192,6 @@ const styles = StyleSheet.create({
   sectionTitle: { ...typography.h2, color: colors.forest },
   body: { ...typography.body, fontSize: 16, lineHeight: 25, color: colors.ink },
   error: { ...typography.bodySmall, color: colors.danger },
-  source: { gap: spacing[2], padding: spacing[4], borderRadius: radii.md, borderWidth: 1, borderColor: colors.border },
+  source: { backgroundColor: colors.surface, gap: spacing[2], padding: spacing[4], borderRadius: radii.md, borderWidth: 1, borderColor: colors.border },
   loading: { marginTop: spacing[8] },
 });

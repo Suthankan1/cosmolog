@@ -9,7 +9,7 @@ const destinations = [
   { name: 'discover', title: 'Discover', icon: 'compass' },
   { name: 'favourites', title: 'Favourites', icon: 'bookmark' },
   { name: 'profile', title: 'Profile', icon: 'user' },
-] as const satisfies ReadonlyArray<{ name: string; title: string; icon: FeatherIconName }>;
+] as const satisfies readonly { name: string; title: string; icon: FeatherIconName }[];
 
 export default function TabLayout() {
   const { bottom, left, right } = useSafeAreaInsets();

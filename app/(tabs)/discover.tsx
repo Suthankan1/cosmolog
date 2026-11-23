@@ -1,3 +1,4 @@
+import { DestinationGroup } from '../../src/components/common/DestinationGroup';
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -97,6 +98,7 @@ export default function DiscoverScreen() {
       {isRefreshing && items.length > 0 && (
         <Text accessibilityLiveRegion="polite" style={styles.subtitle}>Updating sources. Your collection is available.</Text>
       )}
+      {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
       {!searching && resume && (
         <View style={styles.notice}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>Continue Reading</Text>
@@ -107,17 +109,16 @@ export default function DiscoverScreen() {
         </View>
       )}
       {checkpointError && <Text accessibilityRole="alert" style={styles.noticeText}>Could not update your reading position.</Text>}
-      {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
-      {!searching && <Button title="Space Study" icon="book-open" onPress={() => router.push('/study')} />}
-      {!searching && <Button title="Sky Viewer" icon="compass" variant="outline" onPress={() => router.push('/sky-viewer')} />}
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
-      {!searching && selectedCategory !== 'spaceflight-news' && (
-        <>
+      {!searching && <DestinationGroup title="Study, sky and archives" icon="layers">
+        <Button title="Space Study" icon="book-open" variant="destination" onPress={() => router.push('/study')} />
+        <Button title="Sky Viewer" icon="compass" variant="destination" onPress={() => router.push('/sky-viewer')} />
+        <Button title="Offline reading packs" icon="download" variant="destination" onPress={() => router.push('/reading-packs')} />
+        {selectedCategory !== 'spaceflight-news' && <>
           <BrowseByDate />
           <OnThisDay connection={connection} />
-        </>
-      )}
-      {!searching && <Button title="Offline reading packs" icon="download" variant="outline" onPress={() => router.push('/reading-packs')} />}
+        </>}
+      </DestinationGroup>}
       {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
         {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
       </Text>}
