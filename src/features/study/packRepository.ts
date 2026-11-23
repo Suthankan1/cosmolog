@@ -6,7 +6,7 @@ const slug = z.string().regex(/^[a-z0-9-]{1,60}$/);
 const part = z.object({
   file: z.string().regex(/^[a-z0-9-]{1,60}\.json$/),
   bytes: z.number().int().min(2).max(512000),
-  md5: z.string().regex(/^[0-9a-f]{32}$/),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
   count: z.number().int().positive().max(500),
 });
 const pack = z.object({

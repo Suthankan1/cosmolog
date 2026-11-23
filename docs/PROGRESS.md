@@ -287,3 +287,7 @@ Added versioned static manifests, resumable verified parts, transactional instal
 ## Field Guide section anchors, notes and edition validation
 
 Added stable chapter-section anchors, private study notes, per-chapter glossary entries, an accessible bundled Earthrise figure, and content/pack validation tests. Both selected Starlink GP endpoints returned matching NORAD identifiers. Strict TypeScript, ESLint and all 93 tests passed.
+
+## Native pack-write verification
+
+The first Pixel 9 pack-install check exposed the asynchronous native file-write contract. The installer now awaits writes and validates SHA-256 before parsing each part. Regression tests simulate delayed writes, connection loss after a complete part, insufficient free space and corruption. All 95 Jest tests, TypeScript, ESLint, Android release assembly and native lint passed.

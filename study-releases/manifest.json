@@ -9,14 +9,14 @@
         {
           "file": "ground.json",
           "bytes": 405,
-          "md5": "f9b1380d0b941597d10faf2c9ebb4122",
-          "count": 1
+          "count": 1,
+          "sha256": "c8eed0203d4d5fe415d9639e4ae9c76be034f637455f91074f772dfd6f2774cb"
         },
         {
           "file": "space.json",
           "bytes": 447,
-          "md5": "4e00b8d70ca84081b48fbb9beb670374",
-          "count": 1
+          "count": 1,
+          "sha256": "341113874847256dc9f208953d03535903dfe7ae7163061447c66f8bc28fb299"
         }
       ]
     }

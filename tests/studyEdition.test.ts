@@ -33,7 +33,7 @@ it('ships byte-identical resumable parts with the published counts and checksums
       const records=packEntries.parse(JSON.parse(raw.toString()));
       expect(records).toHaveLength(part.count);
       expect(raw.byteLength).toBe(part.bytes);
-      expect(createHash('md5').update(raw).digest('hex')).toBe(part.md5);
+      expect(createHash('sha256').update(raw).digest('hex')).toBe(part.sha256);
       expect(JSON.stringify(JSON.parse(raw.toString()))+'\n').toBe(raw.toString());
     }
   }

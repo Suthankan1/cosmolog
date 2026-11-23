@@ -48,10 +48,10 @@ export const downloadPack = createAsyncThunk(
     const entries: PackRows = [];
     for (const [index, part] of pack.parts.entries()) {
       const file = new File(dir, part.file);
-      if (!file.exists || file.size !== part.bytes || file.md5 !== part.md5) {
+      if (!file.exists || file.size !== part.bytes || (await file.digest('SHA-256')) !== part.sha256) {
         if (shipsWithApp(pack) && embeddedParts[part.file]) {
           file.create({ overwrite: true });
-          file.write(JSON.stringify(embeddedParts[part.file]) + '\n');
+          await file.write(JSON.stringify(embeddedParts[part.file]) + '\n');
         } else {
           const response = await fetch(base + pack.id + '/' + pack.revision + '/' + part.file, { signal });
           if (!response.ok || !response.body) throw Error('Pack download unavailable.');
@@ -71,10 +71,10 @@ export const downloadPack = createAsyncThunk(
           }
           if (offset !== bytes.length) throw Error('Incomplete pack part.');
           file.create({ overwrite: true });
-          file.write(bytes);
+          await file.write(bytes);
         }
       }
-      if (file.size !== part.bytes || file.md5 !== part.md5) throw Error('Pack integrity check failed.');
+      if (file.size !== part.bytes || (await file.digest('SHA-256')) !== part.sha256) throw Error('Pack integrity check failed.');
       const rows = packEntries.parse(JSON.parse(await file.text()));
       if (rows.length !== part.count) throw Error('Unexpected number of study entries.');
       entries.push(...rows);
