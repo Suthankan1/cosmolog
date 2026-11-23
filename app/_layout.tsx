@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -52,6 +53,7 @@ function RootNavigator() {
     <>
       <StatusBar style={isAuthenticated && isBrandRevealed ? 'dark' : 'light'} />
       {!isInitialSessionLoading && (
+        <View style={{ flex: 1 }} accessibilityElementsHidden={!isBrandRevealed} importantForAccessibility={isBrandRevealed ? 'auto' : 'no-hide-descendants'}>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
           <Stack.Screen name="index" />
           <Stack.Protected guard={isAuthenticated}>
@@ -69,8 +71,12 @@ function RootNavigator() {
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
         </Stack>
+        </View>
       )}
-      {(!isBrandRevealed || isInitialSessionLoading) && <BrandReveal onFinish={finishReveal} />}
+      {!isBrandRevealed && <BrandReveal onFinish={finishReveal} />}
+      {isBrandRevealed && isInitialSessionLoading && <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', backgroundColor: colors.forestDark }]}>
+        <ActivityIndicator color={colors.ivory} accessibilityLabel="Restoring your session" />
+      </View>}
     </>
   );
 }

@@ -332,3 +332,5 @@ The iOS navigation XCTest also passed with Accessibility Large text and Increase
 Replaced the launcher and editorial lockup with a cut C and outlined Playfair lettering. Exported transparent foregrounds, monochrome artwork, density-specific launch icons and a matching native splash.
 
 Discover now keeps the edition selector above a shared photo cover. Each source gets its own lead and chronological remainder. The centred dock targets 264 points at normal text size. Edition tests cover deduplication, single-source and empty caches.
+
+The cut C now opens into the outlined masthead on a five-second cold launch. Skip, Reduce Motion and timer completion share one handoff. Two launch regression tests, TypeScript and ESLint passed.
