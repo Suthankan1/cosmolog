@@ -1,3 +1,4 @@
+import { searchFields } from '../searchText';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { getDatabase, writeDatabase } from '../db';
 import { CachedItemRow, DiscoveryItem, mapRowToDiscoveryItem } from '../models';
@@ -7,19 +8,19 @@ export async function upsertItem(db: SQLiteDatabase, item: DiscoveryItem) {
   await db.runAsync(
     `INSERT INTO cached_items (
        local_id, source, external_id, title, summary, body, published_at,
-       image_remote_url, image_license_url, canonical_url, attribution, author, media_type, fetched_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       image_remote_url, image_license_url, canonical_url, attribution, author, media_type, fetched_at, updated_at, search_title, search_text
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(local_id) DO UPDATE SET
        title = excluded.title, summary = excluded.summary, body = excluded.body,
        published_at = excluded.published_at, image_remote_url = excluded.image_remote_url,
        image_license_url = excluded.image_license_url,
        canonical_url = excluded.canonical_url, attribution = excluded.attribution,
        author = excluded.author, media_type = excluded.media_type,
-       fetched_at = excluded.fetched_at, updated_at = excluded.updated_at`,
+       fetched_at = excluded.fetched_at, updated_at = excluded.updated_at, search_title = excluded.search_title, search_text = excluded.search_text`,
     [
       item.localId, item.source, item.externalId, item.title, item.summary, item.body,
       item.publishedAt, item.imageRemoteUrl, item.imageLicenseUrl ?? null, item.canonicalUrl, item.attribution,
-      item.author, item.mediaType, item.fetchedAt, item.updatedAt,
+      item.author, item.mediaType, item.fetchedAt, item.updatedAt, ...searchFields(item),
     ],
   );
 }
@@ -51,6 +52,7 @@ export async function commitFeedSnapshot(source: DiscoverySource, items: Discove
       `DELETE FROM cached_items WHERE fetched_at < ?
        AND NOT EXISTS (SELECT 1 FROM feed_membership WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = cached_items.local_id)
+       AND NOT EXISTS (SELECT 1 FROM search_members WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM saved_media WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM reading_checkpoint WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM reading_history WHERE local_id = cached_items.local_id)`,

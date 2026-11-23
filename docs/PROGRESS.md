@@ -343,3 +343,6 @@ The source selector now reserves identical geometry for each state and indicates
 
 ### Paginated Space Dispatches
 Added a durable dispatch continuation, merged refreshes and bounded list reads. Older stories remain readable offline. The list footer supports manual loading and retry.
+
+### Online dispatch search
+Discover now searches normalized SQLite text and pages Spaceflight News independently of the feed. Search membership is account-scoped, transactional and excluded from cache pruning.

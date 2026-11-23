@@ -208,3 +208,15 @@ export const MIGRATE_TO_DISPATCH_PAGES_SQL = `
   CREATE INDEX idx_feed_position ON feed_membership(source, position);
   PRAGMA user_version = 13;
 `;
+
+export const MIGRATE_TO_ARCHIVE_SEARCH_SQL = `
+  ALTER TABLE cached_items ADD COLUMN search_title TEXT NOT NULL DEFAULT '';
+  ALTER TABLE cached_items ADD COLUMN search_text TEXT NOT NULL DEFAULT '';
+  CREATE TABLE last_search(account_id INTEGER NOT NULL, category TEXT NOT NULL, query TEXT NOT NULL,
+    PRIMARY KEY(account_id, category));
+  CREATE TABLE search_members(account_id INTEGER NOT NULL, category TEXT NOT NULL, position INTEGER NOT NULL,
+    local_id TEXT NOT NULL REFERENCES cached_items(local_id), PRIMARY KEY(account_id, category, position),
+    FOREIGN KEY(account_id, category) REFERENCES last_search(account_id, category) ON DELETE CASCADE);
+  CREATE INDEX idx_search_members_item ON search_members(local_id);
+  PRAGMA user_version = 14;
+`;

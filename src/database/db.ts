@@ -1,5 +1,7 @@
+import { mapRowToDiscoveryItem, type CachedItemRow } from './models';
+import { searchFields } from './searchText';
 import * as SQLite from 'expo-sqlite';
-import { CREATE_TABLES_SQL, MIGRATE_TO_DISPATCH_PAGES_SQL, MIGRATE_TO_SNAPSHOTS_SQL, MIGRATE_TO_NOTES_SQL, MIGRATE_TO_IMAGE_LICENSES_SQL,
+import { CREATE_TABLES_SQL, MIGRATE_TO_ARCHIVE_SEARCH_SQL, MIGRATE_TO_DISPATCH_PAGES_SQL, MIGRATE_TO_SNAPSHOTS_SQL, MIGRATE_TO_NOTES_SQL, MIGRATE_TO_IMAGE_LICENSES_SQL,
   MIGRATE_TO_MEDIA_PROVENANCE_SQL, MIGRATE_TO_READING_CHECKPOINT_SQL, MIGRATE_TO_READING_HISTORY_SQL,
   MIGRATE_TO_COLLECTIONS_SQL, MIGRATE_TO_READING_PACKS_SQL, MIGRATE_TO_SKY_ORBITS_SQL, MIGRATE_TO_STUDY_SQL, MIGRATE_TO_STUDY_PACKS_SQL, MIGRATE_TO_STUDY_ANCHORS_SQL } from './schema';
 
@@ -11,7 +13,7 @@ async function openDatabase() {
     await writer.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
     await writer.withTransactionAsync(async () => {
       const { user_version: version } = (await writer.getFirstAsync<{ user_version: number }>('PRAGMA user_version'))!;
-      if (version > 13) throw new Error('Unsupported database version');
+      if (version > 14) throw new Error('Unsupported database version');
       if (version === 0) {
         await writer.execAsync(CREATE_TABLES_SQL);
         await writer.execAsync(MIGRATE_TO_SNAPSHOTS_SQL);
@@ -28,6 +30,17 @@ async function openDatabase() {
       if (version < 11) await writer.execAsync(MIGRATE_TO_STUDY_PACKS_SQL);
       if (version < 12) await writer.execAsync(MIGRATE_TO_STUDY_ANCHORS_SQL);
       if (version < 13) await writer.execAsync(MIGRATE_TO_DISPATCH_PAGES_SQL);
+      if (version < 14) {
+        await writer.execAsync(MIGRATE_TO_ARCHIVE_SEARCH_SQL);
+        let after = '';
+        for (;;) {
+          const rows = await writer.getAllAsync<CachedItemRow>('SELECT * FROM cached_items WHERE local_id > ? ORDER BY local_id LIMIT 100', [after]);
+          for (const row of rows) await writer.runAsync('UPDATE cached_items SET search_title=?, search_text=? WHERE local_id=?',
+            [...searchFields(mapRowToDiscoveryItem(row)), row.local_id]);
+          if (rows.length < 100) break;
+          after = rows[rows.length - 1].local_id;
+        }
+      }
     });
     const reader = await SQLite.openDatabaseAsync(DATABASE_NAME, { useNewConnection: true });
     return { reader, writer };

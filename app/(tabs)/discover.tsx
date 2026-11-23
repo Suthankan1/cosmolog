@@ -38,10 +38,9 @@ export default function DiscoverScreen() {
   const savedItems = useMemo(() => new Map(favourites.map(item => [item.localId, item])), [favourites]);
   const accountId = useAppSelector(state => state.auth.user?.id);
   const searching = Boolean(searchQuery.trim());
-  const revision = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt].join('|');
-  const library = useLibrarySearch(accountId, selectedCategory, searchQuery, revision);
+  const library = useLibrarySearch(accountId, selectedCategory, searchQuery, connection === 'online');
   const { hero, rows: feedRows } = useMemo(() => selectFeed(items, selectedCategory), [items, selectedCategory]);
-  const rows = searching ? library.data?.items ?? [] : feedRows;
+  const rows = searching ? library.rows : feedRows;
   const [checkpoint, setCheckpoint] = useState<{ accountId: number; data: Awaited<ReturnType<typeof getReadingCheckpoint>> }>();
   const [checkpointError, setCheckpointError] = useState(false);
   useFocusEffect(useCallback(() => {
@@ -90,11 +89,11 @@ export default function DiscoverScreen() {
   ) : cacheStatus === 'error' ? (
     <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
       actionTitle="Try again" onAction={refresh} />
-  ) : searching && library.error ? (
-    <EmptyState icon="alert-circle" title="Could not search the archive" description="Try searching the local collection again."
+  ) : searching && library.errors.length > 0 ? (
+    <EmptyState icon="alert-circle" title="Some search results are unavailable" description="Retry the unavailable sources below."
       actionTitle="Try again" onAction={library.retry} />
   ) : searching && library.pending ? (
-    <ActivityIndicator accessibilityLabel="Searching offline library" color={colors.forest} style={styles.loading} />
+    <ActivityIndicator accessibilityLabel="Searching space materials" color={colors.forest} style={styles.loading} />
   ) : searching ? (
     <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
       actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
@@ -109,7 +108,7 @@ export default function DiscoverScreen() {
     <View style={styles.header}>
       <Image source={require('../../assets/brand/cosmolog-lockup.svg')} contentFit="contain"
         accessible accessibilityLabel="COSMOLOG magazine" style={styles.masthead} />
-      <SearchBar placeholder="Search offline library" accessibilityLabel="Search offline library" value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
+      <SearchBar placeholder="Search space materials" accessibilityLabel="Search space materials" value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       {(!offline && (failedSources || refreshError || cacheStatus === 'error')) ? (
         <View style={styles.notice}>
@@ -147,8 +146,8 @@ export default function DiscoverScreen() {
           <OnThisDay connection={connection} />
         </>}
       </DestinationGroup>}
-      {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
-        {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
+      {searching && library.rows.length > 0 && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
+        {library.localCount} from this device · {library.rows.length - library.localCount} from online archives
       </Text>}
       {(searching || rows.length > 0) && <Text accessibilityRole="header" style={styles.sectionTitle}>
         {searching ? 'Search results' : selectedCategory === 'all' ? 'Latest stories' : selectedCategory === 'nasa-apod' ? 'More Daily Plates' : 'More Dispatches'}
@@ -164,8 +163,13 @@ export default function DiscoverScreen() {
         keyExtractor={item => item.localId}
         renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
         onEndReachedThreshold={0.35}
-        onEndReached={() => { if (canLoadOlder && !appendError) void dispatch(loadOlder()); }}
-        ListFooterComponent={canLoadOlder ? <Button title={appendError ? 'Retry loading older stories' : 'Load more stories'}
+        onEndReached={() => { if (searching && library.more && !library.pending) library.moreResults();
+          else if (canLoadOlder && !appendError) void dispatch(loadOlder()); }}
+        ListFooterComponent={searching ? <View style={styles.header}>
+          {library.pending && rows.length > 0 && <ActivityIndicator accessibilityLabel="Searching archives" />}
+          {library.errors.length > 0 && <Button title={'Retry ' + library.errors.join(', ')} onPress={library.retry} variant="outline" />}
+          {library.more && <Button title="Load more results" loading={library.pending} onPress={library.moreResults} variant="outline" />}
+        </View> : canLoadOlder ? <Button title={appendError ? 'Retry loading older stories' : 'Load more stories'}
           loading={appending} onPress={() => void dispatch(loadOlder())} variant="outline" /> : undefined}
         ListHeaderComponent={header}
         ListEmptyComponent={searching ? empty ?? undefined : undefined}

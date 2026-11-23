@@ -18,7 +18,7 @@ import { finishImage, getOfflineMedia, getPendingImages, reconcileSavedImages } 
 import { writeDatabase } from '../src/database/db';
 import { clearReadingCheckpoint, getReadAt, getReadingCheckpoint, getReadingHistory, markDiscoveryRead,
   saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
-import { searchLibrary } from '../src/features/discovery/librarySearch';
+import { readSearch, saveSearch, searchLibrary } from '../src/features/discovery/librarySearch';
 import { getCollections, removeCollection, saveCollectionName, setCollectionItems } from '../src/database/repositories/collectionsRepository';
 import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../src/database/repositories/readingPacksRepository';
 import {
@@ -364,4 +364,12 @@ it('retains older dispatches and rejects an append from a superseded head', asyn
   expect(articles.map(entry => entry.externalId)).toEqual(expect.arrayContaining(['501', '502', '503']));
   expect(articles.map(entry => entry.externalId)).not.toContain('504');
   expect(cursor?.next_offset).toBe(1);
+});
+
+it('pages past the original result cap and restores ordered searches for the matching account', async () => {
+  const { items } = await searchLibrary(21, 'all', 'archive benchmark', 130);
+  expect(items).toHaveLength(130);
+  await saveSearch(21, 'all', 'archive benchmark', items.slice(110), new AbortController().signal);
+  expect((await readSearch(21, 'all', 'archive benchmark')).map(x => x.localId)).toEqual(items.slice(110).map(x => x.localId));
+  expect(await readSearch(22, 'all', 'archive benchmark')).toEqual([]);
 });
