@@ -12,7 +12,7 @@ export function prepareGuide() {
     const row = await db.getFirstAsync<{value:string}>("SELECT value FROM study_meta WHERE key='edition'");
     if (row?.value === edition) return;
     for (const e of studyEntries) {
-      await db.runAsync(`INSERT INTO study_entries VALUES (?,?,?,?,?,?,?,?,?)
+      await db.runAsync(`INSERT INTO study_entries (id,title,category,body,source,url,related,chapter,sky) VALUES (?,?,?,?,?,?,?,?,?)
         ON CONFLICT(id) DO UPDATE SET title=excluded.title,category=excluded.category,body=excluded.body,
         source=excluded.source,url=excluded.url,related=excluded.related,chapter=excluded.chapter,sky=excluded.sky`,
       [e.id,e.title,e.category,e.body,e.source,e.url,JSON.stringify(e.related),e.chapter ?? null,Number(!!e.sky)]);

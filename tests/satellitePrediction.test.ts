@@ -58,3 +58,7 @@ it('marks a prediction old at 24 hours and suppresses it at 72 hours', () => {
   expect(predictSatellite(row, colombo, epoch + 72 * hour)).toBeNull();
   expect(predictSatellite({ ...row, elements: null }, colombo, epoch)).toBeNull();
 });
+
+it('accepts six-digit catalog numbers without truncation',()=>{
+  expect(validateSatelliteResponse([{...omm,NORAD_CAT_ID:100447}],100447)?.data.NORAD_CAT_ID).toBe(100447);
+});

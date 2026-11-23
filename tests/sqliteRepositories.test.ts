@@ -1,3 +1,7 @@
+import manifest from '../study-releases/manifest.json';
+import space from '../study-releases/observatories/1/space.json';
+import ground from '../study-releases/observatories/1/ground.json';
+import {activatePack,installedPacks,removePack,manifestSchema,packEntries} from '../src/features/study/packRepository';
 import {listStudy,bookmarkStudy,resumeStudy,checkpoint,readStudy} from '../src/features/study/repository';
 import {studyEntries} from '../src/features/study/edition';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -318,4 +322,19 @@ it('installs the full guide, resolves aliases and separates account reading stat
   await checkpoint(5,'chapter:worlds',2);
   expect((await resumeStudy(5))?.section).toBe(2);
   expect(await resumeStudy(6)).toBeFalsy();
+});
+
+it('changes pack revisions atomically and retains bookmarked articles on removal',async()=>{
+  const pack=manifestSchema.parse(manifest).packs[0];
+  const records=packEntries.parse([...ground,...space]);
+  await activatePack(pack,records);
+  const id='pack:observatories:webb';
+  await bookmarkStudy(5,id,true);
+  expect((await listStudy('JWST',false,5,10))[0].id).toBe(id);
+  await expect(activatePack({...pack,revision:2},[records[0],records[0]])).rejects.toThrow();
+  expect((await installedPacks())[0].revision).toBe(1);
+  await removePack(pack.id);
+  expect(await installedPacks()).toHaveLength(0);
+  expect((await readStudy(id,5)).marked).toBe(true);
+  expect((await readStudy('pack:observatories:alma',5)).entry).toBeFalsy();
 });

@@ -41,6 +41,7 @@ export default function StudyLibrary() {
         <Text accessibilityRole="header" style={s.heading}>{saved?'Study bookmarks':'The field guide'}</Text>
         {!saved && <><Text style={s.note}>8 chapters · {studyEntries.filter(e=>!e.chapter).length} bundled object profiles</Text>
           {resume && <Button title={'Continue reading · '+resume.title} icon="book-open" onPress={()=>open(resume.entry_id,resume.section)}/>}
+          <Button title="Editions and downloads" variant="outline" icon="download" onPress={()=>router.push('/study/downloads')}/>
           <Button title="My sky" variant="outline" icon="compass" onPress={()=>router.push('/sky-viewer')}/>
           <Button title={atlas?'Browse chapters':'Browse object atlas'} variant="outline" icon="list" onPress={()=>{setAtlas(!atlas);setLimit(30);}}/>
         </>}

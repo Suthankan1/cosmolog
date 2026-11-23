@@ -279,3 +279,7 @@ Added the bundled eight-chapter introductory edition, original supplemental prof
 ## Worldwide offline city lookup
 
 Bundled 52,004 GeoNames places in an indexed database, with optional city selection, stored city preference, observing-zone time and direct links between supported atlas entries and sky positions. Checked Kandy, worldwide namesakes and database integrity. TypeScript, ESLint and all 88 tests passed.
+
+## Study pack revisions and Starlink profiles
+
+Added versioned static manifests, resumable verified parts, transactional installation and bookmark-preserving removal. Included a two-entry observatories supplement with the app. Added STARLINK-1008 and STARLINK-1012 from the 23 November 2026 CelesTrak catalog. ESLint, TypeScript and all 90 tests passed, including failed pack activation, account bookmarks and six-digit catalog IDs.

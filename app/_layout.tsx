@@ -61,6 +61,7 @@ function RootNavigator() {
             <Stack.Screen name="collections" />
             <Stack.Screen name="reading-packs" />
             <Stack.Screen name="study/index" />
+            <Stack.Screen name="study/downloads" />
             <Stack.Screen name="study/[id]" />
             <Stack.Screen name="sky-viewer" />
           </Stack.Protected>

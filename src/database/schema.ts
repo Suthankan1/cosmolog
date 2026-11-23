@@ -188,3 +188,9 @@ export const MIGRATE_TO_STUDY_SQL = `
   CREATE TABLE study_progress (account INTEGER PRIMARY KEY, entry_id TEXT REFERENCES study_entries(id), section INTEGER NOT NULL);
   PRAGMA user_version = 10;
 `;
+
+export const MIGRATE_TO_STUDY_PACKS_SQL = `
+  CREATE TABLE study_packs(id TEXT PRIMARY KEY,revision INTEGER NOT NULL,bytes INTEGER NOT NULL,installed_at TEXT NOT NULL);
+  ALTER TABLE study_entries ADD COLUMN pack_id TEXT;
+  PRAGMA user_version = 11;
+`;

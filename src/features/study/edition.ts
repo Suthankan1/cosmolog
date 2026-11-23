@@ -57,7 +57,7 @@ const lessons: Lesson[] = [
     'What satellites do\nEarth-observing spacecraft measure land, oceans and weather. Navigation spacecraft broadcast timing signals. Communications satellites relay information between distant locations. Orbit choice determines coverage and how often a spacecraft returns over a region.',
     'A constellation of spacecraft\nStarlink uses many individual communications satellites. Search its family name to study the system. Each cataloged spacecraft has a separate identifier and orbit. An orbit estimate belongs to that particular object.',
     'Reading a prediction\nAn orbital epoch is the reference time of an orbit estimate. Atmospheric drag and manoeuvres can change a satellite’s path afterward. A pass above your horizon may be invisible when the spacecraft is in Earth’s shadow or your sky is too bright. Spent rocket bodies and fragments also orbit Earth.',
-  ], ['group:starlink', 'satellite:25544', 'satellite:20580']],
+  ], ['group:starlink', 'satellite:25544', 'satellite:20580', 'satellite:44714', 'satellite:44718']],
 ];
 
 type Profile = [string, string, string, string, string];
@@ -100,4 +100,6 @@ const objects: StudyEntry[] = [...skyEntries,...profiles.map(([id,title,category
   return {...o, aliases:[...new Set([...o.aliases,...(aliases[o.id] ?? [])])],
     related:(linked.length ? linked : [chapters[family]]).map(ch => ch.id)};
 });
+const starlink = objects.find(o=>o.id==='group:starlink')!;
+starlink.related.push('satellite:44714','satellite:44718');
 export const studyEntries = [...chapters,...objects];
