@@ -112,9 +112,8 @@ export default function DetailsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: spacing[8] + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
-        <DiscoveryImage item={displayItem} offline={offline} style={styles.image} labelled />
         <View style={styles.article} onLayout={measureArticle}>
-          <Text style={styles.metadata}>{formatEditorialDate(item.publishedAt)}</Text>
+          <Text style={styles.kicker}>{sourceName} · {formatEditorialDate(item.publishedAt)}</Text>
           <Text accessibilityRole="header" style={styles.title}>{item.title}</Text>
           {item.author && <Text style={styles.byline}>{item.author}</Text>}
           <Button
@@ -124,6 +123,8 @@ export default function DetailsScreen() {
             loading={Boolean(pending[item.localId])}
             onPress={() => toggleFavourite(item.localId)}
           />
+          <DiscoveryImage item={displayItem} offline={offline} style={styles.image} labelled cover />
+          {item.source === 'nasa-apod' && item.attribution && <Text style={styles.metadata}>Credit: {item.attribution}</Text>}
           {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
           {availableMedia && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(availableMedia.mediaStatus, offline)}</Text>}
           {(availableMedia?.mediaStatus === 'failed' || availableMedia?.mediaStatus === 'previous') && connection === 'online' && (
@@ -182,10 +183,10 @@ const styles = StyleSheet.create({
   image: { width: '100%', aspectRatio: 1.55 },
   article: {
     paddingHorizontal: layout.horizontalInset, paddingTop: spacing[5], gap: spacing[3],
-    backgroundColor: colors.ivory, borderTopLeftRadius: radii.xxl, borderTopRightRadius: radii.xxl,
-    marginTop: -spacing[3],
+    backgroundColor: colors.ivory,
   },
   title: { ...typography.display, color: colors.forest },
+  kicker: { ...typography.label, color: colors.forest, borderTopWidth: 2, borderColor: colors.terracotta, paddingTop: spacing[3] },
   byline: { ...typography.body, color: colors.muted },
   metadata: { ...typography.bodySmall, color: colors.muted },
   paragraphs: { gap: spacing[3] },

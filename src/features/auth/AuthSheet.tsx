@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Earthrise } from '../../components/common/Earthrise';
-import { colors, layout, radii, spacing, typography } from '../../theme/tokens';
+import { colors, layout, spacing, typography } from '../../theme/tokens';
 
 export function AuthSheet({ title, subtitle, error, register, children }: {
   title: string;
@@ -18,9 +18,8 @@ export function AuthSheet({ title, subtitle, error, register, children }: {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
         <View style={[styles.masthead, { paddingTop: insets.top + spacing[3] }, register && styles.compact]}>
           {!register && <Earthrise style={styles.photo} />}
-          <Image source={require('../../../assets/brand/cosmolog-mark-ivory.svg')} style={styles.mark} contentFit="contain" />
-          <Text style={styles.wordmark}>COSMOLOG</Text>
-          {!register && <Text style={styles.tagline}>A field journal for the universe</Text>}
+          <Image source={require('../../../assets/brand/cosmolog-lockup-ivory.svg')} style={styles.wordmark}
+            contentFit="contain" accessibilityLabel="COSMOLOG" accessible />
         </View>
         <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing[6] }]}>
           <View style={styles.form}>
@@ -51,12 +50,10 @@ const styles = StyleSheet.create({
   },
   compact: { paddingBottom: spacing[8] },
   photo: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 128 },
-  mark: { width: 72, height: 72, marginBottom: spacing[1] },
-  wordmark: { ...typography.display, color: colors.ivory, letterSpacing: 2, textAlign: 'center' },
-  tagline: { fontFamily: 'PlayfairDisplay-Italic', fontSize: 15, color: colors.ivory, textAlign: 'center' },
+  wordmark: { width: '100%', maxWidth: 460, aspectRatio: 717 / 102, marginVertical: spacing[3] },
   sheet: {
-    marginTop: -spacing[5], flex: 1, backgroundColor: colors.ivory, borderTopLeftRadius: radii.xxl,
-    borderTopRightRadius: radii.xxl, paddingTop: spacing[6], paddingHorizontal: layout.horizontalInset,
+    flex: 1, backgroundColor: colors.ivory, borderTopWidth: 3, borderColor: colors.terracotta,
+    paddingTop: spacing[6], paddingHorizontal: layout.horizontalInset,
   },
   form: { width: '100%', maxWidth: 500, alignSelf: 'center' },
   title: { ...typography.display, color: colors.ink },

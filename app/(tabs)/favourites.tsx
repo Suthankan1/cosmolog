@@ -56,11 +56,6 @@ export default function FavouritesScreen() {
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.title}>Field Shelf</Text>
       <Text style={styles.subtitle}>Saved discoveries and private field notes.</Text>
-      <DestinationGroup title="Shelf tools" icon="folder">
-        <Button title="Saved study entries" icon="book-open" variant="destination" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
-        <Button title="Collections" icon="folder" variant="destination" onPress={() => router.push('/collections')} />
-        <Button title="Reading history" icon="clock" variant="destination" onPress={() => router.push('/reading-history')} />
-      </DestinationGroup>
       {legacyCount > 0 && <Button title="Import earlier bookmarks" variant="outline" loading={importing}
         onPress={() => Alert.alert('Import earlier bookmarks?', 'Add bookmarks from an earlier app version to this account.', [
           { text: 'Cancel', style: 'cancel' },
@@ -102,6 +97,13 @@ export default function FavouritesScreen() {
         data={results}
         keyExtractor={item => item.localId}
         ListHeaderComponent={header}
+        ListFooterComponent={(
+      <DestinationGroup title="Shelf tools" icon="folder">
+        <Button title="Saved study entries" icon="book-open" variant="destination" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
+        <Button title="Collections" icon="folder" variant="destination" onPress={() => router.push('/collections')} />
+        <Button title="Reading history" icon="clock" variant="destination" onPress={() => router.push('/reading-history')} />
+      </DestinationGroup>
+        )}
         ListEmptyComponent={empty}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.content, { paddingBottom }]}
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ivory },
   content: { paddingHorizontal: layout.horizontalInset, paddingBottom: spacing[8] },
   header: { paddingTop: spacing[5], gap: spacing[3], marginBottom: spacing[2] },
-  title: { ...typography.display, color: colors.ink },
+  title: { ...typography.displayXL, color: colors.ink, borderTopWidth: 3, borderColor: colors.terracotta, paddingTop: spacing[3] },
   subtitle: { ...typography.body, color: colors.muted },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
   count: { ...typography.bodySmall, color: colors.muted },

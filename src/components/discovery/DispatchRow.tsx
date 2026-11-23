@@ -46,10 +46,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderColor: colors.border },
   open: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', paddingVertical: spacing[3], gap: spacing[3] },
   pressed: { opacity: 0.75 },
-  thumbnail: { width: 64, height: 64, borderRadius: radii.md },
+  thumbnail: { width: 76, height: 90, borderRadius: radii.sm },
   copy: { flex: 1, gap: spacing[1] },
   meta: { ...typography.bodySmall, color: colors.muted },
-  title: { fontFamily: typography.h2.fontFamily, fontSize: 18, lineHeight: 24, color: colors.ink },
+  title: { fontFamily: typography.h2.fontFamily, fontSize: 21, lineHeight: 27, color: colors.ink },
   summary: { ...typography.bodySmall, color: colors.muted },
   availability: { ...typography.bodySmall, color: colors.forest },
 });

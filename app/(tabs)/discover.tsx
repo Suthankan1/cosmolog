@@ -83,6 +83,27 @@ export default function DiscoverScreen() {
     onToggleSave: () => toggleFavourite(item.localId),
   });
 
+  const empty = busy ? (
+    <View style={styles.loading}>
+      <ActivityIndicator accessibilityLabel="Loading discoveries" color={colors.forest} />
+    </View>
+  ) : cacheStatus === 'error' ? (
+    <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
+      actionTitle="Try again" onAction={refresh} />
+  ) : searching && library.error ? (
+    <EmptyState icon="alert-circle" title="Could not search the archive" description="Try searching the local collection again."
+      actionTitle="Try again" onAction={library.retry} />
+  ) : searching && library.pending ? (
+    <ActivityIndicator accessibilityLabel="Searching offline library" color={colors.forest} style={styles.loading} />
+  ) : searching ? (
+    <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
+      actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
+  ) : offline && !items.length ? (
+    <EmptyState icon="cloud-off" title="Nothing downloaded yet" description="Connect to download your first collection." />
+  ) : failedSources || refreshError ? null : (
+    <EmptyState icon="compass" title="No discoveries in this section" description="Try a different source or pull to refresh." />
+  );
+
   const header = (
     <View style={styles.header}>
       <Image source={require('../../assets/brand/cosmolog-lockup.svg')} contentFit="contain"
@@ -105,6 +126,7 @@ export default function DiscoverScreen() {
       {!searching && hero && <Animated.View key={hero.localId} entering={reducedMotion ? undefined : FadeIn.duration(160)}>
         <FeaturedStory {...cardProps(hero)} />
       </Animated.View>}
+      {!searching && !hero && empty}
       {!searching && resume && (
         <View style={styles.notice}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>Continue Reading</Text>
@@ -133,27 +155,6 @@ export default function DiscoverScreen() {
     </View>
   );
 
-  const empty = busy ? (
-    <View style={styles.loading}>
-      <ActivityIndicator accessibilityLabel="Loading discoveries" color={colors.forest} />
-    </View>
-  ) : cacheStatus === 'error' ? (
-    <EmptyState icon="alert-circle" title="Could not open the archive" description="Try reading the local collection again."
-      actionTitle="Try again" onAction={refresh} />
-  ) : searching && library.error ? (
-    <EmptyState icon="alert-circle" title="Could not search the archive" description="Try searching the local collection again."
-      actionTitle="Try again" onAction={library.retry} />
-  ) : searching && library.pending ? (
-    <ActivityIndicator accessibilityLabel="Searching offline library" color={colors.forest} style={styles.loading} />
-  ) : searching ? (
-    <EmptyState icon="search" title="No matches" description="Try a different title, topic, or publisher."
-      actionTitle="Clear search" onAction={() => dispatch(setSearchQuery(''))} />
-  ) : offline && !items.length ? (
-    <EmptyState icon="cloud-off" title="Nothing downloaded yet" description="Connect to download your first collection." />
-  ) : failedSources || refreshError ? null : (
-    <EmptyState icon="compass" title="No discoveries in this section" description="Try a different source or pull to refresh." />
-  );
-
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {offline && <OfflineBanner lastSyncedAt={updatedAt} />}
@@ -162,7 +163,7 @@ export default function DiscoverScreen() {
         keyExtractor={item => item.localId}
         renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
         ListHeaderComponent={header}
-        ListEmptyComponent={hero && !searching ? undefined : empty ?? undefined}
+        ListEmptyComponent={searching ? empty ?? undefined : undefined}
         contentContainerStyle={[styles.content, { paddingBottom }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={connection === 'online' ? <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={colors.forest} /> : undefined}

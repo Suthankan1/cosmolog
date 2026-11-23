@@ -10,7 +10,6 @@ import { refreshImagesThunk } from '../../src/store/slices/favouritesSlice';
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
 import { Button } from '../../src/components/common/Button';
-import { Earthrise } from '../../src/components/common/Earthrise';
 import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
 import { formatSyncTimestamp } from '../../src/utils/text';
 
@@ -61,7 +60,7 @@ export default function ProfileScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={[styles.scroll, { paddingBottom }]}>
       {focused && <StatusBar style="light" />}
       <View style={[styles.masthead, { paddingTop: insets.top + spacing[4] }]}>
-        <Earthrise style={styles.horizon} />
+        <Image source={require('../../assets/brand/cosmolog-mark-ivory.png')} style={styles.mark} accessible={false} />
         <Text accessibilityRole="header" style={styles.heading}>Profile</Text>
       </View>
       <View style={styles.content}>
@@ -111,7 +110,7 @@ export default function ProfileScreen() {
         {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
         <Button loading={isLoading} title="Sign out" onPress={signOut} variant="danger" icon="log-out"
           style={styles.signOut} testID="profile-logout-button" />
-        <Text style={styles.secondary}>Earthrise photograph · NASA / Bill Anders</Text>
+
       </View>
     </ScrollView>
   );
@@ -120,8 +119,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ivory },
   scroll: { paddingBottom: spacing[8] },
-  masthead: { backgroundColor: colors.forestDark, paddingHorizontal: layout.horizontalInset, paddingBottom: 68 },
-  horizon: { ...StyleSheet.absoluteFill },
+  masthead: { backgroundColor: colors.forestDark, paddingHorizontal: layout.horizontalInset, paddingBottom: spacing[5], flexDirection: 'row', alignItems: 'center', gap: spacing[4] },
+  mark: { width: 44, height: 44 },
   heading: { ...typography.display, color: colors.ivory },
   content: { paddingHorizontal: layout.horizontalInset, gap: spacing[4], paddingTop: spacing[3] },
   identity: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
@@ -140,7 +139,7 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[3] },
   stat: { flexGrow: 1, flexBasis: 116, backgroundColor: colors.surface, borderRadius: radii.lg, padding: spacing[4], gap: spacing[1] },
   statValue: { ...typography.h2, color: colors.ink },
-  sources: { gap: spacing[2] },
+  sources: { gap: spacing[2], borderTopWidth: 2, borderColor: colors.terracotta, paddingTop: spacing[4] },
   section: { ...typography.h2, color: colors.forest },
   sourceRow: { paddingVertical: spacing[2], borderBottomWidth: 1, borderColor: colors.border },
   sourceLabel: { ...typography.body, color: colors.ink },
