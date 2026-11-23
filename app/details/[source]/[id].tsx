@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../../src/store';
@@ -17,6 +17,7 @@ import { useDiscoveryRecord } from '../../../src/features/discovery/useDiscovery
 import { useToggleFavourite } from '../../../src/features/journal/useToggleFavourite';
 import { FieldNote } from '../../../src/features/journal/FieldNote';
 import { mediaLabel } from '../../../src/features/discovery/mediaLabel';
+import { publicationName, shareDiscoveryContent } from '../../../src/features/discovery/shareDiscovery';
 import { httpsUrl } from '../../../src/services/api/mediaPolicy';
 
 export default function DetailsScreen() {
@@ -33,6 +34,7 @@ export default function DetailsScreen() {
   const { connection, metadata, legacySyncedAt } = useAppSelector(state => state.feed);
   const { favourites, pending, error, isDownloading } = useAppSelector(state => state.favourites);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
   const offline = connection === 'offline';
   const sourceUpdatedAt = parsed ? metadata[parsed.source].lastSyncedAt : null;
 
@@ -67,7 +69,7 @@ export default function DetailsScreen() {
   const { item } = result;
   const saved = favourites.find(entry => entry.localId === item.localId);
   const canonicalUrl = httpsUrl(item.canonicalUrl);
-  const sourceName = item.source === 'nasa-apod' ? 'NASA Astronomy Picture of the Day' : item.attribution || 'Spaceflight News';
+  const sourceName = publicationName(item);
   const openSource = async () => {
     if (!canonicalUrl) return;
     setLinkError(null);
@@ -75,6 +77,19 @@ export default function DetailsScreen() {
       await Linking.openURL(canonicalUrl);
     } catch {
       setLinkError('Could not open the source link. Try again.');
+    }
+  };
+  const share = async () => {
+    const content = shareDiscoveryContent(item);
+    if (!content || sharing) return;
+    setLinkError(null);
+    setSharing(true);
+    try {
+      await Share.share(content, { subject: content.title, dialogTitle: 'Share discovery' });
+    } catch {
+      setLinkError('Could not open sharing. Try again.');
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -147,6 +162,8 @@ export default function DetailsScreen() {
                 variant="outline" icon="external-link" onPress={openSource} disabled={offline} />
             )}
             {offline && canonicalUrl && <Text style={styles.metadata}>Connect to open the original publication.</Text>}
+            {canonicalUrl && Platform.OS !== 'web' && <Button title="Share discovery" icon="share-2" variant="outline"
+              loading={sharing} onPress={() => { void share(); }} />}
             {linkError && <Text accessibilityRole="alert" style={styles.error}>{linkError}</Text>}
           </View>
         </View>

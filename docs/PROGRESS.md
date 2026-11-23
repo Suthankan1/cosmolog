@@ -243,3 +243,7 @@ The Field Shelf opens a protected Collections screen. Accounts can create and re
 ## 2026-11-23 — On This Day
 
 Discover looks for the most recent past NASA plate on the same month and day in SQLite. A cache miss offers a valid earlier date when connected and explains the offline state otherwise. Dated opens reuse the existing Details lookup and leave Discover's source snapshots intact. TypeScript, ESLint, and 12 focused date and SQLite tests passed.
+
+## 2026-11-23 — Share a discovery
+
+Details can open the native Android or iOS share sheet from a cached discovery. The payload is limited to the public title, credit, and validated original link. TypeScript, ESLint, and the two focused share-payload tests passed.
