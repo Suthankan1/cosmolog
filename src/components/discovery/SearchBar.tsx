@@ -22,6 +22,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <View style={styles.container}>
       <Icon name="search" size={18} color={colors.muted} style={styles.searchIcon} />
       <TextInput
+        maxLength={256}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}

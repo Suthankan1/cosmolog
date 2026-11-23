@@ -48,6 +48,7 @@ export function normalizeSpaceflightArticle(raw: RawSpaceflightArticle): Discove
 export interface DiscoveryPage {
   items: DiscoveryItem[];
   nextOffset: number | null;
+  anchor?: string;
 }
 
 export async function fetchNewsPage(offset = 0, anchor?: string | null, query?: string, signal?: AbortSignal): Promise<DiscoveryPage> {
@@ -60,7 +61,7 @@ export async function fetchNewsPage(offset = 0, anchor?: string | null, query?: 
   const page = spaceflightFeedResponseSchema.extend({ next: z.string().nullable() })
     .parse(await fetchJson(url.href, { signal }));
   const items = page.results.map(normalizeSpaceflightArticle);
-  return { items, nextOffset: page.next && items.length ? offset + items.length : null };
+  return { items, anchor: items[0]?.publishedAt ? page.results[0].published_at ?? undefined : undefined, nextOffset: page.next && items.length ? offset + items.length : null };
 }
 
 export async function fetchSpaceflightNewsItem(id: string, signal?: AbortSignal): Promise<DiscoveryItem | null> {

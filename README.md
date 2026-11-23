@@ -43,7 +43,13 @@ A fresh install needs connectivity for the first sign-in. A returning user with 
 
 Scroll into a story to save a reading position. **Continue Reading** on Discover reopens the most recent unfinished story at its saved paragraph. **Dismiss** clears the checkpoint. **Mark as read** also adds the story to the account's offline **Reading history** on the Field Shelf. Use **To read** to filter out completed favourites. Changing the source text starts the reader at the top; changing text size preserves the paragraph anchor.
 
-**Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
+**Search space materials** checks SQLite immediately. With an internet connection, enter at least two characters to search the Spaceflight News and NASA media archives. Device results appear first. Scroll or tap **Load more results** for more matches. Select **NASA Media** for images, video and audio. **Search the wider web** opens a topic search in your browser. The Field Shelf searches private notes.
+
+Space Dispatches load in pages of 15. Older pages stay on the device through refreshes and restarts. **Reopen search** restores the latest stored search for the selected edition. Saved NASA media records preserve their description, date, credit and source link. Open the original online for playback or the full-resolution asset.
+
+[Online archive search](docs/screenshots/22-online-archive-search.png) · [Search after an offline restart](docs/screenshots/23-offline-archive-search.png)
+
+**Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
 
 Under **Study, sky and archives**, **On This Day** offers an earlier NASA plate from the same month and day. Discover checks the local archive first. If no match is stored, it offers an online lookup for the most recent eligible prior year.
 
@@ -130,7 +136,8 @@ See [Architecture](design/ARCHITECTURE.md), [Data model](design/DATA_MODEL.md), 
 1. **Restore the verified session locally.** A network profile check made an offline restart look like a logout. SecureStore now holds the verified identity and tokens. Online validation can refresh or revoke them while the archive remains available during a temporary service failure.
 2. **Use SQLite and one sync coordinator.** Cached items, source membership, and refresh metadata are durable together. Redux Toolkit thunks were retained so the app has one place that controls request ordering and reconciles results with SQLite. The trade-off is that the coordinator owns deduplication and retry behavior.
 3. **Separate bookmarking from downloading.** A file server can be slow or down, so the bookmark is committed first. Image status becomes ready only after the validated local file exists. The journal has useful text and notes even when the image is unavailable.
-4. **Own bookmarks and notes by account.** Feed records are public, so the database can reuse them across accounts. The SQLite favourite relationship carries ownership and the field note. A legacy bookmark has no owner until a signed-in person imports it.
+4. **Keep online search separate from the feed.** Search records share the SQLite item table. Ordered search results belong to the account and edition. Looking up Europa never replaces the Daily Plate or advances the feed timestamp. NASA media search runs directly against its public catalogue. The wider-web action requires no hosted proxy or search API key. [NASA media API](https://images.nasa.gov/docs/images.nasa.gov_api_docs.pdf)
+5. **Own bookmarks and notes by account.** Feed records are public, so the database can reuse them across accounts. The SQLite favourite relationship carries ownership and the field note. A legacy bookmark has no owner until a signed-in person imports it.
 
 ## Verification
 

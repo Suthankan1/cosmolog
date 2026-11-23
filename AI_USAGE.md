@@ -7,6 +7,10 @@ This file must be updated honestly throughout development.
 - Figma integration: authored COSMOLOG brand identity, editable mark, token collection, typography styles, component references, screen wireframes and system-state board.
 - Other coding agents (Claude, Codex, Antigravity, Copilot, Cursor): add exact tool/version, date, task and files changed when actually used.
 
+## Online discovery implementation
+
+Codex implemented dispatch pagination, SQLite search snapshots, NASA media support and regression tests. A live Europa query returned HTTP 400 for the suggested secondary news ordering. Removing the unsupported field produced a successful paginated response. NASA returned an HTTP continuation URL, so the adapter constructs the next HTTPS request from the page number.
+
 ## Required correction log
 The assignment requires at least one example where AI output was corrected or changed and why. Do not invent this entry. Add a real example after a generated suggestion is reviewed and corrected.
 

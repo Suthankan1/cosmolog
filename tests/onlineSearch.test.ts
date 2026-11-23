@@ -1,3 +1,4 @@
+import { fetchNewsPage } from "../src/services/api/spaceflightNewsService";
 import { parseMediaPage } from '../src/services/api/nasaMediaService';
 import { mergeSearch, widerWebUrl } from '../src/features/discovery/searchProviders';
 import { parseDetailsParams } from '../src/navigation/types';
@@ -22,4 +23,18 @@ it('encodes the whole wider web query and only targets the search engine', () =>
   const url = new URL(widerWebUrl('  Europa & ice?  '));
   expect(url.hostname).toBe('search.brave.com');
   expect(url.searchParams.get('q')).toBe('Europa & ice? astronomy space science');
+});
+
+it('keeps provider date precision for the anchored news continuation', async () => {
+  const transport = jest.spyOn(global, 'fetch').mockResolvedValue({
+    ok: true, json: async () => ({ next: 'next', results: [{ id: 1, title: 'Ice', summary: 'Europa',
+      published_at: '2026-11-23T12:00:00.123456Z' }] }),
+  } as Response);
+  try {
+    const page = await fetchNewsPage();
+    await fetchNewsPage(page.nextOffset!, page.anchor);
+    const url = new URL(String(transport.mock.calls[1][0]));
+    expect(url.searchParams.get('published_at_lte')).toBe('2026-11-23T12:00:00.123456Z');
+    expect(url.searchParams.get('ordering')).toBe('-published_at');
+  } finally { transport.mockRestore(); }
 });

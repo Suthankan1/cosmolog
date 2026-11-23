@@ -71,3 +71,12 @@ The Pixel 9 API 37 emulator verified denied location, approximate location, simu
 - Search Kandy with GPS denied, change to a city in another time zone and reopen the viewer. Confirm direction and horizon status for a linked target, including a target below the horizon.
 - Install the observatories supplement offline, bookmark Webb, remove the pack and reopen Webb. For a published network revision interrupt after the first part, then resume. A corrupt part, truncated response or low disk must leave the active version readable.
 - Run the edition checks before releasing a content revision. Verify the per-part byte size, checksum and expected record count. Each section anchor must be unique within its chapter, each credit retained and each internal cross-reference resolvable.
+
+## Paginated discovery and online archives
+
+1. Install the standalone ARM64 QA build over a populated app. Scroll until a story from the third Spaceflight News page appears. Trigger the footer twice and check for repeated rows.
+2. Search for Europa using All sources. Change to NASA Media, open a record and save it. Check its description, original link and provider credit. Open the wider-web action and check the encoded browser query.
+3. Force-stop in airplane mode. Reopen the latest search, read the saved record, and scroll back to a third-page dispatch. Restore connectivity and confirm the favourite and prior pages are still present.
+4. Exercise the labelled load-more and retry controls with large text and a screen reader. A single unavailable archive should retain the other archive's results and offer an independent retry.
+
+The Jest lifecycle checks simulate a partially unavailable provider, retry and a late response after an account and query change. Repository tests use a real SQLite database for migrations, page ordering, stale continuation rejection and account-specific search restoration.

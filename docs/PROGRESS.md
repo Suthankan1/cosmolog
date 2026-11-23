@@ -350,6 +350,9 @@ Discover now searches normalized SQLite text and pages Spaceflight News independ
 ### NASA Media and wider-web discovery
 Added NASA catalogue search, typed media Details, source credits, per-provider pagination and an explicit browser action. Live responses confirmed the NASA Europa preview and identified an unsupported secondary news ordering, now removed.
 
+### Discovery verification
+The full Jest run passed 113 tests across 33 suites. TypeScript and ESLint passed. Gradle assembled the standalone ARM64 Android release, including its packaged JavaScript bundle. Live provider requests returned Europa news and images and identified NASA audio and video records with spaces in their IDs. The existing magazine demo measured 141.78 seconds.
+
 ### Magazine release verification
 
 The Android ARM64 APK and the iOS simulator release use redesign revision `345bf3f`. All 105 Jest tests, TypeScript, ESLint, Android release assembly and release lint passed for this redesign. The isolated APK source map matched all 104 comparable application modules. Later pagination and online-search changes in the shared checkout have their own verification.
@@ -359,3 +362,5 @@ On the Pixel 9 API 37 emulator, clean sign-in, three covers with the same select
 An unsigned iOS simulator build reached login but lacked Keychain access. The locally signed release passed the iPhone 17 / iOS 27.2 XCTest covering sign-in, all three editions, Shelf and Profile. [iOS device capture](screenshots/magazine/ios-discover.png). Physical hardware and store distribution signing remain unverified.
 
 The original Figma file was view-only for the connected account. Its editable edition layouts, launch storyboard and screen references are in the [local handoff](../design/magazine/).
+
+On a Pixel 9 emulator the standalone build reached “APOD: 2026 November 19 – The Horsehead and Flame Nebulas”, independently matched against the third live article page. After saving a NASA Europa record, the app force-stopped and restarted in airplane mode. Its ordered search reopened, Details showed the favourite was still saved, and the same third-page article appeared while scrolling offline. The latest search reopened again after reconnection. The test used Android accessibility labels to operate controls. Spoken TalkBack and iOS device checks remain unverified for this release.
