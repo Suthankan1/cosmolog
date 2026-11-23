@@ -58,3 +58,7 @@ Codex implemented the platform surfaces, destination groups and shared button ch
 ## Magazine redesign
 
 Codex helped implement the cut-C artwork, the timed launch sequence, compact tab sizing and shared edition layout. The team should review the logo at launcher size and exercise Skip and Reduce Motion on a physical device. The editable SVG handoff includes local publication imagery. The connected Figma account had view access to the original design.
+
+## Launch motion revision
+
+Codex helped trace the five-second launch, prepare the credited Apollo 17 cutout, and implement the shorter reveal. The student selected a forest field and the one-second timing. The implementation uses native image display and route layout to coordinate the transition, replacing the previous independent completion timer.

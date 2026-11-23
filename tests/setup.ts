@@ -10,7 +10,7 @@ jest.mock('react-native-reanimated', () => {
       createAnimatedComponent: (comp: any) => comp,
     },
     useReducedMotion: () => false,
-    useSharedValue: (initial: any) => ({ value: initial }),
+    useSharedValue: (initial: any) => require('react').useRef({ value: initial }).current,
     cancelAnimation: jest.fn(),
     interpolate: (_value: number, _input: number[], output: number[]) => output[0],
     useAnimatedStyle: (fn: () => any) => fn(),

@@ -65,7 +65,7 @@ The bundled star and deep-sky catalogs, Moon and planet positions, and detail te
 
 ### Media and provenance
 
-NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. **Share discovery** opens the device share sheet with the public title, credit, and link. The sheet can open from cached Details while offline. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
+NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. **Share discovery** opens the device share sheet with the public title, credit, and link. The sheet can open from cached Details while offline. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The sign-in masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
 
 - [NASA APOD API](https://api.nasa.gov/assets/files/apod/APOD-APIs-and-RSS-info.pdf)
 - [Spaceflight News API v4](https://api.spaceflightnewsapi.net/v4/docs/)
@@ -76,7 +76,7 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 
 ## Magazine edition
 
-COSMOLOG opens with a five-second cut-C animation. Skip is available immediately. Reduce Motion goes directly to session handoff. The source selector stays above the cover as readers switch between All sources, Daily Plates and Dispatches. A missing network connection preserves access to the local archive.
+COSMOLOG opens with a one-second reveal of the Apollo 17 globe and ivory masthead. Skip is available immediately. Reduce Motion goes directly to session handoff. The source selector stays above the cover as readers switch between All sources, Daily Plates and Dispatches. A missing network connection preserves access to the local archive.
 
 The centred three-tab dock targets 264 points at standard type size and expands for larger labels. Supported iPhones use native glass, with an opaque Reduce Transparency fallback. Android uses an elevated ivory surface.
 

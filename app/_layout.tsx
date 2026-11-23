@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -39,21 +39,14 @@ function RootNavigator() {
 
   useArchiveLifecycle(user?.id);
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => {});
-    }
-  }, [fontsLoaded, fontError]);
-
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
+  const [destinationReady, setDestinationReady] = useState(false);
+  const dismissNative = useCallback(() => SplashScreen.hideAsync().catch(() => {}), []);
 
   return (
     <>
       <StatusBar style={isAuthenticated && isBrandRevealed ? 'dark' : 'light'} />
-      {!isInitialSessionLoading && (
-        <View style={{ flex: 1 }} accessibilityElementsHidden={!isBrandRevealed} importantForAccessibility={isBrandRevealed ? 'auto' : 'no-hide-descendants'}>
+      {(fontsLoaded || fontError) && !isInitialSessionLoading && (
+        <View testID="launch-destination" onLayout={() => setDestinationReady(true)} pointerEvents={isBrandRevealed ? 'auto' : 'none'} style={{ flex: 1 }} accessibilityElementsHidden={!isBrandRevealed} importantForAccessibility={isBrandRevealed ? 'auto' : 'no-hide-descendants'}>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
           <Stack.Screen name="index" />
           <Stack.Protected guard={isAuthenticated}>
@@ -73,10 +66,8 @@ function RootNavigator() {
         </Stack>
         </View>
       )}
-      {!isBrandRevealed && <BrandReveal onFinish={finishReveal} />}
-      {isBrandRevealed && isInitialSessionLoading && <View style={[StyleSheet.absoluteFill, { justifyContent: 'center', backgroundColor: colors.forestDark }]}>
-        <ActivityIndicator color={colors.ivory} accessibilityLabel="Restoring your session" />
-      </View>}
+      {!isBrandRevealed && <BrandReveal dismissNative={dismissNative} destinationReady={destinationReady}
+        onFinish={finishReveal} />}
     </>
   );
 }

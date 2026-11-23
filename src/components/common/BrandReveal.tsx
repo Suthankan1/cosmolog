@@ -1,80 +1,123 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { cancelAnimation, Easing, interpolate, useAnimatedStyle, useReducedMotion,
   useSharedValue, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, layout, typography } from '../../theme/tokens';
-import { Earthrise } from './Earthrise';
 
-export const revealDuration = 5000;
+type Props = {
+  dismissNative: () => Promise<void>;
+  destinationReady: boolean;
+  onFinish: () => void;
+};
 
-export function BrandReveal({ onFinish }: { onFinish: () => void }) {
+function easeOut(time: number, start: number, end: number) {
+  'worklet';
+  const fraction = interpolate(time, [start, end], [0, 1], 'clamp');
+  return 1 - (1 - fraction) ** 2;
+}
+
+export function BrandReveal({ dismissNative, destinationReady, onFinish }: Props) {
   const reduced = useReducedMotion();
+  const [laidOut, setLaidOut] = useState(false);
+  const [markReady, setMarkReady] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const [skipped, setSkipped] = useState(false);
+  const [globeFailed, setGlobeFailed] = useState(false);
+  const bypass = skipped || reduced;
+  const mounted = useRef(true);
   const finished = useRef(false);
-  const time = useSharedValue(reduced ? revealDuration : 0);
+  const clock = useSharedValue(0);
+  const opacity = useSharedValue(1);
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const wordWidth = Math.min(width - 48, 460);
-  const cap = wordWidth * 100 / 717;
+  const globe = Math.min(width * 0.3, 128);
+  const word = Math.min(width - 48, 360);
+
   const finish = useCallback(() => {
-    if (finished.current) return;
+    if (!mounted.current || finished.current) return;
     finished.current = true;
     onFinish();
   }, [onFinish]);
+  const settle = useCallback(() => {
+    if (mounted.current) setSettled(true);
+  }, []);
 
   useEffect(() => {
-    if (reduced) { finish(); return; }
-    time.value = withTiming(revealDuration, { duration: revealDuration, easing: Easing.linear });
-    const timer = setTimeout(finish, revealDuration);
-    return () => { clearTimeout(timer); cancelAnimation(time); };
-  }, [finish, reduced, time]);
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
-  const monogram = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(time.value, [1800, 3100], [0, (cap - wordWidth) / 2], 'clamp') },
-      { scale: interpolate(time.value, [1800, 3100], [1, cap / 128], 'clamp') },
-    ],
-  }));
-  const upper = useAnimatedStyle(() => ({
-    transform: [{ translateX: interpolate(time.value, [600, 1200, 1800], [0, 7, 0], 'clamp') },
-      { translateY: interpolate(time.value, [600, 1200, 1800], [0, -5, 0], 'clamp') }],
-  }));
-  const letters = useAnimatedStyle(() => ({
-    width: interpolate(time.value, [1900, 3100], [0, wordWidth - cap * .9], 'clamp'),
-  }));
-  const photo = useAnimatedStyle(() => ({
-    height: interpolate(time.value, [3100, 4300], [0, 115], 'clamp'),
-  }));
+  useEffect(() => {
+    if (!laidOut || !markReady) return;
+    let active = true;
+    void dismissNative().finally(() => { if (active) setStarted(true); });
+    return () => { active = false; };
+  }, [dismissNative, laidOut, markReady]);
+
+  useEffect(() => {
+    if (!started || bypass) return;
+    clock.value = withTiming(820, { duration: 820, easing: Easing.linear }, done => {
+      if (done) scheduleOnRN(settle);
+    });
+    return () => cancelAnimation(clock);
+  }, [started, bypass, clock, settle]);
+
+  useEffect(() => {
+    if (!started || !destinationReady) return;
+    if (bypass) { finish(); return; }
+    if (!settled) return;
+    opacity.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.quad) }, done => {
+      if (done) scheduleOnRN(finish);
+    });
+    return () => cancelAnimation(opacity);
+  }, [started, destinationReady, settled, bypass, opacity, finish]);
+
+  const overlay = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const mark = useAnimatedStyle(() => ({ opacity: 1 - easeOut(clock.value, 0, 360) }));
+  const earth = useAnimatedStyle(() => {
+    const p = easeOut(clock.value, 0, 360);
+    return { opacity: p, transform: [{ translateY: (1 - p) * 6 }] };
+  });
+  const masthead = useAnimatedStyle(() => {
+    const p = easeOut(clock.value, 160, 650);
+    return { opacity: p, transform: [{ translateY: (1 - p) * 4 }] };
+  });
   return (
-    <View style={styles.screen} accessibilityViewIsModal>
-      <Animated.View style={[styles.mark, monogram]} accessible accessibilityLabel="Opening COSMOLOG">
-        <Image source={require('../../../assets/brand/c-lower.svg')} style={StyleSheet.absoluteFill} />
-        <Animated.View style={[StyleSheet.absoluteFill, upper]}>
-          <Image source={require('../../../assets/brand/c-upper.svg')} style={StyleSheet.absoluteFill} />
+    <Animated.View testID="launch-overlay" style={[styles.screen, overlay]} accessibilityViewIsModal onLayout={() => setLaidOut(true)}>
+      <Animated.View style={[styles.mark, !bypass && mark]}>
+        <Image testID="launch-mark" source={require('../../../assets/brand/cosmolog-mark-ivory.png')} style={StyleSheet.absoluteFill}
+          onDisplay={() => setMarkReady(true)} onError={() => setMarkReady(true)} accessible={false} />
+      </Animated.View>
+      {!bypass && <View style={[styles.composition, { top: insets.top, bottom: insets.bottom }]} pointerEvents="none">
+        {!globeFailed && <Animated.View style={[{ width: globe, height: globe }, earth]}>
+          <Image testID="launch-earth" source={require('../../../assets/editorial/blue-marble.png')} style={StyleSheet.absoluteFill}
+            accessible={false} onError={() => setGlobeFailed(true)} />
+        </Animated.View>}
+        <Animated.View style={[{ width: word, height: word * 102 / 717 }, masthead]}>
+          <Image source={require('../../../assets/brand/cosmolog-lockup-ivory.svg')} style={StyleSheet.absoluteFill}
+            contentFit="contain" accessible={false} />
         </Animated.View>
-      </Animated.View>
-      <Animated.View style={[styles.mask, { left: (width - wordWidth) / 2 + cap * .9, height: cap * 1.02 }, letters]}>
-        <Image source={require('../../../assets/brand/wordmark-tail.svg')} style={{ width: wordWidth - cap * .9, height: cap * 1.02 }} />
-      </Animated.View>
-      <Animated.View style={[styles.photo, { bottom: insets.bottom + 32 }, photo]}>
-        <Earthrise style={styles.crop} />
-      </Animated.View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Skip introduction" onPress={finish}
-        style={[styles.skip, { top: insets.top + 8 }]}>
-        <Text style={styles.skipText}>Skip</Text>
-      </Pressable>
-    </View>
+      </View>}
+      {!bypass && <Pressable accessibilityRole="button" accessibilityLabel="Skip introduction"
+        onPress={() => setSkipped(true)} style={[styles.skip, { top: insets.top + 8 }]}>
+        <Text style={styles.label}>Skip</Text>
+      </Pressable>}
+      {(settled || bypass) && !destinationReady && <Text accessibilityRole="alert"
+        style={[styles.status, styles.label, { bottom: insets.bottom + 24 }]}>Restoring your session</Text>}
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.forestDark },
   mark: { width: 128, height: 128 },
-  mask: { position: 'absolute', overflow: 'hidden', justifyContent: 'center' },
-  photo: { position: 'absolute', left: 24, right: 24, overflow: 'hidden' },
-  crop: { height: 115, width: '100%' },
+  composition: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center', gap: 16 },
   skip: { position: 'absolute', right: 16, minWidth: layout.minimumTouchTarget, minHeight: layout.minimumTouchTarget,
     alignItems: 'center', justifyContent: 'center' },
-  skipText: { ...typography.label, color: colors.ivory },
+  status: { position: 'absolute', textAlign: 'center' },
+  label: { ...typography.label, color: colors.ivory },
 });
