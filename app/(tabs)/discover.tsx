@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 import { DestinationGroup } from '../../src/components/common/DestinationGroup';
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -16,7 +18,7 @@ import { clearReadingCheckpoint, getReadingCheckpoint } from '../../src/database
 import { navigateToDetails } from '../../src/navigation/types';
 import { colors, layout, spacing, typography } from '../../src/theme/tokens';
 import { OfflineBanner } from '../../src/components/common/OfflineBanner';
-import { DailyPlateCard } from '../../src/components/discovery/DailyPlateCard';
+import { FeaturedStory } from '../../src/components/discovery/FeaturedStory';
 import { DispatchRow } from '../../src/components/discovery/DispatchRow';
 import { CategoryChips } from '../../src/components/discovery/CategoryChips';
 import { SearchBar } from '../../src/components/discovery/SearchBar';
@@ -25,6 +27,7 @@ import { Button } from '../../src/components/common/Button';
 
 export default function DiscoverScreen() {
   const paddingBottom = useTabContentInset();
+  const reducedMotion = useReducedMotion();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
@@ -82,9 +85,10 @@ export default function DiscoverScreen() {
 
   const header = (
     <View style={styles.header}>
-      <Text accessibilityRole="header" style={styles.title}>Discover</Text>
-      <Text style={styles.subtitle}>Astronomy and spaceflight, collected for reading anywhere.</Text>
+      <Image source={require('../../assets/brand/cosmolog-lockup.svg')} contentFit="contain"
+        accessible accessibilityLabel="COSMOLOG magazine" style={styles.masthead} />
       <SearchBar placeholder="Search offline library" accessibilityLabel="Search offline library" value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
+      <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       {(!offline && (failedSources || refreshError || cacheStatus === 'error')) ? (
         <View style={styles.notice}>
           <Text accessibilityRole="alert" style={styles.noticeText}>
@@ -98,7 +102,9 @@ export default function DiscoverScreen() {
       {isRefreshing && items.length > 0 && (
         <Text accessibilityLiveRegion="polite" style={styles.subtitle}>Updating sources. Your collection is available.</Text>
       )}
-      {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
+      {!searching && hero && <Animated.View key={hero.localId} entering={reducedMotion ? undefined : FadeIn.duration(160)}>
+        <FeaturedStory {...cardProps(hero)} />
+      </Animated.View>}
       {!searching && resume && (
         <View style={styles.notice}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>Continue Reading</Text>
@@ -109,7 +115,6 @@ export default function DiscoverScreen() {
         </View>
       )}
       {checkpointError && <Text accessibilityRole="alert" style={styles.noticeText}>Could not update your reading position.</Text>}
-      <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       {!searching && <DestinationGroup title="Study, sky and archives" icon="layers">
         <Button title="Space Study" icon="book-open" variant="destination" onPress={() => router.push('/study')} />
         <Button title="Sky Viewer" icon="compass" variant="destination" onPress={() => router.push('/sky-viewer')} />
@@ -122,9 +127,9 @@ export default function DiscoverScreen() {
       {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
         {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
       </Text>}
-      <Text accessibilityRole="header" style={styles.sectionTitle}>
-        {searching ? 'Search results' : selectedCategory === 'nasa-apod' || (rows.length > 0 && rows.every(item => item.source === 'nasa-apod')) ? 'Daily Plates' : 'Space Dispatches'}
-      </Text>
+      {(searching || rows.length > 0) && <Text accessibilityRole="header" style={styles.sectionTitle}>
+        {searching ? 'Search results' : selectedCategory === 'all' ? 'Latest stories' : selectedCategory === 'nasa-apod' ? 'More Daily Plates' : 'More Dispatches'}
+      </Text>}
     </View>
   );
 
@@ -157,7 +162,7 @@ export default function DiscoverScreen() {
         keyExtractor={item => item.localId}
         renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
         ListHeaderComponent={header}
-        ListEmptyComponent={empty ?? undefined}
+        ListEmptyComponent={hero && !searching ? undefined : empty ?? undefined}
         contentContainerStyle={[styles.content, { paddingBottom }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={connection === 'online' ? <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={colors.forest} /> : undefined}
@@ -170,7 +175,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ivory },
   content: { paddingHorizontal: layout.horizontalInset, paddingBottom: spacing[8] },
   header: { paddingTop: spacing[5], gap: spacing[3] },
-  title: { ...typography.display, color: colors.forest },
+  masthead: { width: '100%', aspectRatio: 717 / 102, marginBottom: spacing[1] },
   subtitle: { ...typography.body, color: colors.muted },
   sectionTitle: { ...typography.h2, color: colors.ink, marginBottom: spacing[2] },
   notice: { gap: spacing[2], backgroundColor: colors.sageLight, padding: spacing[3] },

@@ -25,7 +25,9 @@ function FloatingTabBar(props: BottomTabBarProps) {
 export default function TabLayout() {
   const { bottom, left, right } = useSafeAreaInsets();
   const { fontScale, width } = useWindowDimensions();
-  const side = width <= 360 || fontScale > 1.3 ? spacing[1] : layout.floatingInset;
+  const usable = width - left - right;
+  const dockWidth = Math.min(usable - spacing[2], Math.max(264, Math.ceil(210 * fontScale + 36)));
+  const side = (usable - dockWidth) / 2;
   return (
     <Tabs tabBar={props => <FloatingTabBar {...props} />} screenOptions={{
       headerShown: false,
@@ -35,7 +37,7 @@ export default function TabLayout() {
       tabBarActiveBackgroundColor: colors.sageLight,
       tabBarBackground: () => <FloatingSurface />,
       tabBarStyle: [styles.bar, {
-        height: 'auto', minHeight: 52 + Math.ceil(17 * fontScale), bottom: bottom + spacing[2], start: left + side, end: right + side,
+        height: 'auto', minHeight: 40 + Math.ceil(17 * fontScale), bottom: bottom + spacing[2], start: left + side, end: right + side,
       }],
       tabBarItemStyle: styles.item,
     }}>
@@ -44,7 +46,7 @@ export default function TabLayout() {
           title,
           tabBarAccessibilityLabel: title,
           tabBarIcon: ({ color }) => <Icon name={icon} size={24} color={color} />,
-          tabBarLabel: ({ color }) => <Text style={[styles.label, { color }]}>{title}</Text>,
+          tabBarLabel: ({ color }) => <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.label, { color }]}>{title}</Text>,
         }} />
       ))}
     </Tabs>
@@ -53,10 +55,10 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   bar: {
-    position: 'absolute', paddingHorizontal: 6, paddingVertical: 5, paddingBottom: 5,
+    position: 'absolute', paddingHorizontal: 6, paddingVertical: 3, paddingBottom: 3,
     borderTopWidth: 0, borderRadius: radii.pill, backgroundColor: 'transparent',
     boxShadow: '0px 3px 12px rgba(24, 66, 53, 0.16)',
   },
-  item: { minHeight: layout.minimumTouchTarget, borderRadius: radii.pill, overflow: 'hidden', paddingVertical: 3 },
+  item: { minHeight: layout.minimumTouchTarget, borderRadius: radii.pill, overflow: 'hidden', paddingVertical: 0 },
   label: { ...typography.label, textAlign: 'center', paddingHorizontal: 2 },
 });

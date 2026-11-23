@@ -7,7 +7,7 @@ import { FavouriteButton } from '../common/FavouriteButton';
 import { Icon } from '../common/Icon';
 import { DiscoveryImage } from './DiscoveryImage';
 
-export interface DailyPlateCardProps {
+export interface FeaturedStoryProps {
   item: DiscoveryItem;
   isSaved: boolean;
   pending?: boolean;
@@ -16,16 +16,18 @@ export interface DailyPlateCardProps {
   onToggleSave: () => void;
 }
 
-export function DailyPlateCard({ item, isSaved, pending, offline, onPress, onToggleSave }: DailyPlateCardProps) {
+export function FeaturedStory({ item, isSaved, pending, offline, onPress, onToggleSave }: FeaturedStoryProps) {
+  const section = item.source === 'nasa-apod' ? 'Daily Plate' : 'Dispatch';
   return (
     <View style={styles.card}>
       <Pressable style={({ pressed }) => [styles.open, pressed && styles.pressed]} onPress={onPress}
-        accessibilityRole="button" accessibilityLabel={'Daily Plate, ' + item.title} testID="daily-plate">
-        <DiscoveryImage item={item} offline={offline} style={styles.photo} />
+        accessibilityRole="button" accessibilityLabel={section + ', ' + item.title} testID="featured-story">
+        <DiscoveryImage cover item={item} offline={offline} style={styles.photo} />
         <View style={styles.caption}>
           <View style={styles.captionText}>
-            <Text style={styles.date}>Daily Plate · {formatEditorialDate(item.publishedAt)}</Text>
+            <Text style={styles.date}>{section.toUpperCase()} · {formatEditorialDate(item.publishedAt)}</Text>
             <Text style={styles.title}>{item.title}</Text>
+            {(item.attribution || item.author) && <Text style={styles.credit}>{item.attribution || item.author}</Text>}
           </View>
           <View style={styles.arrow}><Icon name="arrow-right" size={19} color={colors.forestDark} /></View>
         </View>
@@ -38,11 +40,12 @@ export function DailyPlateCard({ item, isSaved, pending, offline, onPress, onTog
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.forestDark, borderRadius: radii.xl, overflow: 'hidden' },
+  card: { backgroundColor: colors.forestDark, borderRadius: radii.sm, overflow: 'hidden' },
   open: { minHeight: 48 },
   pressed: { opacity: 0.88 },
   photo: { width: '100%', aspectRatio: 1.95 },
-  caption: { padding: spacing[4], gap: spacing[3], flexDirection: 'row', alignItems: 'center' },
+  credit: { ...typography.bodySmall, color: colors.sageLight, marginTop: spacing[1] },
+  caption: { minHeight: 118, padding: spacing[4], gap: spacing[3], flexDirection: 'row', alignItems: 'center' },
   captionText: { flex: 1 },
   date: { ...typography.label, color: colors.brass, marginBottom: spacing[1] },
   title: { ...typography.h2, color: colors.ivory },
