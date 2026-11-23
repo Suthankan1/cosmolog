@@ -374,3 +374,7 @@ All 113 tests, TypeScript, ESLint, Android release lint and GitHub CI passed. Ve
 ### Apollo 17 launch reveal
 
 Replaced the five-second logo sequence and photo strip with a one-second globe and masthead reveal. Native mark display, layout and local startup readiness now control the handoff. Local checks passed for Skip, Reduce Motion, failed globe decoding, slow restoration and late animation callbacks. The complete run passed 118 tests across 34 suites, TypeScript and ESLint.
+
+### COSMOLOG 1.1.1 release verification
+
+Built Android ARM64 and Apple Silicon iOS Simulator artifacts at version 1.1.1, build 3. Android release lint passed. The APK signature matches 1.1.0 and the emulator upgrade reached cached Discover in airplane mode. The iPhone 17 upgrade reached Discover and a separate iPhone 17e reached sign-in. The new launch still comes from the iOS release recording. The 158.5-second demo adds that opening to the prior narrated walkthrough. Physical-device frame pacing remains unmeasured.
