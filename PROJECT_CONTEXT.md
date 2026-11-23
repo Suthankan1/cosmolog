@@ -96,3 +96,7 @@ No custom backend in the assignment baseline. No secrets or permanent API creden
 ## Current implementation
 
 The Expo app implements verified offline session restoration, protected routes, SQLite source snapshots, account-owned favourites and notes, and verified durable image downloads. Discover, Details, Favourites, and Profile follow the v2 design specifications. See `docs/PROGRESS.md` for the current build and device verification evidence.
+
+## Space Study extension
+
+Discover also opens the COSMOLOG Field Guide and object atlas. The first edition includes eight original chapters, 112 object profiles and a bundled city index. Study reading, city selection, bookmarks and account notes work locally after session restoration. The separate sky viewer can identify supported study objects and use recent cached orbital elements. See docs/PROGRESS.md for the release evidence.

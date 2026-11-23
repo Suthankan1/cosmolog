@@ -63,3 +63,11 @@ SQLite and Jest verified account isolation, interrupted download retries, and re
 The Pixel 9 API 37 emulator verified denied location, approximate location, simulated phone pointing, manual fallback, and the Whirlpool Galaxy sheet from a chart tap. The final ARM64 release upgraded the database, opened the viewer from cached Discover in airplane mode, downloaded both orbits on reconnection, and retained both predictions after a second airplane-mode force-stop. The Android build and native lint passed. The iOS JavaScript bundle exported. Physical-device alignment and spoken screen-reader checks remain open.
 
 [Offline sky chart](screenshots/13-sky-viewer-offline.png) · [Offline object detail](screenshots/14-sky-object-offline.png)
+
+## Space Study release checks
+
+- Upgrade an existing version 9 database and verify feed snapshots, favourites and orbit records. Check the eight chapter entries and resolve M31, 25544, Titan and Starlink.
+- Save a chapter section, write a private note, return through the Shelf, and check the other account cannot read the note. Force-stop in airplane mode and resume the same section.
+- Search Kandy with GPS denied, change to a city in another time zone and reopen the viewer. Confirm direction and horizon status for a linked target, including a target below the horizon.
+- Install the observatories supplement offline, bookmark Webb, remove the pack and reopen Webb. For a published network revision interrupt after the first part, then resume. A corrupt part, truncated response or low disk must leave the active version readable.
+- Run the edition checks before releasing a content revision. Verify the per-part byte size, checksum and expected record count. Each section anchor must be unique within its chapter, each credit retained and each internal cross-reference resolvable.

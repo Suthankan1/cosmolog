@@ -39,3 +39,7 @@ Discover opens the protected Sky Viewer. Use a forest chart with ivory markers, 
 - Source and image attribution available in detail.
 - Long-form Details scrolls; save CTA should not overlap dynamic content.
 - Authentication feedback, focus order, keyboard avoidance, screen readers and larger text are tested on-device.
+
+## Space Study
+
+Discover opens the ivory Field Guide with its table of contents and object atlas. The reader displays one section at a time, sources, related entries and a chapter glossary. The Field Shelf opens account-owned study bookmarks and notes. Editions and downloads shows catalog coverage, pack sizes and installation status. My sky supports locally indexed city names, manual coordinates and optional foreground GPS. A linked target reports a direction or an unavailable-position state, including when it lies below the horizon.

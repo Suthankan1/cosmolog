@@ -17,3 +17,7 @@ SQLite owns public discovery records, feed membership, source metadata, bookmark
 The original unversioned schema migrates through five versions in a transaction. Version 1 introduces source membership, account ownership, and media status. Version 2 adds notes. Version 3 retains image license URLs. Version 4 records the URL and license associated with already downloaded files. Version 5 adds the account-scoped reading checkpoint. A checkpoint protects its cached item from pruning until it is cleared or replaced. Legacy bookmarks start unassigned under account zero. Import explicitly assigns them to the active account; orphan relationships are excluded.
 
 The reader and writer use separate SQLite connections. The writer enables foreign keys and serializes transactions. Feed membership, media, and bookmarks refer to a cached item. Only unreferenced records older than 30 days are eligible for pruning. File cleanup retains a validated file until its last bookmark is removed. A missing file is shown as unavailable while it awaits a retry.
+
+## Space Study
+
+Archive migrations 10–12 add study entries, aliases, pack installation metadata, account-owned bookmarks, notes and reading checkpoints. A namespaced ID identifies each public profile or chapter. Stable section anchors allow a saved section to survive chapter reordering. Pack activation and eviction use the archive writer transaction. GeoNames city and alias rows live in an independently versioned bundled database. The archive stores only the chosen manual city. Device fixes remain in memory.

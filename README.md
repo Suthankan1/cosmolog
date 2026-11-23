@@ -125,3 +125,19 @@ npm test -- --runInBand
 ```
 
 Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver, reconnect and source failure behavior, route validation, media normalization, checkpoints, and archive search. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The Smart Reading Android run verified paragraph restore and local search after an airplane-mode cold launch, date lookup, and automatic recovery for an uncached plate on reconnect. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
+
+## Space Study
+
+Open **Discover → Space Study** for eight original introductory chapters and the object atlas. Try **M31**, **25544**, **Titan** or **Starlink**. Chapters include definitions, examples and source links. Save a section to the Field Shelf, add a private field note or reopen the last chapter with **Continue reading**. The bundled guide and the Earthrise figure are available after an offline restart with a restored session.
+
+**My sky → Change location** searches 52,004 places offline. Pick a city to use its coordinates and civil time zone. Selecting another location or the Colombo preview replaces the remembered city. Geometric altitude tells you where a target lies relative to the horizon. Weather and daylight still affect observation. The first edition includes STARLINK-1008 and STARLINK-1012 alongside ISS and Hubble. [GeoNames attribution](assets/study/README.md) · [CelesTrak Starlink catalog](https://celestrak.org/NORAD/elements/table.php?GROUP=starlink)
+
+**Editions and downloads** includes an installable observatories supplement. New editions use versioned JSON parts and the manifest in study-releases. The app checks the project's public main-branch manifest when Downloads is active and online, at most once daily. Each part has an expected byte length, checksum and record count. SQLite activates the new edition after validation. Bookmarked entries survive removal. Publishing a new remote edition requires publishing the corresponding repository assets. The bundled first edition works independently.
+
+The archive migration preserves existing discoveries, favourites and orbital data. Study routes carry a stable ID. Reader checkpoints and notes belong to the signed-in account. City lookup uses a separate bundled SQLite index so opening Discover does not import place records.
+
+| Android guide | Offline chapter bookmark | Kandy sky in airplane mode | iOS reader |
+| --- | --- | --- | --- |
+| ![Bundled Space Study guide](docs/screenshots/15-space-study.png) | ![Restored Saturn section](docs/screenshots/16-study-offline-section.png) | ![Offline sky for Kandy](docs/screenshots/17-study-kandy-offline.png) | ![Native iOS Saturn chapter](docs/screenshots/18-ios-field-guide.png) |
+
+The first-edition city index occupies 11,960,320 bytes uncompressed and 5,279,873 bytes inside the Android APK. A Pixel 9 emulator timing harness ran 60 local searches against the installed SQLite edition using Hermes, including layout of the first result page. The 95th percentile was **22.8 ms**. Physical-device timing can differ. Before a content release, run `npm test -- --runInBand tests/studyEdition.test.ts tests/studyDownloads.test.ts` to validate the book and pack manifests.

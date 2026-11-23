@@ -18,3 +18,18 @@ Target duration **2 min 49 sec**. Use the self-contained Android build with Metr
 ## Local review cut
 
 `dist/cosmolog-smart-reading-demo.mp4` uses Android emulator footage, screenshots, code excerpts, and synthetic narration. The student can use these cues to explain the decisions in their own words. Verify the uploaded submission plays with audio and stays under three minutes.
+
+## Space Study review cut
+
+The local file `dist/cosmolog-space-study-demo.mp4` is 2 minutes 25 seconds. It combines prior Android sign-in and discovery footage with screenshots from the new release, code excerpts and synthetic narration. The final H.264 video and AAC audio were decoded end to end.
+
+| Time | Demonstration |
+| --- | --- |
+| 0:00–0:15 | Sign in, open a discovery and save it. |
+| 0:15–0:32 | Open the Field Guide and introduce alias and catalog-number search. |
+| 0:32–0:47 | Show the bookmarked Saturn section after a cold restart in airplane mode. |
+| 0:47–1:04 | Show the Kandy sky, observing time and horizon status without GPS. |
+| 1:04–1:23 | Explain protected routes and the secure session. |
+| 1:23–1:41 | Explain account-owned SQLite checkpoints and stable section IDs. |
+| 1:41–2:01 | Explain resumable parts, checksums and transactional pack installation. |
+| 2:01–2:25 | Explain local orbit prediction, epoch age and reconnection. |

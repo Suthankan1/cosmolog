@@ -40,3 +40,9 @@ Codex implemented Field Shelf collections, reading history, On This Day, native 
 ## 2026-11-23 — Sky Viewer
 
 Codex implemented the offline sky chart, location and phone pointing, and a SQLite cache for ISS and Hubble predictions. Expo config introspection exposed a conflict in the generated iOS permissions. The first version removed the motion usage description through the location plugin, so the sibling sensors plugin's description was missing from the resolved Info.plist. The revised configuration sets the same motion purpose in both plugins. Introspection confirmed the motion and foreground location strings in the final config.
+
+## Space Study
+
+AI assisted with drafting original guide text, connecting the reader and sky atlas, generating the GeoNames importer, and writing migration and pack tests. A chapter-index-only checkpoint was revised to use stable section identifiers so reordering a later edition can preserve the reader’s place. The content checks cover missing links, sources, section identifiers, section order and pack integrity. Student scientific and editorial review of the new guide remains required before submission.
+
+During Android verification a pack installation failed because an Expo file write was still pending at checksum time. The installer now awaits the native write and verifies SHA-256. A delayed-write test reproduces the timing condition. The student must review the data licensing, source material and narration before submission.

@@ -295,3 +295,9 @@ The first Pixel 9 pack-install check exposed the asynchronous native file-write 
 ## Sky Viewer location and refresh policy
 
 Re-read the selected city when the viewer regains focus so multiple open viewer screens share the preference. Keep coordinate and device fixes out of persistent storage. Refresh due orbit data while the viewer remains active. A provider HTTP error now keeps requests paused across restarts until an explicit resume after the two-hour cooldown. Updated the guide’s small-body reference and bundled revision. All 95 tests, ESLint and TypeScript passed.
+
+## Space Study release verification
+
+The final ARM64 Android release build, Android native lint and iOS bundle export passed. All 95 Jest tests, strict TypeScript and ESLint passed. The Pixel 9 upgrade preserved the earlier Jupiter discovery bookmark. After a force-stop in airplane mode, the study bookmark reopened the Saturn rings section. Kandy was selected locally and restored after restart. The observatories pack installed offline, and its bookmarked Webb entry survived removal. On reconnection the final build calculated positions for ISS, Hubble and both selected Starlink spacecraft. A temporary Hermes harness measured the 95th percentile at 22.8 ms over 60 local first-page query and layout samples. The QA APK was restored after measurement.
+
+An iPhone 17 simulator running Expo Go exercised the native reader. XCTest passed section navigation and bookmarking. Physical handset GPS accuracy and pointing calibration remain unverified. Revision-one assets are local and bundled. A production-hosted update requires publication of the repository assets. The local narrated review cut is 144.62 seconds, includes audio, and passed full decoding. The student still needs to review the original science content and final narration.
