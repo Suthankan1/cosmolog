@@ -231,3 +231,7 @@ The launch recording exposed a white native frame before the forest reveal. Expo
 The final Android QA build reached cached Discover in a median of 2.32 seconds across five offline cold launches. This met the 2.5-second emulator target.
 
 The native iOS release built in an isolated workspace and presented the normal sign-in screen on a locally signed iPhone 18 Pro simulator build. This check covered fresh startup. The full iOS offline flow and spoken screen-reader pass remain open.
+
+## 2026-11-23 — Offline reading history
+
+Mark as read now records an account-owned completion and clears that discovery's resume checkpoint in one SQLite transaction. The Field Shelf links to history and filters saved items with To read. The archive retains completed records across feed refreshes. TypeScript, ESLint, and the 11 focused SQLite and Field Journal tests passed.

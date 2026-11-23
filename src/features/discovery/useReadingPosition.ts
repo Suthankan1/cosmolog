@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, type ScrollViewInstance, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { clearReadingCheckpoint, getReadingCheckpoint, saveReadingCheckpoint } from '../../database/repositories/readingRepository';
+import { getReadAt, getReadingCheckpoint, markDiscoveryRead, saveReadingCheckpoint } from '../../database/repositories/readingRepository';
 import type { DiscoveryItem } from '../../database/models';
 import { readingFingerprint, splitReadingParagraphs } from './readingPosition';
 
@@ -23,6 +23,8 @@ export function useReadingPosition(accountId: number | undefined, item: Discover
   const completed = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [status, setStatus] = useState<string | null>(null);
+  const [readKey, setReadKey] = useState<string>();
+  const key = accountId && localId ? accountId + ':' + localId : undefined;
 
   const flush = useCallback(() => {
     clearTimeout(timer.current);
@@ -52,6 +54,12 @@ export function useReadingPosition(accountId: number | undefined, item: Discover
     userScrolled.current = false;
     saved.current = null;
     restoreIndex.current = null;
+    void getReadAt(accountId, localId).then(readAt => {
+      if (!active || !readAt) return;
+      completed.current = true;
+      restoreIndex.current = null;
+      setReadKey(key);
+    }).catch(() => {});
     void getReadingCheckpoint(accountId).then(checkpoint => {
       if (!active || completed.current || userScrolled.current || checkpoint?.item.localId !== localId) return;
       if (checkpoint.fingerprint === fingerprint && checkpoint.paragraph < paragraphs.length) {
@@ -68,7 +76,7 @@ export function useReadingPosition(accountId: number | undefined, item: Discover
       appState.remove();
       flush();
     };
-  }, [accountId, fingerprint, flush, localId, paragraphs.length, restore]);
+  }, [accountId, fingerprint, flush, key, localId, paragraphs.length, restore]);
 
   useFocusEffect(useCallback(() => flush, [flush]));
 
@@ -91,21 +99,24 @@ export function useReadingPosition(accountId: number | undefined, item: Discover
   };
 
   const markRead = async () => {
-    if (!accountId || !localId) return;
+    if (!accountId || !localId || completed.current) return false;
     completed.current = true;
     clearTimeout(timer.current);
-    pending.current = null;
     try {
-      await clearReadingCheckpoint(accountId, localId);
-      setStatus('Marked as read');
+      await markDiscoveryRead(accountId, localId);
+      pending.current = null;
+      setReadKey(key);
+      setStatus(null);
+      return true;
     } catch {
       completed.current = false;
       setStatus('Could not mark as read. Try again.');
+      return false;
     }
   };
 
   return {
-    scroll, paragraphs, beginScroll, trackScroll, markRead, status, completeScroll: flush,
+    scroll, paragraphs, beginScroll, trackScroll, markRead, status, isRead: Boolean(key && readKey === key), completeScroll: flush,
     measureViewport: (event: LayoutChangeEvent) => { viewportHeight.current = event.nativeEvent.layout.height; restore(); },
     measureContent: (_width: number, height: number) => { contentHeight.current = height; restore(); },
     measureArticle: (event: LayoutChangeEvent) => { articleTop.current = event.nativeEvent.layout.y; restore(); },

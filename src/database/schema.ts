@@ -115,3 +115,14 @@ export const MIGRATE_TO_READING_CHECKPOINT_SQL = `
   CREATE INDEX idx_checkpoint_item ON reading_checkpoint(local_id);
   PRAGMA user_version = 5;
 `;
+
+export const MIGRATE_TO_READING_HISTORY_SQL = `
+  CREATE TABLE reading_history (
+    account_id INTEGER NOT NULL CHECK (account_id > 0),
+    local_id TEXT NOT NULL REFERENCES cached_items(local_id) ON DELETE CASCADE,
+    read_at TEXT NOT NULL,
+    PRIMARY KEY (account_id, local_id)
+  );
+  CREATE INDEX idx_reading_history_item ON reading_history(local_id);
+  PRAGMA user_version = 6;
+`;

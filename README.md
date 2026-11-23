@@ -41,7 +41,7 @@ A fresh install needs connectivity for the first sign-in. A returning user with 
 
 ### Smart Reading
 
-Scroll into a story to save a reading position. **Continue Reading** on Discover reopens the most recent unfinished story at its saved paragraph. **Mark as read** or **Dismiss** clears it. Changing the source text starts the reader at the top; changing text size preserves the paragraph anchor.
+Scroll into a story to save a reading position. **Continue Reading** on Discover reopens the most recent unfinished story at its saved paragraph. **Dismiss** clears the checkpoint. **Mark as read** also adds the story to the account's offline **Reading history** on the Field Shelf. Use **To read** to filter out completed favourites. Changing the source text starts the reader at the top; changing text size preserves the paragraph anchor.
 
 **Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
 

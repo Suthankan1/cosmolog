@@ -35,16 +35,17 @@ export default function FavouritesScreen() {
   const [query, setQuery] = useState('');
   const [withNotes, setWithNotes] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [unread, setUnread] = useState(false);
   const [sort, setSort] = useState<ShelfSort>('saved');
   const [importing, setImporting] = useState(false);
   const offline = connection === 'offline';
   const syncTime = [metadata['nasa-apod'].lastSyncedAt, metadata['spaceflight-news'].lastSyncedAt]
     .filter((value): value is string => Boolean(value)).sort().at(-1) ?? legacySyncedAt;
 
-  const results = useMemo(() => selectShelf(favourites, { query, withNotes, downloaded, sort }),
-    [favourites, query, withNotes, downloaded, sort]);
+  const results = useMemo(() => selectShelf(favourites, { query, withNotes, downloaded, unread, sort }),
+    [favourites, query, withNotes, downloaded, unread, sort]);
   const reload = () => { if (accountId) void dispatch(loadFavouritesThunk(accountId)); };
-  const clearFilters = () => { setQuery(''); setWithNotes(false); setDownloaded(false); };
+  const clearFilters = () => { setQuery(''); setWithNotes(false); setDownloaded(false); setUnread(false); };
 
   const importBookmarks = async () => {
     if (!accountId || importing) return;
@@ -61,6 +62,7 @@ export default function FavouritesScreen() {
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.title}>Field Shelf</Text>
       <Text style={styles.subtitle}>Saved discoveries and private field notes.</Text>
+      <Button title="Reading history" icon="clock" variant="outline" onPress={() => router.push('/reading-history')} />
       {legacyCount > 0 && <Button title="Import earlier bookmarks" variant="outline" loading={importing}
         onPress={() => Alert.alert('Import earlier bookmarks?', 'Add bookmarks from an earlier app version to this account.', [
           { text: 'Cancel', style: 'cancel' },
@@ -73,6 +75,7 @@ export default function FavouritesScreen() {
             placeholder="Search saved discoveries and notes" accessibilityLabel="Search the Field Shelf" />
           <View style={styles.filters}>
             <Filter title="With notes" selected={withNotes} onPress={() => setWithNotes(value => !value)} />
+            <Filter title="To read" selected={unread} onPress={() => setUnread(value => !value)} />
             <Filter title="Image downloaded" selected={downloaded} onPress={() => setDownloaded(value => !value)} />
             <Filter title={sort === 'saved' ? 'Recently saved' : 'Publication date'} selected={sort === 'published'}
               onPress={() => setSort(value => value === 'saved' ? 'published' : 'saved')} />

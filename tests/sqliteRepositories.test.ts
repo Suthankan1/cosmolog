@@ -8,7 +8,8 @@ import { getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFie
 import { getSyncMetadata, recordSyncFailure } from '../src/database/repositories/syncMetadataRepository';
 import { finishImage, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
 import { writeDatabase } from '../src/database/db';
-import { clearReadingCheckpoint, getReadingCheckpoint, saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
+import { clearReadingCheckpoint, getReadAt, getReadingCheckpoint, getReadingHistory, markDiscoveryRead,
+  saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
 import { searchLibrary } from '../src/features/discovery/librarySearch';
 import type { DiscoveryItem } from '../src/database/models';
 
@@ -145,6 +146,25 @@ it('keeps a reading checkpoint private, protects its cached item and clears only
   expect(await getReadingCheckpoint(11)).not.toBeNull();
   await clearReadingCheckpoint(11, older.localId);
   expect(await getReadingCheckpoint(11)).toBeNull();
+});
+
+it('keeps finished history private and durable, and blocks late checkpoints for finished items', async () => {
+  const finished = { ...item, localId: 'spaceflight-news:300', externalId: '300' };
+  await upsertDiscoveryItems([finished]);
+  await saveReadingCheckpoint(11, finished.localId, 2, 'original');
+  await markDiscoveryRead(11, finished.localId);
+  const readAt = await getReadAt(11, finished.localId);
+  expect(readAt).toEqual(expect.any(String));
+  await markDiscoveryRead(11, finished.localId);
+  await saveReadingCheckpoint(11, finished.localId, 3, 'late');
+  await commitFeedSnapshot(item.source, [], '2027-01-24T00:00:00.000Z');
+  expect(await getReadingCheckpoint(11)).toBeNull();
+  expect(await getReadingHistory(11)).toEqual([expect.objectContaining({ localId: finished.localId, readAt })]);
+  expect(await getReadingHistory(12)).toEqual([]);
+  await setFavourite(11, finished.localId, true);
+  await setFavourite(12, finished.localId, true);
+  expect((await getFavourites(11))[0].readAt).toBe(readAt);
+  expect((await getFavourites(12))[0].readAt).toBeNull();
 });
 
 it('searches the cached public article text, ranks title matches first and excludes private notes', async () => {

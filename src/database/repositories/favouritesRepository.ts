@@ -9,6 +9,7 @@ export const NOTE_LIMIT = 1000;
 export interface FavouriteDiscoveryItem extends DiscoveryItem {
   addedAt: string;
   note: string | null;
+  readAt: string | null;
   mediaStatus: MediaStatus;
   imageBytes: number;
 }
@@ -16,6 +17,7 @@ export interface FavouriteDiscoveryItem extends DiscoveryItem {
 interface FavouriteRow extends CachedItemRow {
   added_at: string;
   note: string | null;
+  read_at: string | null;
   status: Exclude<MediaStatus, 'text-only'> | null;
   file_name: string | null;
   source_url: string | null;
@@ -46,9 +48,10 @@ export async function setFavourite(accountId: number, localId: string, saved: bo
 export async function getFavourites(accountId: number): Promise<FavouriteDiscoveryItem[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<FavouriteRow>(
-    `SELECT c.*, f.added_at, f.note, m.status, m.file_name, m.source_url, m.license_url FROM favourites f
+    `SELECT c.*, f.added_at, f.note, h.read_at, m.status, m.file_name, m.source_url, m.license_url FROM favourites f
      JOIN cached_items c ON c.local_id = f.local_id
      LEFT JOIN saved_media m ON m.local_id = c.local_id
+     LEFT JOIN reading_history h ON h.account_id = f.account_id AND h.local_id = f.local_id
      WHERE f.account_id = ? ORDER BY f.added_at DESC, c.local_id`,
     [accountId],
   );
@@ -65,6 +68,7 @@ export async function getFavourites(accountId: number): Promise<FavouriteDiscove
       imageBytes: image?.bytes ?? 0,
       addedAt: row.added_at,
       note: row.note,
+      readAt: row.read_at,
       mediaStatus,
     };
   });

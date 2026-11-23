@@ -3,7 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, ScrollView,
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../../src/store';
-import { refreshImagesThunk, saveFieldNoteThunk } from '../../../src/store/slices/favouritesSlice';
+import { loadFavouritesThunk, refreshImagesThunk, saveFieldNoteThunk } from '../../../src/store/slices/favouritesSlice';
 import { parseDetailsParams } from '../../../src/navigation/types';
 import { colors, layout, radii, spacing, typography } from '../../../src/theme/tokens';
 import { formatEditorialDate } from '../../../src/utils/text';
@@ -24,7 +24,7 @@ export default function DetailsScreen() {
   const parsed = parseDetailsParams(params);
   const { result, retry } = useDiscoveryRecord(parsed);
   const accountId = useAppSelector(state => state.auth.user?.id);
-  const { scroll, paragraphs, beginScroll, trackScroll, markRead, status: readingStatus, completeScroll,
+  const { scroll, paragraphs, beginScroll, trackScroll, markRead, isRead, status: readingStatus, completeScroll,
     measureViewport, measureContent, measureArticle, measureBody, measureParagraph } =
     useReadingPosition(accountId, result.status === 'ready' ? result.item : undefined);
   const insets = useSafeAreaInsets();
@@ -119,9 +119,12 @@ export default function DetailsScreen() {
               <Text key={index} onLayout={event => measureParagraph(index, event)} style={styles.body}>{paragraph}</Text>
             ) : <Text style={styles.body}>The source did not provide a summary.</Text>}
           </View>
-          {paragraphs.length > 0 && <Button title="Mark as read" icon="check" variant="outline"
-            onPress={() => { void markRead(); }} />}
-          {readingStatus && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{readingStatus}</Text>}
+          {isRead ? <Text accessibilityLiveRegion="polite" style={styles.metadata}>Marked as read</Text>
+            : paragraphs.length > 0 && <Button title="Mark as read" icon="check" variant="outline"
+              onPress={async () => {
+                if (accountId && await markRead()) void dispatch(loadFavouritesThunk(accountId));
+              }} />}
+          {!isRead && readingStatus && <Text accessibilityRole="alert" style={styles.error}>{readingStatus}</Text>}
           {saved && <FieldNote key={item.localId} note={saved.note} onSave={text => dispatch(saveFieldNoteThunk(item.localId, text))} />}
           <View style={styles.source}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>Original source</Text>

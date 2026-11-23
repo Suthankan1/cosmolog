@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
-import { CREATE_TABLES_SQL, MIGRATE_TO_SNAPSHOTS_SQL, MIGRATE_TO_NOTES_SQL, MIGRATE_TO_IMAGE_LICENSES_SQL, MIGRATE_TO_MEDIA_PROVENANCE_SQL, MIGRATE_TO_READING_CHECKPOINT_SQL } from './schema';
+import { CREATE_TABLES_SQL, MIGRATE_TO_SNAPSHOTS_SQL, MIGRATE_TO_NOTES_SQL, MIGRATE_TO_IMAGE_LICENSES_SQL,
+  MIGRATE_TO_MEDIA_PROVENANCE_SQL, MIGRATE_TO_READING_CHECKPOINT_SQL, MIGRATE_TO_READING_HISTORY_SQL } from './schema';
 
 const DATABASE_NAME = 'cosmolog.db';
 
@@ -9,7 +10,7 @@ async function openDatabase() {
     await writer.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
     await writer.withTransactionAsync(async () => {
       const { user_version: version } = (await writer.getFirstAsync<{ user_version: number }>('PRAGMA user_version'))!;
-      if (version > 5) throw new Error('Unsupported database version');
+      if (version > 6) throw new Error('Unsupported database version');
       if (version === 0) {
         await writer.execAsync(CREATE_TABLES_SQL);
         await writer.execAsync(MIGRATE_TO_SNAPSHOTS_SQL);
@@ -18,6 +19,7 @@ async function openDatabase() {
       if (version < 3) await writer.execAsync(MIGRATE_TO_IMAGE_LICENSES_SQL);
       if (version < 4) await writer.execAsync(MIGRATE_TO_MEDIA_PROVENANCE_SQL);
       if (version < 5) await writer.execAsync(MIGRATE_TO_READING_CHECKPOINT_SQL);
+      if (version < 6) await writer.execAsync(MIGRATE_TO_READING_HISTORY_SQL);
     });
     const reader = await SQLite.openDatabaseAsync(DATABASE_NAME, { useNewConnection: true });
     return { reader, writer };
