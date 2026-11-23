@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BottomTabBar, Tabs, type BottomTabBarProps } from 'expo-router/js-tabs';
-import { Keyboard, Platform, StyleSheet, Text, useWindowDimensions } from 'react-native';
+import { Keyboard, Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FloatingSurface } from '../../src/components/common/FloatingSurface';
 import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
@@ -25,10 +25,16 @@ function FloatingTabBar(props: BottomTabBarProps) {
 export default function TabLayout() {
   const { bottom, left, right } = useSafeAreaInsets();
   const { fontScale, width } = useWindowDimensions();
+  const [labelWidth, setLabelWidth] = useState(0);
   const usable = width - left - right;
-  const dockWidth = Math.min(usable - spacing[2], Math.max(264, Math.ceil(210 * fontScale + 36)));
+  const dockWidth = Math.min(usable - spacing[2], Math.max(layout.dockWidth, Math.ceil(3 * (labelWidth + 14) + 12)));
   const side = (usable - dockWidth) / 2;
   return (
+    <View style={{ flex: 1 }}>
+      <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
+        style={{ position: 'absolute', opacity: 0, alignItems: 'flex-start' }}>
+        <Text style={styles.label} onLayout={event => setLabelWidth(event.nativeEvent.layout.width)}>Favourites</Text>
+      </View>
     <Tabs tabBar={props => <FloatingTabBar {...props} />} screenOptions={{
       headerShown: false,
       tabBarLabelPosition: 'below-icon',
@@ -50,6 +56,7 @@ export default function TabLayout() {
         }} />
       ))}
     </Tabs>
+    </View>
   );
 }
 

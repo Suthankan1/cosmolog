@@ -1,5 +1,5 @@
 /**
- * COSMOLOG v2 design tokens — keep aligned with design/tokens.json.
+ * COSMOLOG magazine design tokens — keep aligned with design/tokens.json.
  * Reference Figma: https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N
  * Font-family values are planned asset aliases; load the selected open-license
  * fonts during project scaffolding and verify the aliases on Android/iOS.
@@ -46,5 +46,5 @@ export const layout = {
   minimumTouchTarget: 48,
   inputHeight: 48,
   primaryButtonHeight: 52,
-  floatingInset: 12,
+  dockWidth: 264,
 } as const;
