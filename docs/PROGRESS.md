@@ -349,3 +349,13 @@ Discover now searches normalized SQLite text and pages Spaceflight News independ
 
 ### NASA Media and wider-web discovery
 Added NASA catalogue search, typed media Details, source credits, per-provider pagination and an explicit browser action. Live responses confirmed the NASA Europa preview and identified an unsupported secondary news ordering, now removed.
+
+### Magazine release verification
+
+The Android ARM64 APK and the iOS simulator release use redesign revision `345bf3f`. All 105 Jest tests, TypeScript, ESLint, Android release assembly and release lint passed for this redesign. The isolated APK source map matched all 104 comparable application modules. Later pagination and online-search changes in the shared checkout have their own verification.
+
+On the Pixel 9 API 37 emulator, clean sign-in, three covers with the same selector bounds, bookmarking, an offline cold restart and the saved article’s attribution passed. At widths of 360, 390 and 430 dp the tab hit areas measured 84 × 55 dp. At 320 dp with 160% system text all three targets remained centred and at least 48 dp. The APK uses a local QA signing key.
+
+An unsigned iOS simulator build reached login but lacked Keychain access. The locally signed release passed the iPhone 17 / iOS 27.2 XCTest covering sign-in, all three editions, Shelf and Profile. [iOS device capture](screenshots/magazine/ios-discover.png). Physical hardware and store distribution signing remain unverified.
+
+The original Figma file was view-only for the connected account. Its editable edition layouts, launch storyboard and screen references are in the [local handoff](../design/magazine/).

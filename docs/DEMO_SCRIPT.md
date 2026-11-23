@@ -37,3 +37,7 @@ The local file `dist/cosmolog-space-study-demo.mp4` is 2 minutes 25 seconds. It 
 ## Editorial controls review cut
 
 The refreshed cut is `dist/cosmolog-editorial-demo.mp4` (149.37 seconds). New Android screenshots show sign-in, Discover, Details, Favourites, the offline cold launch and original-source information. The second half reuses the narrated architecture walkthrough. Both the H.264 video and AAC audio decoded end to end.
+
+## Magazine redesign recording
+
+The local file `dist/cosmolog-magazine-demo.mp4` runs 2 minutes 21.8 seconds. It starts with emulator footage of the cut-C reveal, then uses narrated device captures for login, edition switching, article details, bookmarking and offline restart. The final segment walks through the architecture. H.264 video and AAC audio decoded end to end.
