@@ -46,5 +46,5 @@ export const layout = {
   minimumTouchTarget: 48,
   inputHeight: 48,
   primaryButtonHeight: 52,
-  bottomNavHeight: 80,
+  floatingInset: 12,
 } as const;

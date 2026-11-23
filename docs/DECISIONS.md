@@ -69,3 +69,7 @@ Use `satellite.js` 6.0.2 for SGP4 propagation of ISS and Hubble elements from Ce
 ## ADR-013 — Space Study editions and offline city lookup
 
 Use the archive SQLite writer for versioned study records, aliases, account bookmarks and reading positions. Keep existing discovery identities and orbital elements intact. Bundle a separately indexed GeoNames database to avoid constructing the worldwide place index at startup. Study routes carry stable record IDs. Optional study packs share the archive transaction boundary. Keep the existing Redux Toolkit thunk approach for remote work.
+
+## ADR-014 — Platform materials for navigation and sky controls
+
+Use Expo SDK 58's expo-glass-effect for the floating tab bar and manual sky toolbar on supported Apple devices. Check native availability and Reduce Transparency before rendering glass. Use an elevated opaque surface elsewhere. Keep Expo Router's JavaScript tabs for Feather icons and existing navigation semantics. Opaque reading surfaces preserve legibility and keep material rendering out of repeated list items.

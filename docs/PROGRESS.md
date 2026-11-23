@@ -301,3 +301,7 @@ Re-read the selected city when the viewer regains focus so multiple open viewer 
 The final ARM64 Android release build, Android native lint and iOS bundle export passed. All 95 Jest tests, strict TypeScript and ESLint passed. The Pixel 9 upgrade preserved the earlier Jupiter discovery bookmark. After a force-stop in airplane mode, the study bookmark reopened the Saturn rings section. Kandy was selected locally and restored after restart. The observatories pack installed offline, and its bookmarked Webb entry survived removal. On reconnection the final build calculated positions for ISS, Hubble and both selected Starlink spacecraft. A temporary Hermes harness measured the 95th percentile at 22.8 ms over 60 local first-page query and layout samples. The QA APK was restored after measurement.
 
 An iPhone 17 simulator running Expo Go exercised the native reader. XCTest passed section navigation and bookmarking. Physical handset GPS accuracy and pointing calibration remain unverified. Revision-one assets are local and bundled. A production-hosted update requires publication of the repository assets. The local narrated review cut is 144.62 seconds, includes audio, and passed full decoding. The student still needs to review the original science content and final narration.
+
+## Editorial control refresh
+
+Added platform material selection, primary and tonal actions, destination rows and a circular back control. TypeScript, ESLint and four focused tests passed. Tests cover live Reduce Transparency changes and the accessible loading state.

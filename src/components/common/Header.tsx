@@ -51,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
             style={styles.backButton}
             accessibilityRole="button"
             accessibilityLabel="Go back to previous screen"
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            android_ripple={{ color: colors.sage }}
           >
             <Icon name="arrow-left" size={22} color={colors.forest} />
           </Pressable>
@@ -60,11 +60,11 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         <View style={styles.titleContainer}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text style={styles.title} >
             {title}
           </Text>
           {Boolean(subtitle) && (
-            <Text style={styles.subtitle} numberOfLines={1}>
+            <Text style={styles.subtitle} >
               {subtitle}
             </Text>
           )}
@@ -94,7 +94,9 @@ const styles = StyleSheet.create({
     width: layout.minimumTouchTarget,
     height: layout.minimumTouchTarget,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    borderRadius: 24,
+    backgroundColor: colors.sageLight,
   },
   titleContainer: {
     flex: 1,

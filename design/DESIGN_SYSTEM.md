@@ -10,7 +10,7 @@ This second design iteration was rebuilt from the two generated editorial refere
 - Forest-green inverted square app icon with cream mark.
 - Playfair Display wordmark **COSMOLOG**; tagline *A field journal for the universe*.
 - High-quality astronomical photography used as the only major dramatic visual element.
-- Restrained UI and no glow, gradients as decoration, glassmorphism, generic AI logos, emojis, rockets or fantasy controls.
+- Restrained UI and no glow, gradients as decoration, generic AI logos, emojis, rockets or fantasy controls.
 
 ## Palette
 | Name | Value | Role |
@@ -67,3 +67,7 @@ The component library uses the `COSMOLOG V2 / Semantic` variable collection and 
 - Respect prefers-reduced-motion.
 - Validate at 320, 360, 390, 430 dp widths and with large text.
 - Avoid invented live data, notifications or sync-to-other-devices claims.
+
+## Floating controls
+
+Use a single regular Liquid Glass background on supported iOS devices for the tab bar and manual Sky Viewer toolbar. Use an opaque ivory surface when Reduce Transparency is enabled, on Android and on web. Use a sage selection capsule, permanent tab labels and 48-point hit areas. Keep body copy, forms, feedback and credits on opaque surfaces. Primary actions use forest, secondary actions use sage, and internal destinations use labelled rows with a Feather chevron.

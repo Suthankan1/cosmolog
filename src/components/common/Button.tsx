@@ -15,7 +15,7 @@ import { FeatherIconName, Icon } from './Icon';
 export interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'outline' | 'danger';
+  variant?: 'primary' | 'outline' | 'secondary' | 'destination' | 'danger';
   loading?: boolean;
   disabled?: boolean;
   icon?: FeatherIconName;
@@ -37,13 +37,15 @@ export const Button: React.FC<ButtonProps> = ({
   accessibilityLabel,
   testID,
 }) => {
-  const isOutline = variant === 'outline';
+  const isOutline = variant === 'outline' || variant === 'secondary';
+  const destination = variant === 'destination';
   const isDanger = variant === 'danger';
 
   const containerStyles = [
     styles.buttonBase,
     variant === 'primary' && styles.primaryButton,
-    isOutline && styles.outlineButton,
+    isOutline && styles.secondaryButton,
+    destination && styles.destination,
     isDanger && styles.dangerButton,
     disabled && styles.disabledButton,
     style,
@@ -52,7 +54,7 @@ export const Button: React.FC<ButtonProps> = ({
   const labelStyles = [
     styles.buttonText,
     variant === 'primary' && styles.primaryText,
-    isOutline && styles.outlineText,
+    (isOutline || destination) && styles.outlineText,
     isDanger && styles.dangerText,
     disabled && styles.disabledText,
     textStyle,
@@ -63,6 +65,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <Pressable
       onPress={onPress}
+      android_ripple={{ color: variant === 'primary' ? '#FFFFFF26' : '#18423516' }}
       disabled={disabled || loading}
       style={({ pressed }) => [
         containerStyles,
@@ -73,24 +76,25 @@ export const Button: React.FC<ButtonProps> = ({
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       testID={testID}
     >
-      {loading ? (
+      {loading && (
         <ActivityIndicator
+          style={styles.spinner}
           size="small"
           color={variant === 'primary' ? colors.white : colors.forest}
         />
-      ) : (
-        <View style={styles.contentRow}>
+      )}
+        <View style={[styles.contentRow, destination && styles.destinationContent, loading && styles.hidden]}>
           {icon && (
             <Icon
               name={icon}
-              size={18}
+              size={20}
               color={iconColor}
               style={styles.iconStyle}
             />
           )}
-          <Text style={labelStyles}>{title}</Text>
+          <Text style={[labelStyles, destination && styles.destinationText]}>{title}</Text>
+          {destination && <Icon name="chevron-right" size={18} color={colors.muted} />}
         </View>
-      )}
     </Pressable>
   );
 };
@@ -100,6 +104,7 @@ const styles = StyleSheet.create({
     minHeight: layout.primaryButtonHeight,
     minWidth: layout.minimumTouchTarget,
     borderRadius: radii.pill,
+    overflow: 'hidden',
     paddingVertical: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -109,10 +114,8 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: colors.forest,
   },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: colors.forest,
+  secondaryButton: {
+    backgroundColor: colors.sageLight,
   },
   dangerButton: {
     backgroundColor: 'transparent',
@@ -120,8 +123,13 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   disabledButton: {
-    opacity: 0.5,
+    backgroundColor: colors.border,
   },
+  destination: { backgroundColor: colors.surface, borderRadius: radii.md, paddingHorizontal: 14, minHeight: layout.minimumTouchTarget },
+  destinationContent: { flex: 1 },
+  destinationText: { flex: 1, textAlign: 'left' },
+  spinner: { position: 'absolute' },
+  hidden: { opacity: 0 },
   pressed: {
     opacity: 0.82,
   },
