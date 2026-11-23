@@ -73,3 +73,6 @@ Use the archive SQLite writer for versioned study records, aliases, account book
 ## ADR-014 — Platform materials for navigation and sky controls
 
 Use Expo SDK 58's expo-glass-effect for the floating tab bar and manual sky toolbar on supported Apple devices. Check native availability and Reduce Transparency before rendering glass. Use an elevated opaque surface elsewhere. Keep Expo Router's JavaScript tabs for Feather icons and existing navigation semantics. Opaque reading surfaces preserve legibility and keep material rendering out of repeated list items.
+
+## ADR-015 — Magazine cover and launch identity
+Use the approved magazine C throughout the launcher, masthead and five-second cold-launch sequence. Keep the existing Reanimated and Expo Image dependencies. Source editions are projections of the local feed. The new presentation requires no database migration.

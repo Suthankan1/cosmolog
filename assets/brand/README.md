@@ -1,13 +1,3 @@
-# COSMOLOG v2 brand assets
-Source: https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=13-135
+# COSMOLOG magazine identity
 
-The mark was vector-redrawn to follow the approved editorial brand reference:
-forest/ivory crescent, brass orbital stroke, observation point and central sighting star.
-
-Formats: SVG mark, transparent PNG mark, SVG/PNG 1024 launcher, monochrome SVG, SVG lockup.
-
-Wordmark uses Playfair Display and tagline Playfair Display Italic. The SVG keeps editable text; correct display depends on an available compatible font. Do not distribute font files; load open-licensed fonts through a supported package during app implementation.
-
-Test at 24px and 48px, with real Android adaptive-icon safe zone before submission.
-
-The v2 ivory observation mark is exported as `cosmolog-mark-ivory.svg` for the dark launch and authentication mastheads. `cosmolog-mark-ivory.png` is the transparent raster of the same mark for the native splash.
+The open C has diagonally cut terminals. The vector master is cosmolog-mark.svg. The two clipped ivory pieces use its exact contour for the opening animation. The outlined masthead combines the custom C with Playfair Display Bold lettering. Android foreground and monochrome layers include launcher-safe padding. The 1024-pixel launcher export is opaque.

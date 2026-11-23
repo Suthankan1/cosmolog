@@ -32,11 +32,11 @@ Differentiation is in editorial curation, source-aware reading, and dependable o
 6. Keep scope honest: no custom backend unless a real requirement appears.
 7. Accessibility and reduced motion are product requirements, not polish-only tasks.
 
-## Brand — v2 (approved redesign direction)
+## Brand — magazine edition (current)
 - Original visual references: `design/references/reference-brand-system.png` and `reference-mobile-case-study.png`.
-- Figma source of truth: `https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N` (all v2 pages first; v1 archived).
-- Mark: ivory/forest crescent with one brass orbital arc, central four-point sighting star, brass observation point and quiet registration ticks.
-- Wordmark: COSMOLOG in Playfair Display Regular; tagline in Playfair Display Italic.
+- Figma source of truth: `https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N` (magazine pages supersede v2).
+- Mark: a typographic C with diagonally cut terminals.
+- Wordmark: outlined COSMOLOG masthead in Playfair Display Bold; tagline in Playfair Display Italic.
 - Interface type: Inter.
 - Palette: Ivory #F8F4EA, Forest #184235, Terracotta #C1654A, Sage #A8B89A, Brass #C79B4D, Ink #2C2A27.
 - Production app uses real attributed remote astronomy photos; Figma mockup's generated editorial imagery is illustrative only.

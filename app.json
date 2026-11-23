@@ -21,7 +21,8 @@
         "android.permission.ACTIVITY_RECOGNITION"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brand/cosmolog-mark.png",
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png",
         "backgroundColor": "#184235"
       },
       "package": "com.cosmolog.app"

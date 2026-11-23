@@ -327,3 +327,6 @@ The iPhone 17 simulator on iOS 27.2 displayed the glass bar in Expo Go. XCTest s
 Updated screenshots show the core journey, iOS tabs, manual sky toolbar and offline provenance. The local Android QA APK is `dist/cosmolog-editorial-qa.apk`. The H.264/AAC narrated cut is `dist/cosmolog-editorial-demo.mp4` and decoded successfully at 149.37 seconds.
 
 The iOS navigation XCTest also passed with Accessibility Large text and Increase Contrast enabled. The simulator settings were restored after the check.
+
+## Magazine identity
+Replaced the launcher and editorial lockup with a cut C and outlined Playfair lettering. Exported transparent foregrounds, monochrome artwork, density-specific launch icons and a matching native splash.
