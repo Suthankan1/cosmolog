@@ -55,3 +55,7 @@ The bookmark transaction completes independently of the image download. The work
 ## ADR-011 — Smart Reading on the local archive
 
 Keep SQLite and the existing Redux Toolkit thunks. Store the image's source revision alongside its file and store one paragraph checkpoint per verified account. Keep dated lookups separate from feed membership. Start with a bounded local search so reader progress, search, and date lookup work offline without a new library or backend.
+
+## ADR-012 — Reading packs share the offline archive
+
+Persist completed pack entries per account in SQLite. Commit each entry with its cached discovery so a failed request leaves completed entries available and retry can skip them. Share the existing licensed image files and download worker between packs and bookmarks. A file remains eligible for retention while any account has a pack entry or favourite referring to it. Packs use the existing date adapter and preserve the source snapshot, so they need no new dependencies or service.

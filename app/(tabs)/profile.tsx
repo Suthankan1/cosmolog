@@ -78,12 +78,12 @@ export default function ProfileScreen() {
           <Icon name={connection === 'offline' ? 'wifi-off' : 'download-cloud'} color={colors.forest} size={21} />
           <View style={styles.identityCopy}>
             <Text style={styles.connectionTitle}>{connection === 'offline' ? 'You’re offline' : 'Offline library'}</Text>
-            <Text style={styles.secondary}>{items.length} cached discoveries · {downloadCount} downloaded images</Text>
+            <Text style={styles.secondary}>{items.length} feed discoveries · {downloadCount} downloaded favourite images</Text>
           </View>
         </View>
         <View style={styles.stats}>
           <Stat label="Saved discoveries" value={String(favourites.length)} icon="bookmark" />
-          <Stat label="Downloaded images" value={formatBytes(imageBytes)} icon="hard-drive" />
+          <Stat label="Favourite images" value={formatBytes(imageBytes)} icon="hard-drive" />
         </View>
         <View style={styles.sources}>
           <Text accessibilityRole="header" style={styles.section}>Source updates</Text>

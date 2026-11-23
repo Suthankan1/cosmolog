@@ -15,9 +15,11 @@ The production mastheads use NASA Earthrise. The Figma screens use illustrative 
 | Favourites | `18:109` | Four sample saved entries as editable design; actual rows from durable SQLite, image status, note search, filters, sorting, add/remove, empty state |
 | Profile & Settings | `18:191` | Local storage stats, last-sync info, preferences, attribution, logout; no fictional cross-device syncing |
 
-## States (5 additional screens)
+## Archive extensions
 
-The Field Shelf also opens protected Reading history and Collections screens. Apply the v2 list rows, text styles, buttons, focus labels, and offline states to these views. Collection membership editing uses a keyboard-safe compose view.
+The Field Shelf opens protected Reading history and Collections screens. Collection membership editing uses a keyboard-safe compose view. Discover opens a protected Reading packs screen showing each plate's text and image availability. On This Day uses the existing Details route. Share discovery opens the device share sheet from Details.
+
+## States (5 additional screens)
 | State | Figma Node | Expected behavior |
 |---|---|---|
 | Offline with cached collection | `19:2` | Cached items and favourites remain usable, last successful sync date |

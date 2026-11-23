@@ -146,3 +146,19 @@ export const MIGRATE_TO_COLLECTIONS_SQL = `
   CREATE INDEX idx_collection_item_bookmark ON shelf_collection_items(account_id, local_id);
   PRAGMA user_version = 7;
 `;
+
+export const MIGRATE_TO_READING_PACKS_SQL = `
+  CREATE TABLE reading_pack_items (
+    account_id INTEGER NOT NULL CHECK (account_id > 0),
+    pack_id TEXT NOT NULL,
+    local_id TEXT NOT NULL REFERENCES cached_items(local_id) ON DELETE CASCADE,
+    added_at TEXT NOT NULL,
+    PRIMARY KEY (account_id, pack_id, local_id)
+  );
+  CREATE INDEX idx_pack_items_discovery ON reading_pack_items(local_id);
+  CREATE VIEW offline_item_owners AS
+    SELECT account_id, local_id, added_at FROM favourites
+    UNION ALL
+    SELECT account_id, local_id, added_at FROM reading_pack_items;
+  PRAGMA user_version = 8;
+`;

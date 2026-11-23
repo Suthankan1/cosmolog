@@ -3,7 +3,7 @@ import { getDatabase, writeDatabase } from '../db';
 import { CachedItemRow, DiscoveryItem, mapRowToDiscoveryItem } from '../models';
 import { DiscoverySource } from '../../navigation/types';
 
-async function upsertItem(db: SQLiteDatabase, item: DiscoveryItem) {
+export async function upsertItem(db: SQLiteDatabase, item: DiscoveryItem) {
   await db.runAsync(
     `INSERT INTO cached_items (
        local_id, source, external_id, title, summary, body, published_at,
@@ -50,7 +50,7 @@ export async function commitFeedSnapshot(source: DiscoverySource, items: Discove
     await db.runAsync(
       `DELETE FROM cached_items WHERE fetched_at < ?
        AND NOT EXISTS (SELECT 1 FROM feed_membership WHERE local_id = cached_items.local_id)
-       AND NOT EXISTS (SELECT 1 FROM favourites WHERE local_id = cached_items.local_id)
+       AND NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM saved_media WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM reading_checkpoint WHERE local_id = cached_items.local_id)
        AND NOT EXISTS (SELECT 1 FROM reading_history WHERE local_id = cached_items.local_id)`,

@@ -113,6 +113,7 @@ export default function DiscoverScreen() {
           <OnThisDay connection={connection} />
         </>
       )}
+      {!searching && <Button title="Offline reading packs" icon="download" variant="outline" onPress={() => router.push('/reading-packs')} />}
       {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
         {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
       </Text>}

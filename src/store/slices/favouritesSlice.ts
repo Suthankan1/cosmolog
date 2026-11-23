@@ -15,12 +15,13 @@ export interface FavouritesState {
   legacyCount: number;
   isLoading: boolean;
   isDownloading: boolean;
+  mediaRevision: number;
   error: string | null;
 }
 
 const initialState: FavouritesState = {
   accountId: null, loadRequestId: null, favourites: [], pending: {}, legacyCount: 0,
-  isLoading: false, isDownloading: false, error: null,
+  isLoading: false, isDownloading: false, mediaRevision: 0, error: null,
 };
 
 export const loadFavouritesThunk = createAsyncThunk(
@@ -84,6 +85,7 @@ export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch
               clearTimeout(timeout);
             }
             if (getState().favourites.accountId === accountId) await dispatch(loadFavouritesThunk(accountId));
+            dispatch(savedMediaChanged(accountId));
           }
         }
       } catch {
@@ -104,6 +106,7 @@ export const reportImageFailure = (localId: string, uri: string): AppThunk<Promi
   try {
     await invalidateSavedImage(localId, uri);
     if (getState().favourites.accountId === accountId) await dispatch(loadFavouritesThunk(accountId));
+    dispatch(savedMediaChanged(accountId));
   } catch {
     dispatch(imageWorkFailed(accountId));
   }
@@ -152,7 +155,12 @@ const slice = createSlice({
       if (state.accountId === action.payload.accountId) delete state.pending[action.payload.localId];
     },
     imageWorkChanged(state, action: PayloadAction<{ accountId: number; busy: boolean }>) {
-      if (state.accountId === action.payload.accountId) state.isDownloading = action.payload.busy;
+      if (state.accountId !== action.payload.accountId) return;
+      state.isDownloading = action.payload.busy;
+      if (!action.payload.busy) state.mediaRevision += 1;
+    },
+    savedMediaChanged(state, action: PayloadAction<number>) {
+      if (state.accountId === action.payload) state.mediaRevision += 1;
     },
     imageWorkFailed(state, action: PayloadAction<number>) {
       if (state.accountId === action.payload) state.error = 'Could not update offline images.';
@@ -197,5 +205,5 @@ const slice = createSlice({
     }),
 });
 
-const { favouriteOperationFinished, fieldNoteStarted, fieldNoteCommitted, imageWorkChanged, imageWorkFailed } = slice.actions;
+const { favouriteOperationFinished, fieldNoteStarted, fieldNoteCommitted, imageWorkChanged, imageWorkFailed, savedMediaChanged } = slice.actions;
 export default slice.reducer;

@@ -25,13 +25,14 @@ export async function searchLibrary(accountId: number, source: 'all' | Discovery
   const rows = await db.getAllAsync<CachedItemRow>(
     `SELECT c.* FROM cached_items c WHERE (? = 'all' OR c.source = ?)
      AND (c.fetched_at >= ? OR EXISTS (SELECT 1 FROM feed_membership WHERE local_id = c.local_id)
-      OR EXISTS (SELECT 1 FROM favourites WHERE local_id = c.local_id AND account_id = ?)
-      OR EXISTS (SELECT 1 FROM reading_checkpoint WHERE local_id = c.local_id AND account_id = ?))
+      OR EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = c.local_id AND account_id = ?)
+      OR EXISTS (SELECT 1 FROM reading_checkpoint WHERE local_id = c.local_id AND account_id = ?)
+      OR EXISTS (SELECT 1 FROM reading_history WHERE local_id = c.local_id AND account_id = ?))
      ORDER BY CASE
-       WHEN EXISTS (SELECT 1 FROM favourites WHERE local_id = c.local_id AND account_id = ?) THEN 0
+       WHEN EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = c.local_id AND account_id = ?) THEN 0
        WHEN EXISTS (SELECT 1 FROM feed_membership WHERE local_id = c.local_id) THEN 1
        ELSE 2 END, c.fetched_at DESC, c.local_id LIMIT 1500`,
-    [source, source, cutoff, accountId, accountId, accountId],
+    [source, source, cutoff, accountId, accountId, accountId, accountId],
   );
   return matchLibrary(rows, query);
 }

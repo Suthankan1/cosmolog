@@ -1,9 +1,7 @@
 import { getDatabase, writeDatabase } from '../db';
 import { CachedItemRow, DiscoveryItem, mapRowToDiscoveryItem } from '../models';
-import { getLocalImage } from '../../services/storage/imageStorage';
 import { mayDownloadImage } from '../../services/api/mediaPolicy';
-
-export type MediaStatus = 'ready' | 'previous' | 'waiting' | 'failed' | 'text-only';
+import { mapSavedMedia, type MediaStatus, type SavedMediaRow } from './mediaRepository';
 export const NOTE_LIMIT = 1000;
 
 export interface FavouriteDiscoveryItem extends DiscoveryItem {
@@ -14,14 +12,10 @@ export interface FavouriteDiscoveryItem extends DiscoveryItem {
   imageBytes: number;
 }
 
-interface FavouriteRow extends CachedItemRow {
+interface FavouriteRow extends CachedItemRow, SavedMediaRow {
   added_at: string;
   note: string | null;
   read_at: string | null;
-  status: Exclude<MediaStatus, 'text-only'> | null;
-  file_name: string | null;
-  source_url: string | null;
-  license_url: string | null;
 }
 
 export async function setFavourite(accountId: number, localId: string, saved: boolean) {
@@ -55,23 +49,13 @@ export async function getFavourites(accountId: number): Promise<FavouriteDiscove
      WHERE f.account_id = ? ORDER BY f.added_at DESC, c.local_id`,
     [accountId],
   );
-  return rows.map(row => {
-    const eligible = mayDownloadImage(row.source, row.image_remote_url, row.attribution, row.image_license_url);
-    const image = eligible && row.license_url === row.image_license_url &&
-      mayDownloadImage(row.source, row.source_url, row.attribution, row.license_url) ? getLocalImage(row.file_name) : null;
-    const mediaStatus: MediaStatus = eligible
-      ? image ? (row.source_url === row.image_remote_url ? 'ready' : 'previous') : row.status === 'failed' ? 'failed' : 'waiting'
-      : 'text-only';
-    return {
-      ...mapRowToDiscoveryItem(row),
-      imageLocalUri: image?.uri ?? null,
-      imageBytes: image?.bytes ?? 0,
-      addedAt: row.added_at,
-      note: row.note,
-      readAt: row.read_at,
-      mediaStatus,
-    };
-  });
+  return rows.map(row => ({
+    ...mapRowToDiscoveryItem(row),
+    ...mapSavedMedia(row),
+    addedAt: row.added_at,
+    note: row.note,
+    readAt: row.read_at,
+  }));
 }
 
 export async function getLegacyFavouriteCount(): Promise<number> {

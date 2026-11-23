@@ -32,3 +32,7 @@ Native testing also exposed two shortcomings in the AI-assisted implementation. 
 ## 2026-11-23 — Smart Reading refinement
 
 Codex implemented the checkpoint, search and APOD date lookup. During Android testing the date form's action could sit below the keyboard inside the Discover list header. The form moved into a dedicated keyboard-aware modal. A second adjustment records the paragraph visible inside the viewport so short articles can also establish a checkpoint.
+
+## 2026-11-23 — Archive extensions
+
+Codex implemented Field Shelf collections, reading history, On This Day, native sharing, and offline reading packs. The first draft of the pack retry test used a matcher absent from the installed Jest version. TypeScript and Jest both flagged it. The revised test verifies the call count and its arguments with supported matchers in `tests/readingPacks.test.ts`.

@@ -247,3 +247,7 @@ Discover looks for the most recent past NASA plate on the same month and day in 
 ## 2026-11-23 — Share a discovery
 
 Details can open the native Android or iOS share sheet from a cached discovery. The payload is limited to the public title, credit, and validated original link. TypeScript, ESLint, and the two focused share-payload tests passed.
+
+## 2026-11-23 — Offline reading packs
+
+Discover offers A Tour of Saturn and Apollo at the Moon. SQLite commits each downloaded plate with the account's pack membership, so interrupted downloads can resume. The existing media worker handles eligible images and keeps a shared file while a bookmark or pack still owns it. Verified HTTP 200 and matching dates for all six NASA entries. The full 69-test Jest suite, ESLint, and TypeScript passed.

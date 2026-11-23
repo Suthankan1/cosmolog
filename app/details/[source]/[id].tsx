@@ -18,6 +18,7 @@ import { useToggleFavourite } from '../../../src/features/journal/useToggleFavou
 import { FieldNote } from '../../../src/features/journal/FieldNote';
 import { mediaLabel } from '../../../src/features/discovery/mediaLabel';
 import { publicationName, shareDiscoveryContent } from '../../../src/features/discovery/shareDiscovery';
+import { useOfflineMedia } from '../../../src/features/discovery/useOfflineMedia';
 import { httpsUrl } from '../../../src/services/api/mediaPolicy';
 
 export default function DetailsScreen() {
@@ -33,6 +34,7 @@ export default function DetailsScreen() {
   const toggleFavourite = useToggleFavourite();
   const { connection, metadata, legacySyncedAt } = useAppSelector(state => state.feed);
   const { favourites, pending, error, isDownloading } = useAppSelector(state => state.favourites);
+  const localMedia = useOfflineMedia(accountId, result.status === 'ready' ? result.item.localId : undefined);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const offline = connection === 'offline';
@@ -68,6 +70,8 @@ export default function DetailsScreen() {
 
   const { item } = result;
   const saved = favourites.find(entry => entry.localId === item.localId);
+  const availableMedia = saved ?? localMedia;
+  const displayItem = availableMedia ? { ...item, imageLocalUri: availableMedia.imageLocalUri } : item;
   const canonicalUrl = httpsUrl(item.canonicalUrl);
   const sourceName = publicationName(item);
   const openSource = async () => {
@@ -108,7 +112,7 @@ export default function DetailsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: spacing[8] + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
-        <DiscoveryImage item={saved ?? item} offline={offline} style={styles.image} labelled />
+        <DiscoveryImage item={displayItem} offline={offline} style={styles.image} labelled />
         <View style={styles.article} onLayout={measureArticle}>
           <Text style={styles.metadata}>{formatEditorialDate(item.publishedAt)}</Text>
           <Text accessibilityRole="header" style={styles.title}>{item.title}</Text>
@@ -121,8 +125,8 @@ export default function DetailsScreen() {
             onPress={() => toggleFavourite(item.localId)}
           />
           {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
-          {saved && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(saved.mediaStatus, offline)}</Text>}
-          {(saved?.mediaStatus === 'failed' || saved?.mediaStatus === 'previous') && connection === 'online' && (
+          {availableMedia && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(availableMedia.mediaStatus, offline)}</Text>}
+          {(availableMedia?.mediaStatus === 'failed' || availableMedia?.mediaStatus === 'previous') && connection === 'online' && (
             <Button title="Retry image download" variant="outline" icon="refresh-cw" loading={isDownloading}
               onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}

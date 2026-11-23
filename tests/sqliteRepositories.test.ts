@@ -7,15 +7,18 @@ import { commitFeedSnapshot, findCachedPlateAnniversary, getCachedFeed, getDisco
   upsertDiscoveryItems } from '../src/database/repositories/discoveryRepository';
 import { getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFieldNote, setFavourite } from '../src/database/repositories/favouritesRepository';
 import { getSyncMetadata, recordSyncFailure } from '../src/database/repositories/syncMetadataRepository';
-import { finishImage, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
+import { finishImage, getOfflineMedia, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
 import { writeDatabase } from '../src/database/db';
 import { clearReadingCheckpoint, getReadAt, getReadingCheckpoint, getReadingHistory, markDiscoveryRead,
   saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
 import { searchLibrary } from '../src/features/discovery/librarySearch';
 import { getCollections, removeCollection, saveCollectionName, setCollectionItems } from '../src/database/repositories/collectionsRepository';
+import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../src/database/repositories/readingPacksRepository';
 import type { DiscoveryItem } from '../src/database/models';
 
-jest.mock('../src/services/storage/imageStorage', () => ({ getLocalImage: () => null }));
+jest.mock('../src/services/storage/imageStorage', () => ({
+  getLocalImage: (name: string | null) => name === 'verified.jpg' ? { uri: 'file:///test/verified.jpg', bytes: 12 } : null,
+}));
 
 let mockDatabasePath: string;
 const mockOpenConnections: mockDatabaseSync[] = [];
@@ -202,6 +205,44 @@ it('locates the newest past APOD from the same month and day in the local archiv
   )));
   expect(await findCachedPlateAnniversary('2028-02-29')).toMatchObject({ externalId: '2024-02-29' });
   expect(await findCachedPlateAnniversary('2028-03-01')).toBeNull();
+});
+
+it('pins pack text and shared media without changing feed sync, and retains files until the last owner is removed', async () => {
+  const plate: DiscoveryItem = {
+    ...item, localId: 'nasa-apod:2017-08-08', source: 'nasa-apod', externalId: '2017-08-08',
+    title: 'Density Waves in Saturn’s Rings', attribution: 'NASA', imageRemoteUrl: 'https://nasa.gov/rings.jpg',
+    mediaType: 'image', fetchedAt: '2017-08-08T00:00:00.000Z',
+  };
+  const sync = await getSyncMetadata(plate.source);
+  await keepReadingPackItem(40, 'saturn', plate);
+  await keepReadingPackItem(40, 'saturn', { ...plate, title: 'Older copy' });
+  expect(await getSyncMetadata(plate.source)).toEqual(sync);
+  expect(await getCachedFeed()).not.toContainEqual(expect.objectContaining({ localId: plate.localId }));
+  expect(await getFavourites(40)).toEqual([]);
+  expect(await getReadingPackItems(41)).toEqual([]);
+  expect(await getOfflineMedia(41, plate.localId)).toBeNull();
+  expect((await searchLibrary(40, 'all', 'Density Waves')).items[0].localId).toBe(plate.localId);
+  expect(await searchLibrary(41, 'all', 'Density Waves')).toEqual({ total: 0, items: [] });
+  await commitFeedSnapshot(item.source, [], '2027-01-25T00:00:00.000Z');
+  expect(await getReadingPackItems(40)).toEqual([expect.objectContaining({ title: plate.title, mediaStatus: 'waiting' })]);
+  await reconcileSavedImages();
+  expect(await getPendingImages(40)).toEqual([expect.objectContaining({ local_id: plate.localId })]);
+  expect(await finishImage(plate.localId, plate.imageRemoteUrl!, { fileName: 'verified.jpg', bytes: 12 })).toBe(true);
+  expect(await getOfflineMedia(40, plate.localId)).toMatchObject({ mediaStatus: 'ready', imageLocalUri: 'file:///test/verified.jpg' });
+  expect(await getReadingPackItems(40)).toEqual([expect.objectContaining({ mediaStatus: 'ready' })]);
+  await setFavourite(40, plate.localId, true);
+  await saveFieldNote(40, plate.localId, 'Compare ring waves.');
+  await keepReadingPackItem(41, 'saturn', plate);
+  await removeReadingPack(40, 'saturn');
+  expect(await getReadingPackItems(40)).toEqual([]);
+  expect(await getFavourites(40)).toEqual([expect.objectContaining({ note: 'Compare ring waves.', mediaStatus: 'ready' })]);
+  await setFavourite(40, plate.localId, false);
+  expect((await reconcileSavedImages()).has('verified.jpg')).toBe(true);
+  expect(await getOfflineMedia(40, plate.localId)).toBeNull();
+  expect(await getOfflineMedia(41, plate.localId)).toMatchObject({ mediaStatus: 'ready' });
+  await removeReadingPack(41, 'saturn');
+  expect((await reconcileSavedImages()).has('verified.jpg')).toBe(false);
+  expect(await finishImage(plate.localId, plate.imageRemoteUrl!, null)).toBe(false);
 });
 
 it('searches the cached public article text, ranks title matches first and excludes private notes', async () => {

@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-Run lint, TypeScript and Jest after a clean `npm ci`. The 60 checks exercise form validation, credential-free Redux actions, local session restore, token refresh, route validation, source normalization, SQLite migration and rollback, source-level retries, media status, account ownership, checkpoints, and search. The public archive search test uses 1,000 records, checks the match count and 100-item display limit, and enforces a 1.5-second bound on the repository call in the test environment.
+Run lint, TypeScript and Jest after a clean `npm ci`. The 69 checks cover authentication, routes, source normalization and retries, SQLite migrations and rollback, media status, account ownership, checkpoints, search, collections, reading history, plate anniversaries, public share content, and pack recovery. The public archive search test uses 1,000 records, checks the match count and 100-item display limit, and enforces a 1.5-second bound on the repository call in the test environment.
 
 The repository integration tests use a real SQLite database through Node's driver and an adapter with separate read and write connections. The Android build is separately responsible for exercising Expo SQLite, SecureStore, FileSystem, NetInfo, and React Native UI.
 
@@ -40,3 +40,11 @@ The repository integration tests use a real SQLite database through Node's drive
 - The iOS bundle exported, and the native iOS release built and reached sign-in on an iPhone 18 Pro simulator running iOS 27.2. The locally signed Xcode build exercised Keychain access during fresh startup. [Sign-in capture](screenshots/10-ios-login.png)
 - The Smart Reading demo runs for 169.02 seconds. The 720p H.264 video and AAC audio decoded successfully. See [the demo script](DEMO_SCRIPT.md).
 - TalkBack's focus indicator reached Discover search and the Details back control. Full spoken screen-reader flows, the iOS offline walkthrough, and the three student walkthroughs remain open.
+
+## Archive extension checks
+
+- Mark a saved discovery as read, reopen the Field Shelf, and confirm **To read** excludes it. Reopen it from **Reading history** in airplane mode.
+- Create two collections, add one favourite to both, then restart offline. Open it from either collection. Removing a collection keeps the favourite and its note.
+- Open **On This Day** online, then revisit it offline after the dated plate is cached. Confirm the NASA publication date is from an earlier year.
+- From cached Details, open **Share discovery** with a private note present. Check the share preview for the title, credit, and original link.
+- Download **A Tour of Saturn**. Confirm the three plates and the eligible image can be opened from the pack after an airplane-mode cold restart. Switch accounts to check pack ownership. Reconnect and retry a partial download.

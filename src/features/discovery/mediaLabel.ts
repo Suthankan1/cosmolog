@@ -1,4 +1,4 @@
-import type { MediaStatus } from '../../database/repositories/favouritesRepository';
+import type { MediaStatus } from '../../database/repositories/mediaRepository';
 
 export function mediaLabel(status: MediaStatus, offline: boolean) {
   switch (status) {

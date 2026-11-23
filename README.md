@@ -49,6 +49,8 @@ Scroll into a story to save a reading position. **Continue Reading** on Discover
 
 On the Field Shelf, open **Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
 
+From Discover, open **Offline reading packs** to download **A Tour of Saturn** or **Apollo at the Moon**. Each card shows which plates are stored and the status of images eligible for offline storage. If the connection drops, reopen the pack and resume the missing entries. Removing a download keeps any matching favourites, notes, and reading history.
+
 ### Media and provenance
 
 NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. **Share discovery** opens the device share sheet with the public title, credit, and link. The sheet can open from cached Details while offline. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
