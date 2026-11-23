@@ -1,3 +1,4 @@
+import { commitDispatchPage, readDispatchWindow } from '../src/database/repositories/dispatchPages';
 import manifest from '../study-releases/manifest.json';
 import space from '../study-releases/observatories/1/space.json';
 import ground from '../study-releases/observatories/1/ground.json';
@@ -350,4 +351,17 @@ it('remembers a bookmarked chapter section and keeps field notes account-owned',
   expect((await readStudy(id,61)).note).toContain('rings');
   expect((await readStudy(id,62)).note).toBeNull();
   await expect(saveStudyNote(62,id,'Unowned')).rejects.toThrow();
+});
+
+it('retains older dispatches and rejects an append from a superseded head', async () => {
+  const article = (id: number) => ({ ...item, externalId: String(id), localId: 'spaceflight-news:' + id });
+  await commitDispatchPage({ items: [article(501)], nextOffset: 1 }, time);
+  const old = (await readDispatchWindow(15)).cursor!;
+  await commitDispatchPage({ items: [article(502)], nextOffset: null }, time, old);
+  await commitDispatchPage({ items: [article(503)], nextOffset: 1 }, '2026-11-24T00:00:00Z');
+  await commitDispatchPage({ items: [article(504)], nextOffset: null }, time, old);
+  const { articles, cursor } = await readDispatchWindow(15);
+  expect(articles.map(entry => entry.externalId)).toEqual(expect.arrayContaining(['501', '502', '503']));
+  expect(articles.map(entry => entry.externalId)).not.toContain('504');
+  expect(cursor?.next_offset).toBe(1);
 });

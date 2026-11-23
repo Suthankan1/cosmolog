@@ -340,3 +340,6 @@ Reworked auth, article, Shelf and Profile layouts. The article opens with publis
 The Field Guide now presents an editorial contents list, the reader displays its section position, and downloads and reading packs use ruled panels. The Sky Viewer places the chart before observing notes and object profiles share the same editorial heading treatment. All 105 tests, strict TypeScript and ESLint passed.
 
 The source selector now reserves identical geometry for each state and indicates selection with a terracotta rule. The dock measures the longest label at the active system text size before choosing its width.
+
+### Paginated Space Dispatches
+Added a durable dispatch continuation, merged refreshes and bounded list reads. Older stories remain readable offline. The list footer supports manual loading and retry.

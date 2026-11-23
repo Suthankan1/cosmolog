@@ -76,3 +76,7 @@ Use Expo SDK 58's expo-glass-effect for the floating tab bar and manual sky tool
 
 ## ADR-015 — Magazine cover and launch identity
 Use the approved magazine C throughout the launcher, masthead and five-second cold-launch sequence. Keep the existing Reanimated and Expo Image dependencies. Source editions are projections of the local feed. The new presentation requires no database migration.
+
+## ADR-016 — Paginated dispatches and hybrid archive search
+
+Keep Redux Toolkit thunks (ADR-008), the serialized SQLite writer and the native FlatList. Store validated pages and continuations atomically so refresh and interrupted pagination preserve offline reading. Keep search membership separate from editorial feed membership. NASA's public media catalogue extends in-app topic coverage. A user-initiated browser search covers the broader web without a hosted proxy or provider credentials.

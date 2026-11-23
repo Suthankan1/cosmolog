@@ -59,12 +59,12 @@ export async function commitFeedSnapshot(source: DiscoverySource, items: Discove
   });
 }
 
-export async function getCachedFeed(): Promise<DiscoveryItem[]> {
+export async function getCachedFeed(source?: DiscoverySource): Promise<DiscoveryItem[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<CachedItemRow>(
     `SELECT c.* FROM feed_membership f
      JOIN cached_items c ON c.local_id = f.local_id
-     ORDER BY f.source, f.position, c.local_id`,
+     WHERE (? IS NULL OR f.source = ?) ORDER BY f.source, f.position, c.local_id`, [source ?? null, source ?? null],
   );
   return rows.map(mapRowToDiscoveryItem);
 }

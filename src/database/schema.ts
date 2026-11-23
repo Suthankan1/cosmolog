@@ -201,3 +201,10 @@ export const MIGRATE_TO_STUDY_ANCHORS_SQL = `
   ALTER TABLE study_progress ADD COLUMN section_anchor TEXT;
   PRAGMA user_version = 12;
 `;
+
+export const MIGRATE_TO_DISPATCH_PAGES_SQL = `
+  CREATE TABLE dispatch_paging (id INTEGER PRIMARY KEY CHECK(id = 1), generation TEXT NOT NULL,
+    anchor TEXT, next_offset INTEGER);
+  CREATE INDEX idx_feed_position ON feed_membership(source, position);
+  PRAGMA user_version = 13;
+`;

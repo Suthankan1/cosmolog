@@ -45,9 +45,22 @@ export function normalizeSpaceflightArticle(raw: RawSpaceflightArticle): Discove
   };
 }
 
-export async function fetchSpaceflightNewsFeed(signal?: AbortSignal): Promise<DiscoveryItem[]> {
-  const json = await fetchJson(SPACEFLIGHT_NEWS_URL + '?limit=15&ordering=-published_at', { signal });
-  return spaceflightFeedResponseSchema.parse(json).results.map(normalizeSpaceflightArticle);
+export interface DiscoveryPage {
+  items: DiscoveryItem[];
+  nextOffset: number | null;
+}
+
+export async function fetchNewsPage(offset = 0, anchor?: string | null, query?: string, signal?: AbortSignal): Promise<DiscoveryPage> {
+  const url = new URL(SPACEFLIGHT_NEWS_URL);
+  url.searchParams.set('limit', '15');
+  url.searchParams.set('offset', String(offset));
+  url.searchParams.set('ordering', '-published_at,-id');
+  if (anchor) url.searchParams.set('published_at_lte', anchor);
+  if (query) url.searchParams.set('search', query);
+  const page = spaceflightFeedResponseSchema.extend({ next: z.string().nullable() })
+    .parse(await fetchJson(url.href, { signal }));
+  const items = page.results.map(normalizeSpaceflightArticle);
+  return { items, nextOffset: page.next && items.length ? offset + items.length : null };
 }
 
 export async function fetchSpaceflightNewsItem(id: string, signal?: AbortSignal): Promise<DiscoveryItem | null> {

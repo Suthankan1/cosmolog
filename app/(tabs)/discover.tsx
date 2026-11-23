@@ -7,7 +7,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } f
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
-import { setSearchQuery, setSelectedCategory } from '../../src/store/slices/feedSlice';
+import { loadOlder, setSearchQuery, setSelectedCategory } from '../../src/store/slices/feedSlice';
 import { useToggleFavourite } from '../../src/features/journal/useToggleFavourite';
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { selectFeed } from '../../src/features/discovery/selectFeed';
@@ -32,7 +32,7 @@ export default function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const toggleFavourite = useToggleFavourite();
-  const { items, selectedCategory, searchQuery, cacheStatus, connection, metadata, legacySyncedAt, isRefreshing, refreshError } =
+  const { moreCached, cursor, appending, appendError, items, selectedCategory, searchQuery, cacheStatus, connection, metadata, legacySyncedAt, isRefreshing, refreshError } =
     useAppSelector(state => state.feed);
   const { favourites, pending, error: saveError } = useAppSelector(state => state.favourites);
   const savedItems = useMemo(() => new Map(favourites.map(item => [item.localId, item])), [favourites]);
@@ -104,6 +104,7 @@ export default function DiscoverScreen() {
     <EmptyState icon="compass" title="No discoveries in this section" description="Try a different source or pull to refresh." />
   );
 
+  const canLoadOlder = !searching && selectedCategory !== 'nasa-apod' && (moreCached || (connection === 'online' && cursor?.next_offset != null));
   const header = (
     <View style={styles.header}>
       <Image source={require('../../assets/brand/cosmolog-lockup.svg')} contentFit="contain"
@@ -162,6 +163,10 @@ export default function DiscoverScreen() {
         data={rows}
         keyExtractor={item => item.localId}
         renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
+        onEndReachedThreshold={0.35}
+        onEndReached={() => { if (canLoadOlder && !appendError) void dispatch(loadOlder()); }}
+        ListFooterComponent={canLoadOlder ? <Button title={appendError ? 'Retry loading older stories' : 'Load more stories'}
+          loading={appending} onPress={() => void dispatch(loadOlder())} variant="outline" /> : undefined}
         ListHeaderComponent={header}
         ListEmptyComponent={searching ? empty ?? undefined : undefined}
         contentContainerStyle={[styles.content, { paddingBottom }]}
