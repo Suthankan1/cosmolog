@@ -1,3 +1,4 @@
+import { CityPicker } from './CityPicker';
 import { useState } from 'react';
 import { Keyboard, Linking, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/common/Button';
@@ -29,6 +30,8 @@ export function SkyLocationControls({ location, status, useLocation, chooseLocat
 
   if (editing) return (
     <View style={styles.form}>
+      <CityPicker onSelect={city=>choose({kind:'manual',latitude:city.latitude,longitude:city.longitude,elevation:0,
+        city:{name:[city.name,city.region,city.country].filter(Boolean).join(', '),zone:city.zone}})}/>
       <Input label="Latitude" value={latitude} onChangeText={setLatitude} placeholder="6.9271" keyboardType="numbers-and-punctuation" maxLength={18} />
       <Input label="Longitude" value={longitude} onChangeText={setLongitude} placeholder="79.8612" keyboardType="numbers-and-punctuation" maxLength={18} />
       {invalid && <Text accessibilityRole="alert" style={styles.error}>Enter latitude from −90 to 90 and longitude from −180 to 180.</Text>}

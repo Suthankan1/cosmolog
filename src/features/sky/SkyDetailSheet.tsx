@@ -10,10 +10,11 @@ interface Props {
   id: SkyObjectId;
   position: SkyPosition;
   offline: boolean;
+  onStudy?: () => void;
   onClose: () => void;
 }
 
-export function SkyDetailSheet({ id, position, offline, onClose }: Props) {
+export function SkyDetailSheet({ id, position, offline, onStudy, onClose }: Props) {
   const [linkError, setLinkError] = useState(false);
   const heading = useRef<ComponentRef<typeof Text>>(null);
   const insets = useSafeAreaInsets();
@@ -55,6 +56,7 @@ export function SkyDetailSheet({ id, position, offline, onClose }: Props) {
             <Text style={styles.credit}>{object.source}</Text>
             {offline && <Text style={styles.credit}>Connect to open the links.</Text>}
             {linkError && <Text accessibilityRole="alert" style={styles.credit}>Could not open the link.</Text>}
+            <>{onStudy && <Button title="Read in Space Study" icon="book-open" onPress={onStudy}/>}</>
             <Button title="Read more" icon="external-link" disabled={offline} onPress={() => { void openLink(object.readMoreUrl); }} />
             {object.sourceUrl !== object.readMoreUrl && (
               <Button title="View catalog source" variant="outline" disabled={offline} onPress={() => { void openLink(object.sourceUrl); }} />

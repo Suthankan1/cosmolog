@@ -275,3 +275,7 @@ Added [the Space Study implementation plan](../tasks/07-space-study.md) covering
 ## Space Study guide and atlas
 
 Added the bundled eight-chapter introductory edition, original supplemental profiles, searchable sky catalog, section reader, account bookmarks and offline reading checkpoints. The SQLite repository suite (14 tests), ESLint and TypeScript passed.
+
+## Worldwide offline city lookup
+
+Bundled 52,004 GeoNames places in an indexed database, with optional city selection, stored city preference, observing-zone time and direct links between supported atlas entries and sky positions. Checked Kandy, worldwide namesakes and database integrity. TypeScript, ESLint and all 88 tests passed.

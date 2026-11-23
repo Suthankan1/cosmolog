@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { colombo, type ObserverLocation } from './skyMath';
 
-type ManualLocation = ObserverLocation & { kind: 'manual' | 'preview' };
+export type ManualLocation = ObserverLocation & { kind: 'manual' | 'preview'; city?: {name:string; zone:string} };
 type DeviceLocation = ObserverLocation & { kind: 'device'; timestamp: number; lastKnown: boolean; approximate: boolean };
 export type SkyLocation = ManualLocation | DeviceLocation;
 export const previewLocation: ManualLocation = { ...colombo, kind: 'preview' };

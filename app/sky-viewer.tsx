@@ -1,4 +1,4 @@
-import { useIsFocused } from 'expo-router';
+import { useIsFocused, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ import { SkyDetailSheet } from '../src/features/sky/SkyDetailSheet';
 import { SkyLocationControls } from '../src/features/sky/SkyLocationControls';
 import { SkyViewfinder } from '../src/features/sky/SkyViewfinder';
 import { aboveHorizon, calculateSky, type SkyPosition } from '../src/features/sky/skyMath';
-import { useSkyLocation } from '../src/features/sky/useSkyLocation';
+import { useRememberedLocation } from '../src/features/sky/useRememberedLocation';
 import { useSkySatellites } from '../src/features/sky/useSkySatellites';
 import { useAppSelector } from '../src/store';
 import { colors, layout, radii, spacing, typography } from '../src/theme/tokens';
@@ -24,7 +24,9 @@ export default function SkyViewerScreen() {
   const insets = useSafeAreaInsets();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   const active = focused && foreground;
-  const locationControls = useSkyLocation(active);
+  const locationControls = useRememberedLocation(active);
+  const {target}=useLocalSearchParams<{target?:string}>();
+  const router=useRouter();
   const { location } = locationControls;
   const satellites = useSkySatellites(active, connection);
   const [now, setNow] = useState(Date.now);
@@ -51,13 +53,15 @@ export default function SkyViewerScreen() {
     return position ? [position] : [];
   }), [satellites.rows, location, now]);
   const positions = useMemo(() => aboveHorizon([...celestialPositions, ...satellitePositions]), [celestialPositions, satellitePositions]);
+  const targetPosition=[...celestialPositions,...satellitePositions].find(p=>p.id===target);
   const select = useCallback((id: SkyObjectId) => {
     setSelected(positions.find(position => position.id === id));
   }, [positions]);
 
   const locationLabel = location.kind === 'device'
     ? (location.lastKnown ? 'Last known device location' : location.approximate ? 'Approximate device location' : 'Device location')
-    : location.kind === 'preview' ? 'Colombo preview' : 'Entered coordinates';
+    : location.kind === 'preview' ? 'Colombo preview' : location.city?.name ?? 'Entered coordinates';
+  const zone=location.kind==='manual'?location.city?.zone:location.kind==='preview'?'Asia/Colombo':undefined;
 
   return (
     <View style={styles.screen}>
@@ -78,8 +82,11 @@ export default function SkyViewerScreen() {
             )}
             <View>
               <Text accessibilityRole="header" style={styles.title}>The sky overhead</Text>
-              <Text style={styles.location}>{locationLabel} · {new Date(now).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</Text>
+              <Text style={styles.location}>{locationLabel} · {new Date(now).toLocaleString([], {timeZone:zone,month:'short',day:'numeric', hour: 'numeric', minute: '2-digit',timeZoneName:'short' })}</Text>
             </View>
+            {target && <Text style={styles.note}>{findSkyObject(target as SkyObjectId)?.name ?? 'Unknown target'} · {targetPosition?
+              (targetPosition.altitude>=0?'Above horizon':'Below horizon')+' · elevation '+Math.round(targetPosition.altitude)+'° · bearing '+Math.round(targetPosition.azimuth)+'°':'Position unavailable'}</Text>}
+            <Text style={styles.note}>Daylight, weather and observing equipment affect what you can see.</Text>
             <SkyViewfinder active={active} usingDeviceLocation={location.kind === 'device'} positions={positions} onSelect={select} />
             <SkyLocationControls {...locationControls} />
             <SatelliteStatus {...satellites} positions={satellitePositions} offline={offline} now={now} />
@@ -103,7 +110,7 @@ export default function SkyViewerScreen() {
           );
         }}
       />
-      {selected && <SkyDetailSheet key={selected.id} id={selected.id} position={selected} offline={offline} onClose={() => setSelected(undefined)} />}
+      {selected && <SkyDetailSheet key={selected.id} id={selected.id} position={selected} offline={offline} onStudy={()=>{setSelected(undefined);router.push({pathname:'/study/[id]',params:{id:selected.id}});}} onClose={() => setSelected(undefined)} />}
     </View>
   );
 }
