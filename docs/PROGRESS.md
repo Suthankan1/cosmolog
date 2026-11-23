@@ -364,3 +364,9 @@ An unsigned iOS simulator build reached login but lacked Keychain access. The lo
 The original Figma file was view-only for the connected account. Its editable edition layouts, launch storyboard and screen references are in the [local handoff](../design/magazine/).
 
 On a Pixel 9 emulator the standalone build reached “APOD: 2026 November 19 – The Horsehead and Flame Nebulas”, independently matched against the third live article page. After saving a NASA Europa record, the app force-stopped and restarted in airplane mode. Its ordered search reopened, Details showed the favourite was still saved, and the same third-page article appeared while scrolling offline. The latest search reopened again after reconnection. The test used Android accessibility labels to operate controls. Spoken TalkBack and iOS device checks remain unverified for this release.
+
+### COSMOLOG 1.1.0 release
+
+Published the discovery edition from commit `5c1d884`. Both mobile artifacts report version 1.1.0, build 2. The Android ARM64 APK uses the previous release’s QA certificate. The Apple Silicon simulator build launched on an iPhone 17 simulator. The updated narrated demo decoded successfully at 154.8 seconds.
+
+All 113 tests, TypeScript, ESLint, Android release lint and GitHub CI passed. Verified anonymous access to the GitHub Packages artifact and matched all four registry layer digests to the release assets. [Release](https://github.com/Suthankan1/cosmolog/releases/tag/v1.1.0) · [Package verification](https://github.com/Suthankan1/cosmolog/actions/runs/45124895133)
