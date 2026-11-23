@@ -45,15 +45,15 @@ Scroll into a story to save a reading position. **Continue Reading** on Discover
 
 **Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
 
-**On This Day** offers an earlier NASA plate from the same month and day. Discover checks the local archive first. If no match is stored, it offers an online lookup for the most recent eligible prior year.
+Under **Study, sky and archives**, **On This Day** offers an earlier NASA plate from the same month and day. Discover checks the local archive first. If no match is stored, it offers an online lookup for the most recent eligible prior year.
 
-On the Field Shelf, open **Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
+On the Field Shelf, open **Shelf tools → Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
 
-From Discover, open **Offline reading packs** to download **A Tour of Saturn** or **Apollo at the Moon**. Each card shows which plates are stored and the status of images eligible for offline storage. If the connection drops, reopen the pack and resume the missing entries. Removing a download keeps any matching favourites, notes, and reading history.
+From Discover, open **Study, sky and archives → Offline reading packs** to download **A Tour of Saturn** or **Apollo at the Moon**. Each card shows which plates are stored and the status of images eligible for offline storage. If the connection drops, reopen the pack and resume the missing entries. Removing a download keeps any matching favourites, notes, and reading history.
 
 ### Sky Viewer
 
-Open **Sky Viewer** in Discover and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.
+Open **Discover → Study, sky and archives → Sky Viewer** and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.
 
 The bundled star and deep-sky catalogs, Moon and planet positions, and detail text work offline. The chart shows geometric positions. Your equipment, daylight, and observing conditions affect what you can see. When orbit data is available, the ISS and Hubble are shown as predictions. The viewer flags elements at 24 hours and hides predictions at 72 hours. Locations and motion readings stay in memory. [Catalog sources and licences](src/features/sky/catalog/README.md)
 
@@ -67,6 +67,14 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 - [NASA Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/)
 - [Jupiter image credits](https://science.nasa.gov/wp-json/wp/v2/apod-basic/261122) · NASA/Juno/SwRI/MSSS, processing by Matt Brealey and Seán Doran · [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/)
 - [Cocoon Nebula Wide Field](https://apod.nasa.gov/apod/ap140918.html) · Federico Pelliccia
+
+## Platform controls
+
+Discover, Favourites and Profile float above the feed. Supported iPhones use native Liquid Glass. Reduce Transparency switches to an opaque surface, and Android uses an elevated ivory capsule. The same material groups the four manual Sky Viewer controls. Both lists and article text remain opaque.
+
+| iOS Discover (Expo Go) | Android manual sky controls | Offline source credit |
+| --- | --- | --- |
+| ![iOS floating tabs](docs/screenshots/20-ios-floating-tabs.png) | ![Manual direction controls beneath the chart](docs/screenshots/21-sky-controls.png) | ![Saved source information in airplane mode](docs/screenshots/19-offline-source.png) |
 
 ## Screenshots
 
@@ -128,7 +136,7 @@ Jest exercises auth lifecycle, real SQLite migrations and rollback through Node'
 
 ## Space Study
 
-Open **Discover → Space Study** for eight original introductory chapters and the object atlas. Try **M31**, **25544**, **Titan** or **Starlink**. Chapters include definitions, examples and source links. Save a section to the Field Shelf, add a private field note or reopen the last chapter with **Continue reading**. The bundled guide and the Earthrise figure are available after an offline restart with a restored session.
+Open **Discover → Study, sky and archives → Space Study** for eight original introductory chapters and the object atlas. Try **M31**, **25544**, **Titan** or **Starlink**. Chapters include definitions, examples and source links. Save a section to the Field Shelf, add a private field note or reopen the last chapter with **Continue reading**. The bundled guide and the Earthrise figure are available after an offline restart with a restored session.
 
 **My sky → Change location** searches 52,004 places offline. Pick a city to use its coordinates and civil time zone. Selecting another location or the Colombo preview replaces the remembered city. Geometric altitude tells you where a target lies relative to the horizon. Weather and daylight still affect observation. The first edition includes STARLINK-1008 and STARLINK-1012 alongside ISS and Hubble. [GeoNames attribution](assets/study/README.md) · [CelesTrak Starlink catalog](https://celestrak.org/NORAD/elements/table.php?GROUP=starlink)
 

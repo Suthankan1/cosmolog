@@ -33,3 +33,7 @@ The local file `dist/cosmolog-space-study-demo.mp4` is 2 minutes 25 seconds. It 
 | 1:23–1:41 | Explain account-owned SQLite checkpoints and stable section IDs. |
 | 1:41–2:01 | Explain resumable parts, checksums and transactional pack installation. |
 | 2:01–2:25 | Explain local orbit prediction, epoch age and reconnection. |
+
+## Editorial controls review cut
+
+The refreshed cut is `dist/cosmolog-editorial-demo.mp4` (149.37 seconds). New Android screenshots show sign-in, Discover, Details, Favourites, the offline cold launch and original-source information. The second half reuses the narrated architecture walkthrough. Both the H.264 video and AAC audio decoded end to end.

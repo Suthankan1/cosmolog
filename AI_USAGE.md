@@ -46,3 +46,7 @@ Codex implemented the offline sky chart, location and phone pointing, and a SQLi
 AI assisted with drafting original guide text, connecting the reader and sky atlas, generating the GeoNames importer, and writing migration and pack tests. A chapter-index-only checkpoint was revised to use stable section identifiers so reordering a later edition can preserve the reader’s place. The content checks cover missing links, sources, section identifiers, section order and pack integrity. Student scientific and editorial review of the new guide remains required before submission.
 
 During Android verification a pack installation failed because an Expo file write was still pending at checksum time. The installer now awaits the native write and verifies SHA-256. A delayed-write test reproduces the timing condition. The student must review the data licensing, source material and narration before submission.
+
+## Platform control refresh
+
+Codex implemented the platform surfaces, destination groups and shared button changes. During emulator testing, a tab’s generated accessibility name included the decorative Feather glyph. The corrected implementation gives each destination an explicit accessibility label and hides decorative icon text from assistive technology.

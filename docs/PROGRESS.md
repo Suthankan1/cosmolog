@@ -317,3 +317,13 @@ Space Study uses destination rows for editions, related reading and sky links. T
 ## Floating controls accessibility verification
 
 The native accessibility hierarchy exposed decorative Feather glyphs in tab names. Android also retained offscreen tab controls while the search keyboard was open. Tabs now have explicit names and unmount during keyboard entry. On the final Android release, the accessibility tree lost the tab controls during typing and restored them on dismissal. All 99 Jest tests, strict TypeScript and full ESLint passed.
+
+## Device evidence and review cut
+
+The Pixel 9 Android 17 emulator ran the locally signed ARM64 release. The public demo login loaded both sources. Saving the Daily Plate, opening Shelf tools and the collection editor, and reopening its original credit after a force-stop in airplane mode succeeded. Reconnection restored the source refresh controls. The manual sky toolbar panned the Colombo preview. Tab labels and 48 dp hit areas were checked at 320, 360, 390 and 430 dp, including 1.6× text at 320 dp. Sign out scrolled above the floating bar in three-button navigation.
+
+The iPhone 17 simulator on iOS 27.2 displayed the glass bar in Expo Go. XCTest selected Favourites, opened Shelf tools, selected Profile and returned to Discover. The production iOS JavaScript export completed. Standalone iOS signing and physical-device VoiceOver/TalkBack listening were outside these simulator checks. The app retains its existing portrait orientation.
+
+Updated screenshots show the core journey, iOS tabs, manual sky toolbar and offline provenance. The local Android QA APK is `dist/cosmolog-editorial-qa.apk`. The H.264/AAC narrated cut is `dist/cosmolog-editorial-demo.mp4` and decoded successfully at 149.37 seconds.
+
+The iOS navigation XCTest also passed with Accessibility Large text and Increase Contrast enabled. The simulator settings were restored after the check.
