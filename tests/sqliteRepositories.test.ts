@@ -14,6 +14,10 @@ import { clearReadingCheckpoint, getReadAt, getReadingCheckpoint, getReadingHist
 import { searchLibrary } from '../src/features/discovery/librarySearch';
 import { getCollections, removeCollection, saveCollectionName, setCollectionItems } from '../src/database/repositories/collectionsRepository';
 import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../src/database/repositories/readingPacksRepository';
+import {
+  readSatelliteCache, recordSatelliteFailure, reserveSatelliteRefresh, satelliteRefreshInterval, saveSatelliteOrbit,
+} from '../src/database/repositories/satelliteOrbitRepository';
+import { parseSatelliteElements } from '../src/features/sky/satelliteElements';
 import type { DiscoveryItem } from '../src/database/models';
 
 jest.mock('../src/services/storage/imageStorage', () => ({
@@ -84,6 +88,31 @@ it('migrates actual SQLite data, rejects orphans and recovers earlier bookmarks 
   expect(await getFavourites(2)).toEqual([]);
   await expect(writeDatabase(db => db.runAsync('INSERT INTO favourites (account_id, local_id, added_at) VALUES (1, ?, ?)', ['missing', time])))
     .rejects.toThrow(/FOREIGN KEY/i);
+});
+
+it('keeps the newest orbit through refresh failures and enforces a durable per-satellite cooldown', async () => {
+  const now = Date.parse(time);
+  const omm = {
+    NORAD_CAT_ID: 25544, EPOCH: time, OBJECT_NAME: 'ISS fixture', OBJECT_ID: '1998-067A',
+    MEAN_MOTION: 15.5, ECCENTRICITY: 0.001, INCLINATION: 51.6, RA_OF_ASC_NODE: 20,
+    ARG_OF_PERICENTER: 120, MEAN_ANOMALY: 210, ELEMENT_SET_NO: 999, BSTAR: 0.0001,
+    MEAN_MOTION_DOT: 0, MEAN_MOTION_DDOT: 0,
+  };
+  const orbit = parseSatelliteElements(omm, 25544)!;
+  expect(await readSatelliteCache()).toEqual([]);
+  expect(await Promise.all([reserveSatelliteRefresh(25544, now), reserveSatelliteRefresh(25544, now)]))
+    .toEqual([true, false]);
+  await saveSatelliteOrbit(25544, orbit, now);
+  await recordSatelliteFailure(25544, 'paused');
+  expect(await reserveSatelliteRefresh(20580, now + 1)).toBe(false);
+  expect(await readSatelliteCache()).toEqual([{ noradId: 25544, elements: orbit, downloadedAt: now, failure: 'paused' }]);
+
+  const later = now + satelliteRefreshInterval;
+  expect(await reserveSatelliteRefresh(25544, later)).toBe(true);
+  const older = parseSatelliteElements({ ...omm, EPOCH: new Date(now - 1000).toISOString() }, 25544)!;
+  await saveSatelliteOrbit(25544, older, later);
+  expect(await readSatelliteCache()).toEqual([{ noradId: 25544, elements: orbit, downloadedAt: now, failure: null }]);
+  expect(await reserveSatelliteRefresh(20580, later)).toBe(true);
 });
 
 it('commits unique feed membership and time together, and keeps bookmarks on a valid empty refresh', async () => {

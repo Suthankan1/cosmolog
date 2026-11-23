@@ -1,9 +1,10 @@
 import { Body } from 'astronomy-engine';
 import brightStars from './catalog/bright-stars.json';
 import messierObjects from './catalog/messier.json';
+import { satelliteObjects, type SatelliteId } from './satelliteCatalog';
 
-export type SkyObjectId = `hip:${number}` | `messier:${number}` | `body:${Body}`;
-export type SkyObjectKind = 'star' | 'deep-sky' | 'moon' | 'planet';
+export type SkyObjectId = `hip:${number}` | `messier:${number}` | `body:${Body}` | `satellite:${SatelliteId}`;
+export type SkyObjectKind = 'star' | 'deep-sky' | 'moon' | 'planet' | 'satellite';
 
 export interface SkyObject {
   id: SkyObjectId;
@@ -79,7 +80,7 @@ export const movingBodies: readonly MovingBody[] = [
 ];
 
 const catalog = new Map<SkyObjectId, SkyObject>(
-  [...fixedObjects, ...movingBodies].map(object => [object.id, object]),
+  [...fixedObjects, ...movingBodies, ...satelliteObjects].map(object => [object.id, object]),
 );
 
 export function findSkyObject(id: SkyObjectId): SkyObject | undefined {

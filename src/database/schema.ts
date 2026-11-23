@@ -162,3 +162,15 @@ export const MIGRATE_TO_READING_PACKS_SQL = `
     SELECT account_id, local_id, added_at FROM reading_pack_items;
   PRAGMA user_version = 8;
 `;
+
+export const MIGRATE_TO_SKY_ORBITS_SQL = `
+  CREATE TABLE sky_satellite_orbits (
+    norad_id INTEGER PRIMARY KEY,
+    attempted_at INTEGER NOT NULL,
+    elements_json TEXT,
+    epoch_at INTEGER,
+    downloaded_at INTEGER,
+    failure TEXT CHECK (failure IN ('unavailable', 'paused'))
+  );
+  PRAGMA user_version = 9;
+`;

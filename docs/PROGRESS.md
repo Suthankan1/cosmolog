@@ -263,3 +263,11 @@ Discover opens a protected sky chart with manual panning, coordinate entry, and 
 ## 2026-11-23 — Phone pointing
 
 Sky Viewer uses a foreground device location when permission is available, and it can use manual coordinates or a Colombo preview. It derives phone pointing from gravity and the magnetic field and corrects the bearing to true north. Manual controls remain available for missing readings and reduced-motion preferences. The Android release emulator verified location denial, approximate location, a direct chart marker tap, simulated sensor pointing, and manual fallback. TypeScript, ESLint, 12 focused tests, the Android release build, and the iOS bundle export passed. Physical-device pointing remains open.
+
+## 2026-11-23 — Offline satellite predictions
+
+Sky Viewer validates CelesTrak elements for the ISS and Hubble, caches them in SQLite, and calculates predictions locally. The viewer labels older orbit data and hides predictions once the elements expire. The Pixel 9 emulator upgraded from the previous release, downloaded both orbits while the viewer was open on reconnection, and retained both predictions after an airplane-mode force-stop. The Android package excludes the unused Expo background location services. TypeScript, ESLint, 86 Jest tests, the Android release build and native lint, and the iOS bundle export passed.
+
+## 2026-11-23 — Space Study planning
+
+Added [the Space Study implementation plan](../tasks/07-space-study.md) covering the in-app book, searchable atlas, offline city selection, Sky Viewer integration, catalog updates, and assignment release gates. This entry records planning only.

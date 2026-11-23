@@ -51,6 +51,12 @@ On the Field Shelf, open **Collections**, create a named collection, then tap **
 
 From Discover, open **Offline reading packs** to download **A Tour of Saturn** or **Apollo at the Moon**. Each card shows which plates are stored and the status of images eligible for offline storage. If the connection drops, reopen the pack and resume the missing entries. Removing a download keeps any matching favourites, notes, and reading history.
 
+### Sky Viewer
+
+Open **Sky Viewer** in Discover and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.
+
+The bundled star and deep-sky catalogs, Moon and planet positions, and detail text work offline. The chart shows geometric positions. Your equipment, daylight, and observing conditions affect what you can see. When orbit data is available, the ISS and Hubble are shown as predictions. The viewer flags elements at 24 hours and hides predictions at 72 hours. Locations and motion readings stay in memory. [Catalog sources and licences](src/features/sky/catalog/README.md)
+
 ### Media and provenance
 
 NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. **Share discovery** opens the device share sheet with the public title, credit, and link. The sheet can open from cached Details while offline. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
@@ -80,9 +86,15 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 | --- | --- |
 | ![Offline Saturn study collection](docs/screenshots/11-offline-collection.png) | ![The Saturn reading pack with three downloaded plates and one available image](docs/screenshots/12-offline-reading-packs.png) |
 
+| Sky Viewer in airplane mode | Whirlpool Galaxy details in airplane mode |
+| --- | --- |
+| ![Offline Colombo sky chart](docs/screenshots/13-sky-viewer-offline.png) | ![Offline Whirlpool Galaxy detail sheet](docs/screenshots/14-sky-object-offline.png) |
+
 ## Architecture and state
 
 Expo Router protects the main stack and passes a source and ID to Details. A Redux Toolkit coordinator loads SQLite before starting remote refresh. It shares connection, request, and save state across the screens. Validated and normalized source responses become SQLite transactions. Each transaction updates a source snapshot and its last successful timestamp together.
+
+Sky Viewer calculates celestial positions and device pointing locally. It uses the same Redux Toolkit thunk pattern for CelesTrak requests and stores the last validated orbital elements in SQLite. Viewer focus and connection state control requests, and the database enforces a two-hour minimum between attempts.
 
 ```mermaid
 flowchart LR

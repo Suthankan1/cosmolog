@@ -36,3 +36,7 @@ Codex implemented the checkpoint, search and APOD date lookup. During Android te
 ## 2026-11-23 — Archive extensions
 
 Codex implemented Field Shelf collections, reading history, On This Day, native sharing, and offline reading packs. The first draft of the pack retry test used a matcher absent from the installed Jest version. TypeScript and Jest both flagged it. The revised test verifies the call count and its arguments with supported matchers in `tests/readingPacks.test.ts`.
+
+## 2026-11-23 — Sky Viewer
+
+Codex implemented the offline sky chart, location and phone pointing, and a SQLite cache for ISS and Hubble predictions. Expo config introspection exposed a conflict in the generated iOS permissions. The first version removed the motion usage description through the location plugin, so the sibling sensors plugin's description was missing from the resolved Info.plist. The revised configuration sets the same motion purpose in both plugins. Introspection confirmed the motion and foreground location strings in the final config.

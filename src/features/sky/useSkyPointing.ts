@@ -79,6 +79,7 @@ export function useSkyPointing(enabled: boolean, reducedMotion: boolean): Pointi
     };
 
     const dispose = () => {
+      if (stopped) return;
       stopped = true;
       clearInterval(timer);
       subscriptions.forEach(subscription => subscription.remove());

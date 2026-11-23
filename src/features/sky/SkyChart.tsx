@@ -1,5 +1,5 @@
 import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, Text, View } from 'react-native';
+import { PanResponder, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Icon, type FeatherIconName } from '../../components/common/Icon';
 import { colors, layout, radii, typography } from '../../theme/tokens';
 import { findSkyObject, type SkyObjectId, type SkyObjectKind } from './catalog';
@@ -7,7 +7,7 @@ import { closestMarker, horizontalFieldOfView, project, projectHorizon, type Cha
 import type { SkyPosition } from './skyMath';
 
 export const objectIcons: Record<SkyObjectKind, FeatherIconName> = {
-  star: 'star', 'deep-sky': 'aperture', moon: 'moon', planet: 'circle',
+  star: 'star', 'deep-sky': 'aperture', moon: 'moon', planet: 'circle', satellite: 'radio',
 };
 
 interface Props {
@@ -23,6 +23,7 @@ const cardinals = [
 ];
 
 export const SkyChart = memo(function SkyChart({ positions, view, onPan, onSelect }: Props) {
+  const { fontScale } = useWindowDimensions();
   const [size, setSize] = useState<ChartSize>({ width: 0, height: 0 });
   const markers = useMemo(() => positions.flatMap(position => {
     if (size.width === 0) return [];
@@ -64,6 +65,11 @@ export const SkyChart = memo(function SkyChart({ positions, view, onPan, onSelec
 
   const [start, end] = size.width ? projectHorizon(view, size) : [];
   const horizonLength = start && end ? Math.hypot(end.x - start.x, end.y - start.y) : 0;
+  const inset = 4;
+  const labelHeight = typography.label.lineHeight * fontScale;
+  const labelTop = (y: number, gap: number) => (
+    y + gap + labelHeight <= size.height - inset ? y + gap : Math.max(inset, y - gap - labelHeight)
+  );
   return (
     <View
       testID="sky-chart"
@@ -85,20 +91,29 @@ export const SkyChart = memo(function SkyChart({ positions, view, onPan, onSelec
         }]} /> : null}
         {size.width > 0 && cardinals.map(({ label, azimuth }) => {
           const point = project({ azimuth, altitude: 0 }, view, size);
-          return point && <Text key={label} style={[styles.cardinal, { left: point.x - 7, top: point.y + 4 }]}>{label}</Text>;
+          const width = 16 * fontScale;
+          return point && <Text key={label} style={[styles.cardinal, {
+            width, left: Math.max(inset, Math.min(point.x - width / 2, size.width - width - inset)),
+            top: labelTop(point.y, 4),
+          }]}>{label}</Text>;
         })}
         <View style={styles.reticle}><Icon name="crosshair" size={22} color={colors.sage} /></View>
         {markers.map(({ id, x, y, object }) => {
           const isStar = object.kind === 'star';
-          const labelWidth = 124;
+          const labelWidth = Math.min(140 * fontScale, size.width - 2 * inset);
+          const labelLeft = Math.max(inset, Math.min(x - 11, size.width - labelWidth - inset));
           return (
-            <View key={id} style={[styles.marker, { left: x - 7, top: y - 7 }]}>
+            <View key={id} style={[styles.marker, { left: x - 7, top: y - 7, zIndex: isStar ? 0 : 1 }]}>
               {isStar ? <View style={styles.star} /> : (
                 <Icon name={objectIcons[object.kind]} size={14} color={colors.brass} />
               )}
-              {!isStar && <Text numberOfLines={1} style={[styles.markerLabel, {
-                width: labelWidth, left: Math.min(-4, size.width - x - labelWidth),
-              }]}>{object.name}</Text>}
+              {!isStar && (
+                <View style={[styles.annotation, { width: labelWidth, left: labelLeft - x + 7, top: labelTop(y, 8) - y + 7 }]}>
+                  <Text numberOfLines={1} style={styles.markerLabel}>
+                    {object.kind === 'satellite' ? `${object.name} · Predicted` : object.name}
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}
@@ -113,9 +128,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.forestDark,
   },
   horizon: { position: 'absolute', height: 1, backgroundColor: colors.sage },
-  cardinal: { position: 'absolute', ...typography.label, color: colors.sageLight },
+  cardinal: { position: 'absolute', ...typography.label, color: colors.sageLight, textAlign: 'center', includeFontPadding: false },
   reticle: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', opacity: 0.55 },
   marker: { position: 'absolute', width: 14, height: 14, alignItems: 'center', justifyContent: 'center' },
   star: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.ivory },
-  markerLabel: { position: 'absolute', top: 15, ...typography.label, color: colors.ivory },
+  annotation: { position: 'absolute', alignItems: 'flex-start' },
+  markerLabel: { ...typography.label, color: colors.ivory, backgroundColor: colors.forestDark, includeFontPadding: false, paddingHorizontal: 2 },
 });

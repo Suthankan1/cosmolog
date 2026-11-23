@@ -27,3 +27,17 @@ it('opens the original educational link for the selected object when connected',
     openUrl.mockRestore();
   }
 });
+
+it('shows the orbital epoch and uncertainty for a selected cached satellite', async () => {
+  const predicted = {
+    id: 'satellite:25544',
+    altitude: 35,
+    azimuth: 132,
+    prediction: { epochAt: Date.parse('2026-11-22T08:15:00Z'), older: true },
+  } as const;
+  await render(<SkyDetailSheet id={predicted.id} position={predicted} offline onClose={jest.fn()} />);
+  expect(screen.getByRole('header', { name: 'ISS' })).toBeTruthy();
+  expect(screen.getByText('Predicted direction')).toBeTruthy();
+  expect(screen.getByText(/Orbital epoch 2026-11-22 08:15 UTC/)).toBeTruthy();
+  expect(screen.getByText(/Older orbit data can reduce accuracy/)).toBeTruthy();
+});

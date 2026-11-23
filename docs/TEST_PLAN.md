@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-Run lint, TypeScript and Jest after a clean `npm ci`. The 69 checks cover authentication, routes, source normalization and retries, SQLite migrations and rollback, media status, account ownership, checkpoints, search, collections, reading history, plate anniversaries, public share content, and pack recovery. The public archive search test uses 1,000 records, checks the match count and 100-item display limit, and enforces a 1.5-second bound on the repository call in the test environment.
+Run lint, TypeScript and Jest after a clean `npm ci`. The 86 checks cover authentication, routes, source normalization and retries, SQLite migrations and rollback, media status, account ownership, checkpoints, search, collections, reading history, plate anniversaries, public share content, pack recovery, sky projection, location lifecycle, and satellite predictions and caching. The public archive search test uses 1,000 records, checks the match count and 100-item display limit, and enforces a 1.5-second bound on the repository call in the test environment.
 
 The repository integration tests use a real SQLite database through Node's driver and an adapter with separate read and write connections. The Android build is separately responsible for exercising Expo SQLite, SecureStore, FileSystem, NetInfo, and React Native UI.
 
@@ -52,3 +52,14 @@ The repository integration tests use a real SQLite database through Node's drive
 The updated ARM64 Android release built and passed native lint. In a clean Pixel 9 API 37 emulator, **On This Day** retrieved the 23 November 2025 plate and reopened it offline. **To read** excluded a completed favourite. After a force-stop in airplane mode, the Saturn study collection reopened with both favourites and its note, and reading history retained the completion. The Android chooser displayed the public title, credit, and original URL from cached Details. Its preview excluded the field note. The Saturn pack retained all three plates and rendered its licensed image in Details without a bookmark. After reconnection, the Apollo pack downloaded all three plates. [Offline collection](screenshots/11-offline-collection.png) · [Offline reading pack](screenshots/12-offline-reading-packs.png)
 
 SQLite and Jest verified account isolation, interrupted download retries, and retention of shared media when a bookmark or another pack still owns it. The iOS JavaScript bundle exported successfully. Native iOS behaviour for these extensions remains unverified.
+
+## Sky Viewer checks
+
+- Deny location and open the Colombo chart. Tap a plotted object and check the title, bearing, elevation, and source. Open the same object from the list and verify the offline link state.
+- Grant approximate location from the viewer. On physical Android and iOS phones, point at the Moon and check that tilting and turning move the view in the expected directions. Switch to manual mode and repeat with reduced motion and a screen reader.
+- Open Sky Viewer online and wait for the ISS and Hubble states. Force-stop in airplane mode and reopen it. Cached predictions should remain available until their elements expire. On a viewer with an empty satellite cache, reconnect while it is open and check that the satellite states resolve automatically.
+- Test data at the 24- and 72-hour boundaries, a malformed response, and a failed refresh. Confirm the older-data label, the expired marker removal, and preservation of the last validated orbit.
+
+The Pixel 9 API 37 emulator verified denied location, approximate location, simulated phone pointing, manual fallback, and the Whirlpool Galaxy sheet from a chart tap. The final ARM64 release upgraded the database, opened the viewer from cached Discover in airplane mode, downloaded both orbits on reconnection, and retained both predictions after a second airplane-mode force-stop. The Android build and native lint passed. The iOS JavaScript bundle exported. Physical-device alignment and spoken screen-reader checks remain open.
+
+[Offline sky chart](screenshots/13-sky-viewer-offline.png) · [Offline object detail](screenshots/14-sky-object-offline.png)

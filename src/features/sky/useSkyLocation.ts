@@ -51,6 +51,8 @@ export function useSkyLocation(active: boolean) {
 
     const getFix = async () => {
       setStatus('checking');
+      setDevice(previous => previous && Math.abs(Date.now() - previous.timestamp) <= recentFixAge
+        ? { ...previous, lastKnown: true } : undefined);
       const shouldPrompt = attempt > promptedAttempt.current;
       if (shouldPrompt) promptedAttempt.current = attempt;
       let permission = await Location.getForegroundPermissionsAsync();
@@ -73,8 +75,6 @@ export function useSkyLocation(active: boolean) {
       }
       if (stopped) return;
 
-      setDevice(previous => previous && Date.now() - previous.timestamp <= recentFixAge
-        ? { ...previous, lastKnown: true } : undefined);
       setStatus('locating');
       void Location.getLastKnownPositionAsync({ maxAge: recentFixAge }).then(result => {
         if (stopped || finished || !result || Math.abs(Date.now() - result.timestamp) > recentFixAge) return;

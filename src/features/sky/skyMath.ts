@@ -16,6 +16,7 @@ export interface SkyDirection {
 
 export interface SkyPosition extends SkyDirection {
   id: SkyObjectId;
+  prediction?: { epochAt: number; older: boolean };
 }
 
 export function calculateSky(location: ObserverLocation, date: Date): SkyPosition[] {

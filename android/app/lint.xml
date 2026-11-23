@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+  <!-- Sky Viewer uses a foreground watch. The dependency service is removed from the manifest. -->
+  <issue id="NotificationPermission">
+    <ignore regexp=".*usage from expo\.modules\.location\.next\.locationForegroundService\.LocationForegroundService\.Companion.*" />
+  </issue>
+</lint>

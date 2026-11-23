@@ -5,25 +5,31 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../src/components/common/Header';
 import { Icon } from '../src/components/common/Icon';
 import { findSkyObject, type SkyObjectId } from '../src/features/sky/catalog';
+import { SatelliteStatus } from '../src/features/sky/SatelliteStatus';
+import { orbitAge, predictSatellite } from '../src/features/sky/satellitePrediction';
 import { objectIcons } from '../src/features/sky/SkyChart';
 import { SkyDetailSheet } from '../src/features/sky/SkyDetailSheet';
 import { SkyLocationControls } from '../src/features/sky/SkyLocationControls';
 import { SkyViewfinder } from '../src/features/sky/SkyViewfinder';
 import { aboveHorizon, calculateSky, type SkyPosition } from '../src/features/sky/skyMath';
 import { useSkyLocation } from '../src/features/sky/useSkyLocation';
+import { useSkySatellites } from '../src/features/sky/useSkySatellites';
 import { useAppSelector } from '../src/store';
 import { colors, layout, radii, spacing, typography } from '../src/theme/tokens';
 
 export default function SkyViewerScreen() {
-  const offline = useAppSelector(state => state.feed.connection === 'offline');
+  const connection = useAppSelector(state => state.feed.connection);
+  const offline = connection === 'offline';
   const focused = useIsFocused();
   const insets = useSafeAreaInsets();
   const [foreground, setForeground] = useState(AppState.currentState === 'active');
   const active = focused && foreground;
   const locationControls = useSkyLocation(active);
   const { location } = locationControls;
+  const satellites = useSkySatellites(active, connection);
   const [now, setNow] = useState(Date.now);
   const [selected, setSelected] = useState<SkyPosition>();
+  const hasOrbits = satellites.rows.some(row => row.elements && orbitAge(row.elements.epochAt, now) !== 'expired');
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => setForeground(state === 'active'));
@@ -34,12 +40,17 @@ export default function SkyViewerScreen() {
     if (!active) return;
     const update = () => setNow(Date.now());
     update();
-    const timer = setInterval(update, 10_000);
+    const timer = setInterval(update, hasOrbits ? 1000 : 10_000);
     return () => clearInterval(timer);
-  }, [active]);
+  }, [active, hasOrbits]);
 
   const minute = Math.floor(now / 60_000) * 60_000;
-  const positions = useMemo(() => aboveHorizon(calculateSky(location, new Date(minute))), [location, minute]);
+  const celestialPositions = useMemo(() => calculateSky(location, new Date(minute)), [location, minute]);
+  const satellitePositions = useMemo(() => satellites.rows.flatMap(row => {
+    const position = predictSatellite(row, location, now);
+    return position ? [position] : [];
+  }), [satellites.rows, location, now]);
+  const positions = useMemo(() => aboveHorizon([...celestialPositions, ...satellitePositions]), [celestialPositions, satellitePositions]);
   const select = useCallback((id: SkyObjectId) => {
     setSelected(positions.find(position => position.id === id));
   }, [positions]);
@@ -71,6 +82,7 @@ export default function SkyViewerScreen() {
             </View>
             <SkyViewfinder active={active} usingDeviceLocation={location.kind === 'device'} positions={positions} onSelect={select} />
             <SkyLocationControls {...locationControls} />
+            <SatelliteStatus {...satellites} positions={satellitePositions} offline={offline} now={now} />
             <Text accessibilityRole="header" style={styles.section}>Objects above the horizon</Text>
           </View>
         )}
@@ -79,12 +91,12 @@ export default function SkyViewerScreen() {
           const object = findSkyObject(item.id);
           if (!object) return null;
           return (
-            <Pressable accessibilityRole="button" accessibilityLabel={`${object.name}, ${object.category}, elevation ${Math.round(item.altitude)} degrees`}
+            <Pressable accessibilityRole="button" accessibilityLabel={`${object.name}, ${object.category}, ${item.prediction ? 'predicted ' : ''}elevation ${Math.round(item.altitude)} degrees`}
               style={styles.objectRow} onPress={() => select(item.id)}>
               <Icon name={objectIcons[object.kind]} color={colors.forest} size={17} />
               <View style={styles.objectText}>
                 <Text style={styles.objectName}>{object.name}</Text>
-                <Text style={styles.note}>{object.category} · {Math.round(item.altitude)}° up</Text>
+                <Text style={styles.note}>{object.category} · {item.prediction ? 'Predicted · ' : ''}{Math.round(item.altitude)}° up</Text>
               </View>
               <Icon name="chevron-right" color={colors.forest} size={17} />
             </Pressable>

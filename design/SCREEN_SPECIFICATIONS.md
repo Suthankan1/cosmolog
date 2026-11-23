@@ -19,6 +19,8 @@ The production mastheads use NASA Earthrise. The Figma screens use illustrative 
 
 The Field Shelf opens protected Reading history and Collections screens. Collection membership editing uses a keyboard-safe compose view. Discover opens a protected Reading packs screen showing each plate's text and image availability. On This Day uses the existing Details route. Share discovery opens the device share sheet from Details.
 
+Discover opens the protected Sky Viewer. Use a forest chart with ivory markers, brass accents, and a horizon line. The manual arrows and object list provide alternatives to phone pointing and chart taps. An ivory detail sheet shows the selected object's catalog information and links. The viewer displays the active location source and the availability of cached satellite predictions.
+
 ## States (5 additional screens)
 | State | Figma Node | Expected behavior |
 |---|---|---|

@@ -40,11 +40,18 @@ export function SkyDetailSheet({ id, position, offline, onClose }: Props) {
             <Text ref={heading} accessible accessibilityRole="header" style={styles.title}>{object.name}</Text>
             <Text style={styles.summary}>{object.summary}</Text>
             <View style={styles.position}>
-              <Text style={styles.category}>Direction</Text>
+              <Text style={styles.category}>{position.prediction ? 'Predicted direction' : 'Direction'}</Text>
               <Text style={styles.summary}>
                 Bearing {Math.round(position.azimuth) % 360}° · Elevation {Math.round(position.altitude)}°
               </Text>
             </View>
+            {position.prediction && (
+              <Text style={styles.credit}>
+                Orbital epoch {new Date(position.prediction.epochAt).toISOString().slice(0, 16).replace('T', ' ')} UTC.
+                {position.prediction.older ? ' Older orbit data can reduce accuracy.' : ''}
+                {' '}Visibility also depends on sunlight and observing conditions.
+              </Text>
+            )}
             <Text style={styles.credit}>{object.source}</Text>
             {offline && <Text style={styles.credit}>Connect to open the links.</Text>}
             {linkError && <Text accessibilityRole="alert" style={styles.credit}>Could not open the link.</Text>}
