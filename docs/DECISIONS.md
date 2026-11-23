@@ -59,3 +59,9 @@ Keep SQLite and the existing Redux Toolkit thunks. Store the image's source revi
 ## ADR-012 — Reading packs share the offline archive
 
 Persist completed pack entries per account in SQLite. Commit each entry with its cached discovery so a failed request leaves completed entries available and retry can skip them. Share the existing licensed image files and download worker between packs and bookmarks. A file remains eligible for retention while any account has a pack entry or favourite referring to it. Packs use the existing date adapter and preserve the source snapshot, so they need no new dependencies or service.
+
+## ADR-013 — Calculate the sky on the device
+
+Use Astronomy Engine and small attributed HYG and OpenNGC catalog extracts to calculate sky positions without a network request. A React Native chart and object list share the same local data and detail sheet. Device time and coordinates determine the sky. Phone motion changes only the viewing direction. Use Expo Location and Expo Sensors for foreground pointing, with manual controls available when the compass or location is unavailable. Keep device coordinates and sensor readings in memory on the viewer.
+
+Use `satellite.js` 6.0.2 for SGP4 propagation of ISS and Hubble elements from CelesTrak. Store validated elements and fetch timing in the existing SQLite database, and use the app's Redux Toolkit thunk pattern for refresh. Show the epoch and hide expired predictions. Cache and refresh remain independent of the astronomy catalog and article feeds.

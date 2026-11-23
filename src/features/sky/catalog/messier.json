@@ -1,0 +1,8 @@
+[
+  {"messier": 8, "name": "Lagoon Nebula", "category": "Nebula", "summary": "A cloud of glowing gas in Sagittarius where young stars are forming.", "ra": 18.0614639, "dec": -24.3801667},
+  {"messier": 13, "name": "Hercules Cluster", "category": "Star cluster", "summary": "A dense, roughly spherical group of old stars in the constellation Hercules.", "ra": 16.6948972, "dec": 36.4613056},
+  {"messier": 31, "name": "Andromeda Galaxy", "category": "Galaxy", "summary": "A large spiral galaxy and one of the Milky Way’s closest galactic neighbours.", "ra": 0.7123194, "dec": 41.2690556},
+  {"messier": 33, "name": "Triangulum Galaxy", "category": "Galaxy", "summary": "A spiral galaxy in the Local Group, named for the constellation Triangulum.", "ra": 1.5641361, "dec": 30.6602222},
+  {"messier": 42, "name": "Orion Nebula", "category": "Nebula", "summary": "A nearby stellar nursery that appears in the sword of Orion.", "ra": 5.5879111, "dec": -5.3896667},
+  {"messier": 51, "name": "Whirlpool Galaxy", "category": "Galaxy", "summary": "A spiral galaxy interacting with its smaller neighbour, NGC 5195.", "ra": 13.497975, "dec": 47.1951667}
+]

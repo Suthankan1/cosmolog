@@ -106,6 +106,7 @@ export default function DiscoverScreen() {
       )}
       {checkpointError && <Text accessibilityRole="alert" style={styles.noticeText}>Could not update your reading position.</Text>}
       {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
+      {!searching && <Button title="Sky Viewer" icon="compass" variant="outline" onPress={() => router.push('/sky-viewer')} />}
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       {!searching && selectedCategory !== 'spaceflight-news' && (
         <>

@@ -255,3 +255,7 @@ Discover offers A Tour of Saturn and Apollo at the Moon. SQLite commits each dow
 ## 2026-11-23 — Archive extension verification
 
 Android native lint and the optimized ARM64 release build passed. The Pixel 9 emulator restored the cached anniversary plate, reading completion, note, collection and Saturn pack after a force-stop in airplane mode. The pack's licensed image rendered from local storage without a bookmark. The Android share sheet displayed the public attribution and link. Apollo downloaded on reconnection. The README includes two screenshots from the offline run. The iOS bundle exported successfully. Native iOS behaviour for these extensions remains unverified.
+
+## 2026-11-23 — Offline Sky Viewer
+
+Discover opens a protected sky chart with manual panning, coordinate entry, and a labelled Colombo preview. The bundled catalog includes 80 stars, six Messier objects, the Moon, and seven planets. The chart and accessible object list open the same detail sheet with local summaries and source links. The Moon position matched the U.S. Naval Observatory reference within 0.2°. TypeScript, ESLint, seven focused tests, and the Android bundle export passed.

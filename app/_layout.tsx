@@ -60,6 +60,7 @@ function RootNavigator() {
             <Stack.Screen name="reading-history" />
             <Stack.Screen name="collections" />
             <Stack.Screen name="reading-packs" />
+            <Stack.Screen name="sky-viewer" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
