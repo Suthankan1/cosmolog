@@ -313,3 +313,7 @@ Discover places the Daily Plate before resume reading and groups secondary tools
 The Shelf groups its three archive destinations in one row. Discover and Favourites share checked filter chips. Form labels are larger and secondary actions use the tonal treatment across authentication and Profile.
 
 Space Study uses destination rows for editions, related reading and sky links. The manual sky controls share a floating capsule beneath the chart. Android release assembly and native lint passed.
+
+## Floating controls accessibility verification
+
+The native accessibility hierarchy exposed decorative Feather glyphs in tab names. Android also retained offscreen tab controls while the search keyboard was open. Tabs now have explicit names and unmount during keyboard entry. On the final Android release, the accessibility tree lost the tab controls during typing and restored them on dismissal. All 99 Jest tests, strict TypeScript and full ESLint passed.

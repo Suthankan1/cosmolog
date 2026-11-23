@@ -28,6 +28,8 @@ export const Icon: React.FC<IconProps> = ({
       style={style}
       accessibilityLabel={accessibilityLabel}
       accessible={Boolean(accessibilityLabel)}
+      accessibilityElementsHidden={!accessibilityLabel}
+      importantForAccessibility={accessibilityLabel ? "yes" : "no-hide-descendants"}
     />
   );
 };

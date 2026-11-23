@@ -1,5 +1,6 @@
-import { Tabs } from 'expo-router/js-tabs';
-import { StyleSheet, Text, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { BottomTabBar, Tabs, type BottomTabBarProps } from 'expo-router/js-tabs';
+import { Keyboard, Platform, StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FloatingSurface } from '../../src/components/common/FloatingSurface';
 import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
@@ -11,14 +12,23 @@ const destinations = [
   { name: 'profile', title: 'Profile', icon: 'user' },
 ] as const satisfies readonly { name: string; title: string; icon: FeatherIconName }[];
 
+function FloatingTabBar(props: BottomTabBarProps) {
+  const [editing, setEditing] = useState(() => Keyboard.isVisible());
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setEditing(true));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setEditing(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+  return editing ? null : <BottomTabBar {...props} />;
+}
+
 export default function TabLayout() {
   const { bottom, left, right } = useSafeAreaInsets();
   const { fontScale, width } = useWindowDimensions();
   const side = width <= 360 || fontScale > 1.3 ? spacing[1] : layout.floatingInset;
   return (
-    <Tabs screenOptions={{
+    <Tabs tabBar={props => <FloatingTabBar {...props} />} screenOptions={{
       headerShown: false,
-      tabBarHideOnKeyboard: true,
       tabBarLabelPosition: 'below-icon',
       tabBarActiveTintColor: colors.forest,
       tabBarInactiveTintColor: colors.ink,
@@ -32,6 +42,7 @@ export default function TabLayout() {
       {destinations.map(({ name, title, icon }) => (
         <Tabs.Screen key={name} name={name} options={{
           title,
+          tabBarAccessibilityLabel: title,
           tabBarIcon: ({ color }) => <Icon name={icon} size={24} color={color} />,
           tabBarLabel: ({ color }) => <Text style={[styles.label, { color }]}>{title}</Text>,
         }} />
