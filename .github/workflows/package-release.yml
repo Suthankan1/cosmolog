@@ -1,0 +1,49 @@
+name: Package a published mobile release
+
+on:
+  push:
+    branches: ['release/v*']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: oras-project/setup-oras@22ce207df3b08e061f537244349aac6ae1d214f6
+        with:
+          version: 1.3.0
+      - name: Verify and publish the release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#release/}"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          version="${tag#v}"
+          ref="ghcr.io/${GITHUB_REPOSITORY,,}:$version"
+          mkdir assets
+          cd assets
+          gh release download "$tag"
+          sha256sum --check --strict SHA256SUMS
+          revision=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha)
+          printf '%s' "$GH_TOKEN" | oras login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          oras push "$ref" \
+            --artifact-type application/vnd.cosmolog.mobile-release.v1 \
+            --annotation "org.opencontainers.image.source=https://github.com/$GH_REPO" \
+            --annotation "org.opencontainers.image.revision=$revision" \
+            --annotation "org.opencontainers.image.version=$version" \
+            --annotation "org.opencontainers.image.description=COSMOLOG mobile builds and demo" \
+            "COSMOLOG-$version-android-arm64.apk:application/vnd.android.package-archive" \
+            "COSMOLOG-$version-ios-simulator.zip:application/zip" \
+            "COSMOLOG-$version-demo.mp4:video/mp4" \
+            SHA256SUMS:text/plain
+          mkdir ../verification
+          cd ../verification
+          oras pull "$ref"
+          cmp SHA256SUMS ../assets/SHA256SUMS
+          sha256sum --check --strict SHA256SUMS
