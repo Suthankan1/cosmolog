@@ -114,8 +114,8 @@ export default function StudyLibrary() {
             style={s.row}
             onPress={() => open(item.id, saved ? sectionNumber(item.id, item.anchor) : 0)}
           >
-            <Text style={s.body}>{item.title}</Text>
-            <Text style={s.note}>{item.category}</Text>
+            <Text style={s.kicker}>{item.category}</Text>
+            <Text style={s.entryTitle}>{item.title}</Text>
           </Pressable>
         )}
         ListEmptyComponent={

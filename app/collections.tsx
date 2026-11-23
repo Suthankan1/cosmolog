@@ -185,9 +185,9 @@ const styles = StyleSheet.create({
   error: { ...typography.bodySmall, color: colors.danger },
   row: {
     flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: layout.minimumTouchTarget,
-    padding: spacing[3], borderBottomWidth: 1, borderColor: colors.border,
+    paddingVertical: spacing[4], borderBottomWidth: 1, borderColor: colors.border,
   },
   rowCopy: { ...typography.body, flex: 1, color: colors.ink },
-  rowTitle: { ...typography.h2, color: colors.forest },
+  rowTitle: { ...typography.h2, color: colors.ink },
   checked: { backgroundColor: colors.sageLight, borderRadius: radii.md },
 });

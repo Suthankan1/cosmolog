@@ -158,7 +158,7 @@ export default function ReadingPacksScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ivory },
   content: { gap: spacing[4], paddingHorizontal: layout.horizontalInset, paddingVertical: spacing[4] },
-  pack: { gap: spacing[2], padding: spacing[3], backgroundColor: colors.surface, borderRadius: radii.md },
+  pack: { gap: spacing[2], padding: spacing[3], backgroundColor: colors.surface, borderRadius: radii.sm, borderTopWidth: 3, borderColor: colors.forest },
   title: { ...typography.h1, color: colors.forest },
   entryTitle: { ...typography.h2, color: colors.ink },
   missing: { paddingVertical: spacing[3], borderBottomWidth: 1, borderColor: colors.border, gap: spacing[1] },

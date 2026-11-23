@@ -336,3 +336,5 @@ Discover now keeps the edition selector above a shared photo cover. Each source 
 The cut C now opens into the outlined masthead on a five-second cold launch. Skip, Reduce Motion and timer completion share one handoff. Two launch regression tests, TypeScript and ESLint passed.
 
 Reworked auth, article, Shelf and Profile layouts. The article opens with publisher, date and title before the image and credit. Shelf search and saved discoveries precede its management links. Discovery empties occupy the cover position.
+
+The Field Guide now presents an editorial contents list, the reader displays its section position, and downloads and reading packs use ruled panels. The Sky Viewer places the chart before observing notes and object profiles share the same editorial heading treatment. All 105 tests, strict TypeScript and ESLint passed.

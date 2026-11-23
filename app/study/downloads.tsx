@@ -115,8 +115,8 @@ export default function Downloads() {
         {packs.map((pack) => {
           const local = installed.find((i) => i.id === pack.id);
           return (
-            <View key={pack.id} style={{ gap: 8 }}>
-              <Text style={s.body}>{pack.title}</Text>
+            <View key={pack.id} style={s.pack}>
+              <Text style={s.entryTitle}>{pack.title}</Text>
               <Text style={s.note}>
                 {packSize(pack).toLocaleString()} bytes · edition {pack.revision}
                 {local ? ' · installed edition ' + local.revision : ''}

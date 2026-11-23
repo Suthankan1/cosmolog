@@ -89,7 +89,7 @@ function Reader({ id, section }: { id: string; section?: string }) {
             </Text>
             {entry.chapter ? (
               <>
-                <Text style={s.note}>
+                <Text style={s.kicker}>
                   Section {page + 1} of {blocks.length}
                 </Text>
                 <Text accessibilityRole="header" style={s.section}>

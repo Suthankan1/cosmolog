@@ -84,10 +84,10 @@ export default function SkyViewerScreen() {
               <Text accessibilityRole="header" style={styles.title}>The sky overhead</Text>
               <Text style={styles.location}>{locationLabel} · {new Date(now).toLocaleString([], {timeZone:zone,month:'short',day:'numeric', hour: 'numeric', minute: '2-digit',timeZoneName:'short' })}</Text>
             </View>
+            <SkyViewfinder active={active} usingDeviceLocation={location.kind === 'device'} positions={positions} onSelect={select} />
             {target && <Text style={styles.note}>{findSkyObject(target as SkyObjectId)?.name ?? 'Unknown target'} · {targetPosition?
               (targetPosition.altitude>=0?'Above horizon':'Below horizon')+' · elevation '+Math.round(targetPosition.altitude)+'° · bearing '+Math.round(targetPosition.azimuth)+'°':'Position unavailable'}</Text>}
             <Text style={styles.note}>Daylight, weather and observing equipment affect what you can see.</Text>
-            <SkyViewfinder active={active} usingDeviceLocation={location.kind === 'device'} positions={positions} onSelect={select} />
             <SkyLocationControls {...locationControls} />
             <SatelliteStatus {...satellites} positions={satellitePositions} offline={offline} now={now} />
             <Text accessibilityRole="header" style={styles.section}>Objects above the horizon</Text>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ivory },
   content: { paddingHorizontal: layout.horizontalInset, paddingTop: spacing[4] },
   intro: { gap: spacing[3], paddingBottom: spacing[2] },
-  title: { ...typography.h1, color: colors.forest },
+  title: { ...typography.display, color: colors.ink },
   location: { ...typography.bodySmall, color: colors.muted, marginTop: spacing[1] },
   offline: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], backgroundColor: colors.sageLight, borderRadius: radii.md, padding: spacing[3] },
   offlineText: { flex: 1, ...typography.bodySmall, color: colors.forest },

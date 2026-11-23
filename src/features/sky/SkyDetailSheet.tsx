@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(16, 47, 38, 0.50)', justifyContent: 'flex-end' },
   sheet: { maxHeight: '85%', backgroundColor: colors.surface, borderTopLeftRadius: radii.xxl, borderTopRightRadius: radii.xxl },
   content: { padding: spacing[6], gap: spacing[3] },
-  title: { ...typography.h1, color: colors.forest },
+  title: { ...typography.display, color: colors.ink, borderTopWidth: 3, borderColor: colors.terracotta, paddingTop: spacing[3] },
   category: { ...typography.label, color: colors.forest },
   summary: { ...typography.body, color: colors.ink },
   credit: { ...typography.bodySmall, color: colors.muted },
