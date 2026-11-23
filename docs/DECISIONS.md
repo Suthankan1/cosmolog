@@ -65,3 +65,7 @@ Persist completed pack entries per account in SQLite. Commit each entry with its
 Use Astronomy Engine and small attributed HYG and OpenNGC catalog extracts to calculate sky positions without a network request. A React Native chart and object list share the same local data and detail sheet. Device time and coordinates determine the sky. Phone motion changes only the viewing direction. Use Expo Location and Expo Sensors for foreground pointing, with manual controls available when the compass or location is unavailable. Keep device coordinates and sensor readings in memory on the viewer.
 
 Use `satellite.js` 6.0.2 for SGP4 propagation of ISS and Hubble elements from CelesTrak. Store validated elements and fetch timing in the existing SQLite database, and use the app's Redux Toolkit thunk pattern for refresh. Show the epoch and hide expired predictions. Cache and refresh remain independent of the astronomy catalog and article feeds.
+
+## ADR-013 — Space Study editions and offline city lookup
+
+Use the archive SQLite writer for versioned study records, aliases, account bookmarks and reading positions. Keep existing discovery identities and orbital elements intact. Bundle a separately indexed GeoNames database to avoid constructing the worldwide place index at startup. Study routes carry stable record IDs. Optional study packs share the archive transaction boundary. Keep the existing Redux Toolkit thunk approach for remote work.

@@ -271,3 +271,7 @@ Sky Viewer validates CelesTrak elements for the ISS and Hubble, caches them in S
 ## 2026-11-23 — Space Study planning
 
 Added [the Space Study implementation plan](../tasks/07-space-study.md) covering the in-app book, searchable atlas, offline city selection, Sky Viewer integration, catalog updates, and assignment release gates. This entry records planning only.
+
+## Space Study guide and atlas
+
+Added the bundled eight-chapter introductory edition, original supplemental profiles, searchable sky catalog, section reader, account bookmarks and offline reading checkpoints. The SQLite repository suite (14 tests), ESLint and TypeScript passed.

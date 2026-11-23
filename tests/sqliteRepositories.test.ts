@@ -1,3 +1,5 @@
+import {listStudy,bookmarkStudy,resumeStudy,checkpoint,readStudy} from '../src/features/study/repository';
+import {studyEntries} from '../src/features/study/edition';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -297,4 +299,23 @@ it('searches a thousand local records within the bounded result window', async (
   expect(result.total).toBe(1000);
   expect(result.items).toHaveLength(100);
   expect(performance.now() - start).toBeLessThan(1500);
+});
+
+it('installs the full guide, resolves aliases and separates account reading state', async () => {
+  const ids = new Set(studyEntries.map(e=>e.id));
+  expect(ids.size).toBe(studyEntries.length);
+  for(const entry of studyEntries) {
+    expect(entry.url).toMatch(/^https:\/\//);
+    expect(entry.body.length).toBeGreaterThan(10);
+    for(const related of entry.related) expect(ids.has(related)).toBe(true);
+  }
+  expect(await listStudy('',false,5,20)).toHaveLength(8);
+  expect((await listStudy('M31',false,5,5))[0].id).toBe('messier:31');
+  expect((await listStudy('25544',false,5,5))[0].id).toBe('satellite:25544');
+  await bookmarkStudy(5,'moon:titan',true);
+  expect(await listStudy('',true,5,10)).toHaveLength(1);
+  expect((await readStudy('moon:titan',6)).marked).toBe(false);
+  await checkpoint(5,'chapter:worlds',2);
+  expect((await resumeStudy(5))?.section).toBe(2);
+  expect(await resumeStudy(6)).toBeFalsy();
 });

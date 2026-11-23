@@ -174,3 +174,17 @@ export const MIGRATE_TO_SKY_ORBITS_SQL = `
   );
   PRAGMA user_version = 9;
 `;
+
+export const MIGRATE_TO_STUDY_SQL = `
+  CREATE TABLE study_entries (
+    id TEXT PRIMARY KEY, title TEXT NOT NULL COLLATE NOCASE, category TEXT NOT NULL,
+    body TEXT NOT NULL, source TEXT NOT NULL, url TEXT NOT NULL, related TEXT NOT NULL,
+    chapter INTEGER, sky INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX study_titles ON study_entries(title);
+  CREATE TABLE study_aliases (name TEXT COLLATE NOCASE, entry_id TEXT REFERENCES study_entries(id), PRIMARY KEY(name,entry_id));
+  CREATE TABLE study_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  CREATE TABLE study_bookmarks (account INTEGER, entry_id TEXT REFERENCES study_entries(id), PRIMARY KEY(account,entry_id));
+  CREATE TABLE study_progress (account INTEGER PRIMARY KEY, entry_id TEXT REFERENCES study_entries(id), section INTEGER NOT NULL);
+  PRAGMA user_version = 10;
+`;

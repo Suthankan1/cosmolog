@@ -62,6 +62,7 @@ export default function FavouritesScreen() {
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.title}>Field Shelf</Text>
       <Text style={styles.subtitle}>Saved discoveries and private field notes.</Text>
+      <Button title="Saved study entries" icon="book-open" variant="outline" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
       <Button title="Collections" icon="folder" variant="outline" onPress={() => router.push('/collections')} />
       <Button title="Reading history" icon="clock" variant="outline" onPress={() => router.push('/reading-history')} />
       {legacyCount > 0 && <Button title="Import earlier bookmarks" variant="outline" loading={importing}

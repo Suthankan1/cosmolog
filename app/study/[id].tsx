@@ -1,0 +1,70 @@
+import { useEffect, useState } from 'react';
+import { Alert, Linking, ScrollView, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Header } from '../../src/components/common/Header';
+import { Button } from '../../src/components/common/Button';
+import { useAppSelector } from '../../src/store';
+import { bookmarkStudy, checkpoint, readStudy, type StudyRow } from '../../src/features/study/repository';
+import { studyEntries } from '../../src/features/study/edition';
+import { studyStyles as s } from '../../src/features/study/layout';
+
+export default function StudyReader() {
+  const {id,section}=useLocalSearchParams<{id:string;section?:string}>();
+  return <Reader key={id} id={id} section={section}/>;
+}
+function Reader({id,section}:{id:string;section?:string}) {
+  const router=useRouter();
+  const account=useAppSelector(state=>state.auth.user?.id);
+  const offline=useAppSelector(state=>state.feed.connection==='offline');
+  const [entry,setEntry]=useState<StudyRow|null>(null);
+  const [page,setPage]=useState(0);
+  const [marked,setMarked]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState('Opening guide…');
+  const [attempt,retry]=useState(0);
+  useEffect(()=>{
+    let active=true;
+    if(account) readStudy(id,account).then(({entry:row,marked:mark})=>{
+      if(!active)return;
+      setMarked(mark);setPage(Math.min(row?.body.split('\n\n').length??1,Math.max(1,(Number(section)||0)+1))-1);
+      setEntry(row);setMessage(row?'':'This entry is unavailable.');
+    }).catch(()=>{if(active)setMessage('Could not read the local entry.');});
+    return ()=>{active=false;};
+  },[account,id,section,attempt]);
+  useEffect(()=>{
+    if(account && entry?.chapter && entry.id===id) void checkpoint(account,id,page).catch(()=>setMessage('Reading position could not be saved.'));
+  },[account,entry,id,page]);
+  const blocks=entry?.body.split('\n\n')??[];
+  const [heading,...paragraphs]=(blocks[page]??'').split('\n');
+  const open=(next:string)=>router.push({pathname:'/study/[id]',params:{id:next}});
+  async function toggle() {
+    if(!account||busy)return;
+    setBusy(true);
+    try {await bookmarkStudy(account,id,!marked);setMarked(!marked);}
+    catch {Alert.alert('Could not update bookmark');}
+    finally {setBusy(false);}
+  }
+  return <View style={s.page}><Header title="Space Study" showBack/><ScrollView key={id+'-'+page} contentContainerStyle={s.content}>
+    {!!message && <Text style={s.note}>{message}</Text>}
+    {!entry && message.startsWith('Could') && <Button title="Try again" onPress={()=>retry(attempt+1)}/>}
+    {entry && <>
+      <Text style={s.note}>{offline?'Offline · ':''}{entry.chapter?'Chapter '+entry.chapter:entry.category}</Text>
+      <Text accessibilityRole="header" style={s.heading}>{entry.title}</Text>
+      {entry.chapter ? <><Text style={s.note}>Section {page+1} of {blocks.length}</Text>
+        <Text accessibilityRole="header" style={s.section}>{heading}</Text><Text style={s.body}>{paragraphs.join('\n')}</Text></>:
+        <Text style={s.body}>{entry.body}</Text>}
+      {page>0 && <Button title="Previous section" variant="outline" onPress={()=>setPage(page-1)}/>}
+      {page+1<blocks.length && <Button title="Next section" onPress={()=>setPage(page+1)}/>}
+      {entry.chapter!=null && page+1===blocks.length && studyEntries.some(e=>e.chapter===entry.chapter!+1) &&
+        <Button title="Next chapter" onPress={()=>open(studyEntries.find(e=>e.chapter===entry.chapter!+1)!.id)}/>}
+      <Button title={marked?'Remove study bookmark':'Save to Field Shelf'} icon="bookmark" variant="outline" loading={busy} onPress={()=>void toggle()}/>
+      {Boolean(entry.sky) && <Button title="Show in sky" icon="compass" onPress={()=>router.push({pathname:'/sky-viewer',params:{target:id}})}/>}
+      <Text style={s.section}>Related reading</Text>
+      {(JSON.parse(entry.related) as string[]).map(link=><Button key={link} title={studyEntries.find(e=>e.id===link)?.title??link}
+        variant="outline" onPress={()=>open(link)}/>)}
+      <Text style={s.note}>{entry.source}</Text>
+      <Button title="Original source" icon="external-link" variant="outline" disabled={offline}
+        onPress={()=>void Linking.openURL(entry.url).catch(()=>Alert.alert('Could not open source'))}/>
+    </>}
+  </ScrollView></View>;
+}
