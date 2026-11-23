@@ -68,15 +68,23 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 - [Jupiter image credits](https://science.nasa.gov/wp-json/wp/v2/apod-basic/261122) · NASA/Juno/SwRI/MSSS, processing by Matt Brealey and Seán Doran · [CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/)
 - [Cocoon Nebula Wide Field](https://apod.nasa.gov/apod/ap140918.html) · Federico Pelliccia
 
-## Platform controls
+## Magazine edition
 
-Discover, Favourites and Profile float above the feed. Supported iPhones use native Liquid Glass. Reduce Transparency switches to an opaque surface, and Android uses an elevated ivory capsule. The same material groups the four manual Sky Viewer controls. Both lists and article text remain opaque.
+COSMOLOG opens with a five-second cut-C animation. Skip is available immediately. Reduce Motion goes directly to session handoff. The source selector stays above the cover as readers switch between All sources, Daily Plates and Dispatches. A missing network connection preserves access to the local archive.
 
-| iOS Discover (Expo Go) | Android manual sky controls | Offline source credit |
+The centred three-tab dock targets 264 points at standard type size and expands for larger labels. Supported iPhones use native glass, with an opaque Reduce Transparency fallback. Android uses an elevated ivory surface.
+
+| All sources | Daily Plates | Dispatches |
 | --- | --- | --- |
-| ![iOS floating tabs](docs/screenshots/20-ios-floating-tabs.png) | ![Manual direction controls beneath the chart](docs/screenshots/21-sky-controls.png) | ![Saved source information in airplane mode](docs/screenshots/19-offline-source.png) |
+| ![All sources cover](docs/screenshots/magazine/all-sources.png) | ![NASA edition](docs/screenshots/magazine/daily-plates.png) | ![Dispatch edition](docs/screenshots/magazine/dispatches.png) |
 
-## Screenshots
+| Sign in | Article | Field Shelf | Cold launch offline |
+| --- | --- | --- | --- |
+| ![Sign in](docs/screenshots/magazine/login.png) | ![Article details](docs/screenshots/magazine/details.png) | ![Field Shelf](docs/screenshots/magazine/shelf.png) | ![Offline archive](docs/screenshots/magazine/offline.png) |
+
+[Magazine identity and launch storyboard](design/magazine/identity-and-motion.svg) · [Editable edition layouts](design/magazine/editions.svg) · [Magazine screen handoff](design/magazine/screens.svg)
+
+## Earlier release screenshots
 
 | Sign in | Discover | Details |
 | --- | --- | --- |

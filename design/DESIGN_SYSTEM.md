@@ -1,16 +1,10 @@
-# COSMOLOG v2 — Design system
+# COSMOLOG — Magazine design system
 
-**Source of truth:** [Figma v2](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=11-5).
-
-This second design iteration was rebuilt from the two generated editorial reference images in `design/references/` after the original v1 was rejected. The v1 pages are archived at the end of the Figma file. **Do not implement v1.**
+The current visual identity is the magazine C and outlined masthead in `assets/brand/`. The existing online Figma v2 pages are historical references. Current portable handoff boards are in `design/magazine/`.
 
 ## Visual identity
-- Editorial science journal, not a dark sci-fi dashboard.
-- A distinctive crescent observation mark with a brass orbit, one brass observation point and a central four-point sighting star.
-- Forest-green inverted square app icon with cream mark.
-- Playfair Display wordmark **COSMOLOG**; tagline *A field journal for the universe*.
-- High-quality astronomical photography used as the only major dramatic visual element.
-- Restrained UI and no glow, gradients as decoration, generic AI logos, emojis, rockets or fantasy controls.
+
+Use the cut C at launcher scale and the full vector masthead at publication scale. Place photography with its source, date and credit. Set editorial headlines in Playfair Display and controls in Inter. Reserve glass for the floating dock and sky toolbar. Use the native feather glyph library for actions.
 
 ## Palette
 | Name | Value | Role |
@@ -38,7 +32,7 @@ Strong light mode is the default. Dark forest is limited to intentional branded 
 - Avoid micro-sized 10 px copy in accessible production UI; scale metadata to user font settings.
 
 ## Components
-Reusable editable Figma components exist on `02 — V2 / Components`:
+The earlier reusable components are archived on `02 — V2 / Components`:
 - Brand mark (forest/ivory).
 - Feather-style SVG vector icons.
 - Primary CTA, outline CTA.
@@ -52,7 +46,7 @@ The component library uses the `COSMOLOG V2 / Semantic` variable collection and 
 ## Composition
 - Reference device is 390×844, with 24 px horizontal content inset.
 - Status bar stays clear. Safe-area insets and keyboard handling are dynamic in React Native.
-- Featured Saturn image: 342×245 editorial card with dark lower overlay, real readable text, and one brass action affordance.
+- Cover: 1.95:1 image above a forest caption with source, date, headline and credit. All three editions share this structure.
 - Compact article rows: ~70 px source thumbnail, two-line serif title, 10–12 px metadata.
 - Navigation: three logical tabs, **Discover / Favourites / Profile**. The case study's separate 'Saved' tab was dropped because it duplicates Favourites and adds unnecessary navigation complexity.
 - Details is a pushed stack screen without persistent tab bar; content is scrollable and attribution remains available.
@@ -70,4 +64,4 @@ The component library uses the `COSMOLOG V2 / Semantic` variable collection and 
 
 ## Floating controls
 
-Use a single regular Liquid Glass background on supported iOS devices for the tab bar and manual Sky Viewer toolbar. Use an opaque ivory surface when Reduce Transparency is enabled, on Android and on web. Use a sage selection capsule, permanent tab labels and 48-point hit areas. Keep body copy, forms, feedback and credits on opaque surfaces. Primary actions use forest, secondary actions use sage, and internal destinations use labelled rows with a Feather chevron.
+At standard text size centre a 264-point dock with three labelled destinations. Expand within the safe area for enlarged text. Use a single regular Liquid Glass background on supported iOS devices for the tab bar and manual Sky Viewer toolbar. Use an opaque ivory surface when Reduce Transparency is enabled, on Android and on web. Use a sage selection capsule, permanent tab labels and 48-point hit areas. Keep body copy, forms, feedback and credits on opaque surfaces. Primary actions use forest, secondary actions use sage, and internal destinations use labelled rows with a Feather chevron.

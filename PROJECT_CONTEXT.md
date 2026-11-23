@@ -34,7 +34,7 @@ Differentiation is in editorial curation, source-aware reading, and dependable o
 
 ## Brand — magazine edition (current)
 - Original visual references: `design/references/reference-brand-system.png` and `reference-mobile-case-study.png`.
-- Figma source of truth: `https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N` (magazine pages supersede v2).
+- Magazine handoff: `design/magazine/`. The existing Figma file preserves the v2 reference pages.
 - Mark: a typographic C with diagonally cut terminals.
 - Wordmark: outlined COSMOLOG masthead in Playfair Display Bold; tagline in Playfair Display Italic.
 - Interface type: Inter.
@@ -95,7 +95,7 @@ No custom backend in the assignment baseline. No secrets or permanent API creden
 
 ## Current implementation
 
-The Expo app implements verified offline session restoration, protected routes, SQLite source snapshots, account-owned favourites and notes, and verified durable image downloads. Discover, Details, Favourites, and Profile follow the v2 design specifications. See `docs/PROGRESS.md` for the current build and device verification evidence.
+The Expo app implements verified offline session restoration, protected routes, SQLite source snapshots, account-owned favourites and notes, and verified durable image downloads. Discover, Details, Favourites, and Profile follow the magazine design specifications. See `docs/PROGRESS.md` for the current build and device verification evidence.
 
 ## Space Study extension
 

@@ -2,7 +2,7 @@
   "file": "COSMOLOG \u2014 Product & Visual Design",
   "url": "https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N",
   "team": "Suthankan Balenthiran's team",
-  "current_version": "v2 editorial redesign",
+  "current_version": "v3 science magazine",
   "archived_version": "v1 \u2014 do not implement",
   "pages": {
     "cover": {
@@ -51,5 +51,11 @@
       "main_board": "21:2"
     }
   },
-  "design_note": "Five original Figma image generations were used for high-fidelity mockup imagery only; final app should load attributed API media."
+  "design_note": "Five original Figma image generations were used for high-fidelity mockup imagery only; final app should load attributed API media.",
+  "magazine_boards": [
+    "magazine/identity-and-motion.svg",
+    "magazine/editions.svg",
+    "magazine/screens.svg"
+  ],
+  "previous_version": "v2 editorial redesign"
 }

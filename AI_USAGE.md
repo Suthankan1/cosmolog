@@ -50,3 +50,7 @@ During Android verification a pack installation failed because an Expo file writ
 ## Platform control refresh
 
 Codex implemented the platform surfaces, destination groups and shared button changes. During emulator testing, a tab’s generated accessibility name included the decorative Feather glyph. The corrected implementation gives each destination an explicit accessibility label and hides decorative icon text from assistive technology.
+
+## Magazine redesign
+
+Codex helped implement the cut-C artwork, the timed launch sequence, compact tab sizing and shared edition layout. The team should review the logo at launcher size and exercise Skip and Reduce Motion on a physical device. The editable SVG handoff includes local publication imagery. The connected Figma account had view access to the original design.

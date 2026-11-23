@@ -1,13 +1,13 @@
-# COSMOLOG v2 — Screen specifications
+# COSMOLOG — Magazine screen specifications
 
-[Figma file](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=11-5). V2 primary screens and five distinct offline/error states are editable in Figma.
+[Figma file](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=11-5). V2 screens and offline/error examples are retained there as historical references. Current layouts follow the magazine boards and production app.
 
 The production mastheads use NASA Earthrise. The Figma screens use illustrative example articles, profiles, counts and sync times. Production content must be populated from actual APIs/local database and must not present samples as live data.
 
 ## Primary screens (7)
 | Screen | Figma Node | Requirements |
 |---|---|---|
-| Launch Reveal | `16:2` | In-app brand reveal: dark forest + crescent/orbit/wordmark + moon horizon. Native splash icon remains static; reduced-motion alternative |
+| Launch Reveal | `16:2` | In-app brand reveal: dark forest + cut C, outlined wordmark and Earthrise crop. Native splash icon remains static; reduced-motion alternative |
 | Login | `16:25` | Username/password labels, validation, password reveal, DummyJSON login, SecureStore session, loading and error states |
 | Create Account | `16:70` | Simulated DummyJSON registration, inline disclosure, no fake persistent user |
 | Discover | `17:42` | Curated NASA image, space dispatch list, local search, offline banner, article cards, loading/retry/empty states, last refresh |
@@ -47,3 +47,10 @@ Discover opens the ivory Field Guide with its table of contents and object atlas
 ## Platform controls
 
 Discover, Favourites and Profile use the floating three-tab capsule. The router reports its measured height to each list so the final action scrolls clear. Discover groups Space Study, Sky Viewer, packs and date browsing under **Study, sky and archives**. Favourites groups saved study entries, Collections and History under **Shelf tools**. The manual sky toolbar sits below the chart so all chart targets stay visible.
+
+
+## Magazine layouts
+
+Discover keeps its outlined masthead, search and edition selector above the cover. All sources leads with the newest plate when available, then shows the remaining interleaved stories. Each single-source edition leads with its newest record. Empty editions and unavailable media have explicit states. The 264-point dock expands at larger type sizes.
+
+Details opens with source, date, headline, byline and save action before the image. The Shelf puts search and saved entries before archive tools. Profile groups identity, local storage, refresh and sign-out. The Field Guide uses ruled chapter headings, catalogue labels and persistent section positions. Reading packs and edition downloads use ruled panels. Sky Viewer leads with the chart and manual controls.
