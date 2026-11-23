@@ -58,6 +58,7 @@ function RootNavigator() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="details/[source]/[id]" />
             <Stack.Screen name="reading-history" />
+            <Stack.Screen name="collections" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />

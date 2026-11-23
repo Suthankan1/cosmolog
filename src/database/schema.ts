@@ -126,3 +126,23 @@ export const MIGRATE_TO_READING_HISTORY_SQL = `
   CREATE INDEX idx_reading_history_item ON reading_history(local_id);
   PRAGMA user_version = 6;
 `;
+
+export const MIGRATE_TO_COLLECTIONS_SQL = `
+  CREATE TABLE shelf_collections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL CHECK (account_id > 0),
+    name TEXT NOT NULL COLLATE NOCASE CHECK (length(name) BETWEEN 1 AND 64),
+    UNIQUE (account_id, name),
+    UNIQUE (account_id, id)
+  );
+  CREATE TABLE shelf_collection_items (
+    account_id INTEGER NOT NULL,
+    collection_id INTEGER NOT NULL,
+    local_id TEXT NOT NULL,
+    PRIMARY KEY (account_id, collection_id, local_id),
+    FOREIGN KEY (account_id, collection_id) REFERENCES shelf_collections(account_id, id) ON DELETE CASCADE,
+    FOREIGN KEY (account_id, local_id) REFERENCES favourites(account_id, local_id) ON DELETE CASCADE
+  );
+  CREATE INDEX idx_collection_item_bookmark ON shelf_collection_items(account_id, local_id);
+  PRAGMA user_version = 7;
+`;

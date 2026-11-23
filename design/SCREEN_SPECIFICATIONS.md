@@ -16,6 +16,8 @@ The production mastheads use NASA Earthrise. The Figma screens use illustrative 
 | Profile & Settings | `18:191` | Local storage stats, last-sync info, preferences, attribution, logout; no fictional cross-device syncing |
 
 ## States (5 additional screens)
+
+The Field Shelf also opens protected Reading history and Collections screens. Apply the v2 list rows, text styles, buttons, focus labels, and offline states to these views. Collection membership editing uses a keyboard-safe compose view.
 | State | Figma Node | Expected behavior |
 |---|---|---|
 | Offline with cached collection | `19:2` | Cached items and favourites remain usable, last successful sync date |

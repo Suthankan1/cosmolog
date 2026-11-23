@@ -11,6 +11,7 @@ import { writeDatabase } from '../src/database/db';
 import { clearReadingCheckpoint, getReadAt, getReadingCheckpoint, getReadingHistory, markDiscoveryRead,
   saveReadingCheckpoint } from '../src/database/repositories/readingRepository';
 import { searchLibrary } from '../src/features/discovery/librarySearch';
+import { getCollections, removeCollection, saveCollectionName, setCollectionItems } from '../src/database/repositories/collectionsRepository';
 import type { DiscoveryItem } from '../src/database/models';
 
 jest.mock('../src/services/storage/imageStorage', () => ({ getLocalImage: () => null }));
@@ -165,6 +166,32 @@ it('keeps finished history private and durable, and blocks late checkpoints for 
   await setFavourite(12, finished.localId, true);
   expect((await getFavourites(11))[0].readAt).toBe(readAt);
   expect((await getFavourites(12))[0].readAt).toBeNull();
+});
+
+it('keeps collection membership private, supports multiple collections and removes memberships without removing bookmarks', async () => {
+  const plate = { ...item, localId: 'spaceflight-news:304', externalId: '304' };
+  const other = { ...item, localId: 'spaceflight-news:305', externalId: '305' };
+  await upsertDiscoveryItems([plate, other]);
+  await setFavourite(31, plate.localId, true);
+  await setFavourite(32, other.localId, true);
+  await saveCollectionName(31, null, '  Moon  ');
+  await saveCollectionName(31, null, 'Saturn');
+  await expect(saveCollectionName(31, null, 'moon')).rejects.toThrow();
+  await saveCollectionName(32, null, 'Moon');
+  const [moon, saturn] = await getCollections(31);
+  await setCollectionItems(31, moon.id, [plate.localId, plate.localId, other.localId]);
+  await setCollectionItems(31, saturn.id, [plate.localId]);
+  await expect(setCollectionItems(32, moon.id, [other.localId])).rejects.toThrow();
+  await expect(saveCollectionName(32, moon.id, 'Taken')).rejects.toThrow();
+  await saveCollectionName(31, saturn.id, 'Rings');
+  expect(await getCollections(31)).toEqual([
+    { ...moon, itemIds: [plate.localId] }, { id: saturn.id, name: 'Rings', itemIds: [plate.localId] },
+  ]);
+  expect(await getCollections(32)).toEqual([expect.objectContaining({ name: 'Moon', itemIds: [] })]);
+  await removeCollection(31, moon.id);
+  expect((await getFavourites(31))[0].localId).toBe(plate.localId);
+  await setFavourite(31, plate.localId, false);
+  expect(await getCollections(31)).toEqual([{ id: saturn.id, name: 'Rings', itemIds: [] }]);
 });
 
 it('searches the cached public article text, ranks title matches first and excludes private notes', async () => {

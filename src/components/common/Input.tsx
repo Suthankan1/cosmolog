@@ -25,6 +25,8 @@ export interface InputProps {
   secureTextEntry?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   keyboardType?: KeyboardTypeOptions;
+  editable?: boolean;
+  maxLength?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityLabel?: string;
@@ -42,6 +44,8 @@ export const Input: React.FC<InputProps> = ({
   secureTextEntry = false,
   autoCapitalize = 'none',
   keyboardType = 'default',
+  editable,
+  maxLength,
   style,
   testID,
   accessibilityLabel,
@@ -72,6 +76,8 @@ export const Input: React.FC<InputProps> = ({
           autoCorrect={false}
           onSubmitEditing={onSubmitEditing}
           keyboardType={keyboardType}
+          editable={editable}
+          maxLength={maxLength}
           onFocus={() => setIsFocused(true)}
           onBlur={() => { setIsFocused(false); onInputBlur?.(); }}
           style={styles.textInput}

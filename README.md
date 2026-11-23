@@ -45,6 +45,8 @@ Scroll into a story to save a reading position. **Continue Reading** on Discover
 
 **Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
 
+On the Field Shelf, open **Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
+
 ### Media and provenance
 
 NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The production masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.

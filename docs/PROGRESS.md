@@ -235,3 +235,7 @@ The native iOS release built in an isolated workspace and presented the normal s
 ## 2026-11-23 — Offline reading history
 
 Mark as read now records an account-owned completion and clears that discovery's resume checkpoint in one SQLite transaction. The Field Shelf links to history and filters saved items with To read. The archive retains completed records across feed refreshes. TypeScript, ESLint, and the 11 focused SQLite and Field Journal tests passed.
+
+## 2026-11-23 — Field Shelf collections
+
+The Field Shelf opens a protected Collections screen. Accounts can create and rename collections, select existing favourites, and open their selections offline. SQLite enforces ownership and automatically removes memberships when a favourite is removed. Deleting a collection keeps its favourites and notes. TypeScript, ESLint, and the 10 SQLite repository tests passed.
