@@ -109,12 +109,13 @@ function Reader({ id, section }: { id: string; section?: string }) {
               studyEntries.some((e) => e.chapter === entry.chapter! + 1) && (
                 <Button
                   title="Next chapter"
+                  icon="book-open" variant="destination"
                   onPress={() => open(studyEntries.find((e) => e.chapter === entry.chapter! + 1)!.id)}
                 />
               )}
             <Button
               title={marked ? 'Remove study bookmark' : 'Save to Field Shelf'}
-              icon="bookmark"
+              icon={marked ? 'check' : 'bookmark'}
               variant="outline"
               loading={busy}
               onPress={() => void toggle()}
@@ -122,6 +123,7 @@ function Reader({ id, section }: { id: string; section?: string }) {
             {Boolean(entry.sky) && (
               <Button
                 title="Show in sky"
+                variant="destination"
                 icon="compass"
                 onPress={() => router.push({ pathname: '/sky-viewer', params: { target: id } })}
               />
@@ -165,7 +167,7 @@ function Reader({ id, section }: { id: string; section?: string }) {
               <Button
                 key={link}
                 title={studyEntries.find((e) => e.id === link)?.title ?? link}
-                variant="outline"
+                variant="destination"
                 onPress={() => open(link)}
               />
             ))}

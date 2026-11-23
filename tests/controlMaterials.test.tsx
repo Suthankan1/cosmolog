@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react-native';
+import { DestinationGroup } from '../src/components/common/DestinationGroup';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo, Platform } from 'react-native';
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { FloatingSurface } from '../src/components/common/FloatingSurface';
@@ -39,4 +40,16 @@ it('resolves transparency conservatively and tracks preference changes', async (
     subscribe.mockRestore();
     platform.restore();
   }
+});
+
+it('exposes shelf destinations when expanded and keeps their labels actionable', async () => {
+  const open = jest.fn();
+  await render(<DestinationGroup title="Shelf tools" icon="folder">
+    <Button title="Collections" variant="destination" onPress={open} />
+  </DestinationGroup>);
+  expect(screen.queryByText('Collections')).toBeNull();
+  await fireEvent.press(screen.getByRole('button', { name: 'Shelf tools', expanded: false }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Collections' }));
+  expect(open).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('button', { name: 'Shelf tools', expanded: true })).toBeTruthy();
 });

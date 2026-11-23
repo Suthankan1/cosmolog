@@ -311,3 +311,5 @@ The floating tab bar retains Expo Router tab presses, selection and keyboard han
 Discover places the Daily Plate before resume reading and groups secondary tools behind an accessible disclosure. Details differentiates the saved action with a checkmark. TypeScript, focused ESLint and eight reading/control tests passed.
 
 The Shelf groups its three archive destinations in one row. Discover and Favourites share checked filter chips. Form labels are larger and secondary actions use the tonal treatment across authentication and Profile.
+
+Space Study uses destination rows for editions, related reading and sky links. The manual sky controls share a floating capsule beneath the chart. Android release assembly and native lint passed.

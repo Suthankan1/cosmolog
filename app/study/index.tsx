@@ -77,13 +77,13 @@ export default function StudyLibrary() {
                 )}
                 <Button
                   title="Editions and downloads"
-                  variant="outline"
+                  variant="destination"
                   icon="download"
                   onPress={() => router.push('/study/downloads')}
                 />
                 <Button
                   title="My sky"
-                  variant="outline"
+                  variant="destination"
                   icon="compass"
                   onPress={() => router.push('/sky-viewer')}
                 />

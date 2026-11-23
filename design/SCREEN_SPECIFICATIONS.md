@@ -43,3 +43,7 @@ Discover opens the protected Sky Viewer. Use a forest chart with ivory markers, 
 ## Space Study
 
 Discover opens the ivory Field Guide with its table of contents and object atlas. The reader displays one section at a time, sources, related entries and a chapter glossary. The Field Shelf opens account-owned study bookmarks and notes. Editions and downloads shows catalog coverage, pack sizes and installation status. My sky supports locally indexed city names, manual coordinates and optional foreground GPS. A linked target reports a direction or an unavailable-position state, including when it lies below the horizon.
+
+## Platform controls
+
+Discover, Favourites and Profile use the floating three-tab capsule. The router reports its measured height to each list so the final action scrolls clear. Discover groups Space Study, Sky Viewer, packs and date browsing under **Study, sky and archives**. Favourites groups saved study entries, Collections and History under **Shelf tools**. The manual sky toolbar sits below the chart so all chart targets stay visible.

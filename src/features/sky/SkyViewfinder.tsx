@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
+import { FloatingSurface } from '../../components/common/FloatingSurface';
 import { Button } from '../../components/common/Button';
 import { Icon, type FeatherIconName } from '../../components/common/Icon';
 import { colors, layout, radii, spacing, typography } from '../../theme/tokens';
@@ -44,9 +45,11 @@ export function SkyViewfinder({ active, usingDeviceLocation, positions, onSelect
       <SkyChart positions={positions} view={isPointing ? pointing.view : manualView}
         onPan={isPointing ? undefined : pan} onSelect={onSelect} />
       {!isPointing && <View style={styles.arrows}>
+        <FloatingSurface />
         {panControls.map(control => (
           <Pressable key={control.label} accessibilityRole="button" accessibilityLabel={control.label}
-            style={styles.panButton} onPress={() => pan(control.azimuth, control.altitude)}>
+            android_ripple={{ color: colors.sageLight }}
+            style={({ pressed }) => [styles.panButton, pressed && styles.pressed]} onPress={() => pan(control.azimuth, control.altitude)}>
             <Icon name={control.icon} color={colors.forest} />
           </Pressable>
         ))}
@@ -75,10 +78,11 @@ export function SkyViewfinder({ active, usingDeviceLocation, positions, onSelect
 
 const styles = StyleSheet.create({
   controls: { gap: spacing[3] },
-  arrows: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: spacing[2] },
+  arrows: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', alignSelf: 'center', padding: spacing[1], borderRadius: radii.pill, boxShadow: '0px 3px 12px rgba(24, 66, 53, 0.16)' },
   panButton: {
     width: layout.minimumTouchTarget, height: layout.minimumTouchTarget, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.surface, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border,
+    borderRadius: radii.pill, overflow: 'hidden',
   },
+  pressed: { backgroundColor: colors.sageLight },
   note: { ...typography.bodySmall, color: colors.muted },
 });
