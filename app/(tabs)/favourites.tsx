@@ -1,30 +1,22 @@
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
 import { importFavouritesThunk, loadFavouritesThunk, refreshImagesThunk } from '../../src/store/slices/favouritesSlice';
 import { navigateToDetails } from '../../src/navigation/types';
-import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+import { colors, layout, spacing, typography } from '../../src/theme/tokens';
 import { DispatchRow } from '../../src/components/discovery/DispatchRow';
 import { SearchBar } from '../../src/components/discovery/SearchBar';
 import { Button } from '../../src/components/common/Button';
 import { OfflineBanner } from '../../src/components/common/OfflineBanner';
 import { EmptyState } from '../../src/components/common/EmptyState';
-import { Icon } from '../../src/components/common/Icon';
+import { DestinationGroup } from '../../src/components/common/DestinationGroup';
+import { FilterChip } from '../../src/components/common/FilterChip';
 import { useToggleFavourite } from '../../src/features/journal/useToggleFavourite';
 import { selectShelf, type ShelfSort } from '../../src/features/journal/selectShelf';
 import { mediaLabel } from '../../src/features/discovery/mediaLabel';
-
-function Filter({ title, selected, onPress }: { title: string; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityState={{ selected }} style={[styles.chip, selected && styles.chipSelected]} onPress={onPress}>
-      {selected && <Icon name="check" size={14} color={colors.forest} />}
-      <Text style={styles.filterLabel}>{title}</Text>
-    </Pressable>
-  );
-}
 
 export default function FavouritesScreen() {
   const paddingBottom = useTabContentInset();
@@ -64,9 +56,11 @@ export default function FavouritesScreen() {
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.title}>Field Shelf</Text>
       <Text style={styles.subtitle}>Saved discoveries and private field notes.</Text>
-      <Button title="Saved study entries" icon="book-open" variant="outline" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
-      <Button title="Collections" icon="folder" variant="outline" onPress={() => router.push('/collections')} />
-      <Button title="Reading history" icon="clock" variant="outline" onPress={() => router.push('/reading-history')} />
+      <DestinationGroup title="Shelf tools" icon="folder">
+        <Button title="Saved study entries" icon="book-open" variant="destination" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
+        <Button title="Collections" icon="folder" variant="destination" onPress={() => router.push('/collections')} />
+        <Button title="Reading history" icon="clock" variant="destination" onPress={() => router.push('/reading-history')} />
+      </DestinationGroup>
       {legacyCount > 0 && <Button title="Import earlier bookmarks" variant="outline" loading={importing}
         onPress={() => Alert.alert('Import earlier bookmarks?', 'Add bookmarks from an earlier app version to this account.', [
           { text: 'Cancel', style: 'cancel' },
@@ -78,10 +72,10 @@ export default function FavouritesScreen() {
           <SearchBar value={query} onChangeText={setQuery} onClear={() => setQuery('')}
             placeholder="Search saved discoveries and notes" accessibilityLabel="Search the Field Shelf" />
           <View style={styles.filters}>
-            <Filter title="With notes" selected={withNotes} onPress={() => setWithNotes(value => !value)} />
-            <Filter title="To read" selected={unread} onPress={() => setUnread(value => !value)} />
-            <Filter title="Image downloaded" selected={downloaded} onPress={() => setDownloaded(value => !value)} />
-            <Filter title={sort === 'saved' ? 'Recently saved' : 'Publication date'} selected={sort === 'published'}
+            <FilterChip title="With notes" selected={withNotes} onPress={() => setWithNotes(value => !value)} />
+            <FilterChip title="To read" selected={unread} onPress={() => setUnread(value => !value)} />
+            <FilterChip title="Image downloaded" selected={downloaded} onPress={() => setDownloaded(value => !value)} />
+            <FilterChip title={sort === 'saved' ? 'Recently saved' : 'Publication date'} selected={sort === 'published'}
               onPress={() => setSort(value => value === 'saved' ? 'published' : 'saved')} />
           </View>
           <Text accessibilityLiveRegion="polite" style={styles.count}>{results.length} of {favourites.length} saved</Text>
@@ -130,12 +124,6 @@ const styles = StyleSheet.create({
   title: { ...typography.display, color: colors.ink },
   subtitle: { ...typography.body, color: colors.muted },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
-  chip: {
-    gap: spacing[1], minHeight: layout.minimumTouchTarget, paddingHorizontal: spacing[3], paddingVertical: spacing[1],
-    borderRadius: radii.pill, borderColor: colors.border, borderWidth: 1, flexDirection: 'row', alignItems: 'center',
-  },
-  chipSelected: { backgroundColor: colors.sageLight, borderColor: colors.forest },
-  filterLabel: { ...typography.label, color: colors.forest },
   count: { ...typography.bodySmall, color: colors.muted },
   error: { ...typography.bodySmall, color: colors.danger },
 });

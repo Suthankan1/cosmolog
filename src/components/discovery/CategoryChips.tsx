@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { colors, layout, radii, spacing, typography } from '../../theme/tokens';
+import { ScrollView, StyleSheet } from 'react-native';
+import { spacing } from '../../theme/tokens';
+import { FilterChip } from '../common/FilterChip';
 import { DiscoverySource } from '../../navigation/types';
 
 export interface CategoryChipsProps {
@@ -24,23 +25,10 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContainer}
     >
-      {CATEGORIES.map((cat) => {
-        const isSelected = selectedCategory === cat.value;
-        return (
-          <Pressable
-            key={cat.value}
-            onPress={() => onSelectCategory(cat.value)}
-            style={[styles.chip, isSelected && styles.chipSelected]}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: isSelected }}
-            accessibilityLabel={`Filter by ${cat.label}`}
-          >
-            <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-              {cat.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+      {CATEGORIES.map(cat => (
+        <FilterChip key={cat.value} title={cat.label} selected={selectedCategory === cat.value}
+          onPress={() => onSelectCategory(cat.value)} />
+      ))}
     </ScrollView>
   );
 };
@@ -50,31 +38,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[2],
     gap: spacing[2],
   },
-  chip: {
-    minHeight: 48,
-    minWidth: layout.minimumTouchTarget,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chipSelected: {
-    backgroundColor: colors.forest,
-    borderColor: colors.forest,
-  },
-  chipText: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 12,
-    color: colors.ink,
-    fontWeight: '600',
-  },
-  chipTextSelected: {
-    color: colors.ivory,
-  },
+
 });
 
 export default CategoryChips;

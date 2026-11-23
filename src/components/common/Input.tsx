@@ -90,7 +90,7 @@ export const Input: React.FC<InputProps> = ({
             style={styles.eyeButton}
             accessibilityRole="button"
             accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            android_ripple={{ color: colors.sageLight, borderless: true }}
           >
             <Icon
               name={isPasswordVisible ? 'eye-off' : 'eye'}
@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: typography.label.fontFamily,
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: '600',
     color: colors.ink,
     marginBottom: spacing[1],
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     paddingHorizontal: spacing[3],
   },
   inputFocused: {
