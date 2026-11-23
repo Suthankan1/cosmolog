@@ -3,6 +3,7 @@ import type { DiscoverySource } from '../../navigation/types';
 import { colors, layout, spacing, typography } from '../../theme/tokens';
 
 export interface CategoryChipsProps {
+  searching?: boolean;
   selectedCategory: 'all' | DiscoverySource;
   onSelectCategory: (category: 'all' | DiscoverySource) => void;
 }
@@ -11,12 +12,13 @@ const editions = [
   { label: 'All sources', value: 'all' },
   { label: 'Daily Plates', value: 'nasa-apod' },
   { label: 'Dispatches', value: 'spaceflight-news' },
+  { label: 'NASA Media', value: 'nasa-media' },
 ] as const;
 
-export function CategoryChips({ selectedCategory, onSelectCategory }: CategoryChipsProps) {
+export function CategoryChips({ selectedCategory, onSelectCategory, searching }: CategoryChipsProps) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
-      {editions.map(({ label, value }) => {
+      {editions.filter(edition => searching || edition.value !== 'nasa-media').map(({ label, value }) => {
         const selected = value === selectedCategory;
         return (
           <Pressable key={value} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}

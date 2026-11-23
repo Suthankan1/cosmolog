@@ -346,3 +346,6 @@ Added a durable dispatch continuation, merged refreshes and bounded list reads. 
 
 ### Online dispatch search
 Discover now searches normalized SQLite text and pages Spaceflight News independently of the feed. Search membership is account-scoped, transactional and excluded from cache pruning.
+
+### NASA Media and wider-web discovery
+Added NASA catalogue search, typed media Details, source credits, per-provider pagination and an explicit browser action. Live responses confirmed the NASA Europa preview and identified an unsupported secondary news ordering, now removed.

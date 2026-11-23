@@ -54,7 +54,7 @@ export async function fetchNewsPage(offset = 0, anchor?: string | null, query?: 
   const url = new URL(SPACEFLIGHT_NEWS_URL);
   url.searchParams.set('limit', '15');
   url.searchParams.set('offset', String(offset));
-  url.searchParams.set('ordering', '-published_at,-id');
+  url.searchParams.set('ordering', '-published_at');
   if (anchor) url.searchParams.set('published_at_lte', anchor);
   if (query) url.searchParams.set('search', query);
   const page = spaceflightFeedResponseSchema.extend({ next: z.string().nullable() })

@@ -115,7 +115,8 @@ const feedSlice = createSlice({
   initialState,
   reducers: {
     setSelectedCategory(state, action: PayloadAction<Category>) { state.selectedCategory = action.payload; },
-    setSearchQuery(state, action: PayloadAction<string>) { state.searchQuery = action.payload; },
+    setSearchQuery(state, action: PayloadAction<string>) { state.searchQuery = action.payload;
+      if (!action.payload.trim() && state.selectedCategory === 'nasa-media') state.selectedCategory = 'all'; },
     setConnection(state, action: PayloadAction<Connection>) { state.connection = action.payload; },
   },
   extraReducers: builder => builder

@@ -14,7 +14,7 @@ export interface DiscoveryItem {
   canonicalUrl: string | null;
   attribution: string | null;
   author: string | null;
-  mediaType: 'image' | 'video' | 'article' | 'unknown';
+  mediaType: 'image' | 'video' | 'audio' | 'article' | 'unknown';
   fetchedAt: string;
   updatedAt: string;
 }

@@ -38,12 +38,12 @@ export default function DetailsScreen() {
   const [linkError, setLinkError] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const offline = connection === 'offline';
-  const sourceUpdatedAt = parsed ? metadata[parsed.source].lastSyncedAt : null;
+  const sourceUpdatedAt = parsed?.source === 'nasa-media' ? (result.status === 'ready' ? result.item.fetchedAt : null) : parsed ? metadata[parsed.source].lastSyncedAt ?? legacySyncedAt : null;
 
   const header = (
     <>
-      <Header title={parsed?.source === 'nasa-apod' ? 'Daily Plate' : 'Space Dispatch'} showBack />
-      {offline && <OfflineBanner lastSyncedAt={sourceUpdatedAt ?? legacySyncedAt} />}
+      <Header title={parsed?.source === 'nasa-apod' ? 'Daily Plate' : parsed?.source === 'nasa-media' ? 'NASA Media' : 'Space Dispatch'} showBack />
+      {offline && <OfflineBanner lastSyncedAt={sourceUpdatedAt} />}
     </>
   );
 
@@ -113,7 +113,7 @@ export default function DetailsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.article} onLayout={measureArticle}>
-          <Text style={styles.kicker}>{sourceName} · {formatEditorialDate(item.publishedAt)}</Text>
+          <Text style={styles.kicker}>{sourceName} · {item.source === 'nasa-media' && item.publishedAt ? 'Created ' : ''}{formatEditorialDate(item.publishedAt)}</Text>
           <Text accessibilityRole="header" style={styles.title}>{item.title}</Text>
           {item.author && <Text style={styles.byline}>{item.author}</Text>}
           <Button
@@ -124,7 +124,7 @@ export default function DetailsScreen() {
             onPress={() => toggleFavourite(item.localId)}
           />
           <DiscoveryImage item={displayItem} offline={offline} style={styles.image} labelled cover />
-          {item.source === 'nasa-apod' && item.attribution && <Text style={styles.metadata}>Credit: {item.attribution}</Text>}
+          {item.source !== 'spaceflight-news' && item.attribution && <Text style={styles.metadata}>Credit: {item.attribution}</Text>}
           {error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
           {availableMedia && <Text accessibilityLiveRegion="polite" style={styles.metadata}>{mediaLabel(availableMedia.mediaStatus, offline)}</Text>}
           {(availableMedia?.mediaStatus === 'failed' || availableMedia?.mediaStatus === 'previous') && connection === 'online' && (
@@ -132,7 +132,7 @@ export default function DetailsScreen() {
               onPress={() => { void dispatch(refreshImagesThunk()); }} />
           )}
           <Text accessibilityRole="header" style={styles.sectionTitle}>
-            {item.source === 'nasa-apod' ? 'About this observation' : 'Publisher summary'}
+            {item.source === 'nasa-apod' ? 'About this observation' : item.source === 'nasa-media' ? 'Archive description' : 'Publisher summary'}
           </Text>
           <View onLayout={measureBody} style={styles.paragraphs}>
             {paragraphs.length ? paragraphs.map((paragraph, index) =>
@@ -149,7 +149,7 @@ export default function DetailsScreen() {
           <View style={styles.source}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>Original source</Text>
             <Text style={styles.body}>{sourceName}</Text>
-            {item.source === 'nasa-apod' && item.attribution && <Text style={styles.metadata}>Credit: {item.attribution}</Text>}
+            {item.source !== 'spaceflight-news' && item.attribution && <Text style={styles.metadata}>Credit: {item.attribution}</Text>}
             {httpsUrl(item.imageLicenseUrl) && (
               <Button title="Image license" variant="outline" icon="external-link" disabled={offline}
                 onPress={async () => {
@@ -163,10 +163,10 @@ export default function DetailsScreen() {
                 }} />
             )}
             {canonicalUrl && (
-              <Button title={item.mediaType === 'video' ? 'Watch at the source' : 'Open original publication'}
+              <Button title={item.mediaType === 'video' ? 'Watch at the source' : item.mediaType === 'audio' ? 'Listen at the source' : 'Open original publication'}
                 variant="outline" icon="external-link" onPress={openSource} disabled={offline} />
             )}
-            {offline && canonicalUrl && <Text style={styles.metadata}>Connect to open the original publication.</Text>}
+            {offline && canonicalUrl && <Text style={styles.metadata}>{canonicalUrl}{'\n'}Connect to open the original source.</Text>}
             {canonicalUrl && Platform.OS !== 'web' && <Button title="Share discovery" icon="share-2" variant="outline"
               loading={sharing} onPress={() => { void share(); }} />}
             {linkError && <Text accessibilityRole="alert" style={styles.error}>{linkError}</Text>}

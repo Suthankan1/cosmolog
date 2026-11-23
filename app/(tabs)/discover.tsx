@@ -2,8 +2,8 @@ import { Image } from 'expo-image';
 import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 import { DestinationGroup } from '../../src/components/common/DestinationGroup';
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
-import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
@@ -13,6 +13,9 @@ import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { selectFeed } from '../../src/features/discovery/selectFeed';
 import { BrowseByDate } from '../../src/features/discovery/BrowseByDate';
 import { OnThisDay } from '../../src/features/discovery/OnThisDay';
+import { lastSearch } from '../../src/features/discovery/librarySearch';
+import { widerWebUrl } from '../../src/features/discovery/searchProviders';
+import type { DiscoveryItem } from '../../src/database/models';
 import { useLibrarySearch } from '../../src/features/discovery/useLibrarySearch';
 import { clearReadingCheckpoint, getReadingCheckpoint } from '../../src/database/repositories/readingRepository';
 import { navigateToDetails } from '../../src/navigation/types';
@@ -39,6 +42,27 @@ export default function DiscoverScreen() {
   const accountId = useAppSelector(state => state.auth.user?.id);
   const searching = Boolean(searchQuery.trim());
   const library = useLibrarySearch(accountId, selectedCategory, searchQuery, connection === 'online');
+  const previousKey = JSON.stringify([accountId, selectedCategory]);
+  const [savedQuery, setPrevious] = useState<{ key: string; data: Awaited<ReturnType<typeof lastSearch>> }>();
+  const previous = savedQuery?.key === previousKey ? savedQuery.data : null;
+  const [webError, setWebError] = useState<string>();
+  const list = useRef<FlatList<DiscoveryItem>>(null);
+  const feedOffset = useRef(0);
+  const wasSearching = useRef(false);
+  useEffect(() => {
+    if (wasSearching.current !== searching) {
+      const frame = requestAnimationFrame(() => list.current?.scrollToOffset({ offset: searching ? 0 : feedOffset.current, animated: false }));
+      wasSearching.current = searching;
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [searching]);
+  useEffect(() => {
+    let active = true;
+    if (!searching && accountId) void lastSearch(accountId, selectedCategory).then(value => {
+      if (active) setPrevious({ key: previousKey, data: value });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [accountId, previousKey, searching, selectedCategory]);
   const { hero, rows: feedRows } = useMemo(() => selectFeed(items, selectedCategory), [items, selectedCategory]);
   const rows = searching ? library.rows : feedRows;
   const [checkpoint, setCheckpoint] = useState<{ accountId: number; data: Awaited<ReturnType<typeof getReadingCheckpoint>> }>();
@@ -109,7 +133,8 @@ export default function DiscoverScreen() {
       <Image source={require('../../assets/brand/cosmolog-lockup.svg')} contentFit="contain"
         accessible accessibilityLabel="COSMOLOG magazine" style={styles.masthead} />
       <SearchBar placeholder="Search space materials" accessibilityLabel="Search space materials" value={searchQuery} onChangeText={value => dispatch(setSearchQuery(value))} onClear={() => dispatch(setSearchQuery(''))} />
-      <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
+      {!searching && previous && <Button title={'Reopen search: ' + previous.query} variant="outline" onPress={() => { dispatch(setSearchQuery(previous.query)); dispatch(setSelectedCategory(previous.category)); }} />}
+      <CategoryChips searching={searching} selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
       {(!offline && (failedSources || refreshError || cacheStatus === 'error')) ? (
         <View style={styles.notice}>
           <Text accessibilityRole="alert" style={styles.noticeText}>
@@ -158,10 +183,15 @@ export default function DiscoverScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {offline && <OfflineBanner lastSyncedAt={updatedAt} />}
-      <FlatList
+      <FlatList ref={list} onScroll={event => { if (!searching && !wasSearching.current) feedOffset.current = event.nativeEvent.contentOffset.y; }}
         data={rows}
         keyExtractor={item => item.localId}
-        renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
+        renderItem={({ item, index }) => <View>
+          {searching && (index === 0 || index === library.localCount) && <Text accessibilityRole="header" style={styles.subtitle}>
+            {index < library.localCount ? 'On this device' : 'Online archives'}
+          </Text>}
+          <DispatchRow {...cardProps(item)} />
+        </View>}
         onEndReachedThreshold={0.35}
         onEndReached={() => { if (searching && library.more && !library.pending) library.moreResults();
           else if (canLoadOlder && !appendError) void dispatch(loadOlder()); }}
@@ -169,6 +199,11 @@ export default function DiscoverScreen() {
           {library.pending && rows.length > 0 && <ActivityIndicator accessibilityLabel="Searching archives" />}
           {library.errors.length > 0 && <Button title={'Retry ' + library.errors.join(', ')} onPress={library.retry} variant="outline" />}
           {library.more && <Button title="Load more results" loading={library.pending} onPress={library.moreResults} variant="outline" />}
+          <Button title={'Search the wider web for “' + searchQuery.trim() + '”'} icon="external-link"
+            variant="outline" disabled={connection !== 'online'} onPress={() => {
+              void Linking.openURL(widerWebUrl(searchQuery)).catch(() => setWebError(searchQuery));
+            }} />
+          {webError === searchQuery && <Text accessibilityRole="alert" style={styles.noticeText}>Could not open the browser. Try again.</Text>}
         </View> : canLoadOlder ? <Button title={appendError ? 'Retry loading older stories' : 'Load more stories'}
           loading={appending} onPress={() => void dispatch(loadOlder())} variant="outline" /> : undefined}
         ListHeaderComponent={header}

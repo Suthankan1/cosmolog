@@ -4,7 +4,7 @@ import { httpsUrl } from '../../services/api/mediaPolicy';
 type Publication = Pick<DiscoveryItem, 'title' | 'canonicalUrl' | 'author' | 'attribution' | 'source'>;
 
 export function publicationName(item: Publication) {
-  return item.source === 'nasa-apod' ? 'NASA Astronomy Picture of the Day' : item.attribution || 'Spaceflight News';
+  return item.source === 'nasa-apod' ? 'NASA Astronomy Picture of the Day' : item.source === 'nasa-media' ? 'NASA Image and Video Library' : item.attribution || 'Spaceflight News';
 }
 
 export function shareDiscoveryContent(item: Publication) {

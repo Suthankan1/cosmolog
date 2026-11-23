@@ -20,7 +20,7 @@ export interface DispatchRowProps {
 export function DispatchRow({
   item, isSaved, pending, offline, notePreview, availability, onPress, onToggleSave,
 }: DispatchRowProps) {
-  const publisher = item.source === 'nasa-apod' ? 'NASA APOD' : item.attribution || 'Spaceflight News';
+  const publisher = item.source === 'nasa-apod' ? 'NASA APOD' : item.source === 'nasa-media' ? 'NASA Media · ' + item.mediaType : item.attribution || 'Spaceflight News';
   return (
     <View style={styles.row}>
       <Pressable onPress={onPress} style={({ pressed }) => [styles.open, pressed && styles.pressed]}

@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { searchNasaMedia } from '../../services/api/nasaMediaService';
 import { fetchNewsPage } from '../../services/api/spaceflightNewsService';
 import { upsertDiscoveryItems } from '../../database/repositories/discoveryRepository';
 import type { DiscoveryItem } from '../../database/models';
@@ -8,7 +9,11 @@ export const providers = {
     label: 'Spaceflight News',
     fetch: (query: string, offset: number, signal: AbortSignal) => fetchNewsPage(offset, null, query, signal),
   },
+  'nasa-media': { label: 'NASA Media', fetch: searchNasaMedia },
 };
+export function widerWebUrl(query: string) {
+  return 'https://search.brave.com/search?q=' + encodeURIComponent(query.trim() + ' astronomy space science');
+}
 export type Provider = keyof typeof providers;
 export const fetchSearchPage = createAsyncThunk('discovery/searchPage',
   async ({ provider, query, offset }: { provider: Provider; query: string; offset: number }, { signal }) => {

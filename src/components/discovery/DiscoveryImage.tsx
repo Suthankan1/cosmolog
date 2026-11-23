@@ -46,11 +46,11 @@ export function DiscoveryImage({ item, offline, style, labelled, cover }: Discov
         </Pressable>
       ) : cover ? (
         <View style={styles.mediaPanel}>
-          <Icon name={item.mediaType === 'video' ? 'play-circle' : 'image'} color={colors.forest} size={32} />
-          <Text style={styles.mediaStatus}>{item.mediaType === 'video' ? 'Video feature' : offline ? 'Image unavailable offline' : 'Image unavailable'}</Text>
+          <Icon name={item.mediaType === 'audio' ? 'headphones' : item.mediaType === 'video' ? 'play-circle' : 'image'} color={colors.forest} size={32} />
+          <Text style={styles.mediaStatus}>{item.mediaType === 'audio' ? 'Audio recording' : item.mediaType === 'video' ? 'Video feature' : offline ? 'Image unavailable offline' : 'Image unavailable'}</Text>
         </View>
       ) : (
-        <Icon name={item.mediaType === 'video' ? 'play-circle' : 'image'} size={25} color={colors.forest} />
+        <Icon name={item.mediaType === 'audio' ? 'headphones' : item.mediaType === 'video' ? 'play-circle' : 'image'} size={25} color={colors.forest} />
       )}
     </View>
   );

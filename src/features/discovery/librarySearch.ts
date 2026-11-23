@@ -36,8 +36,9 @@ export async function saveSearch(account: number, category: SearchCategory, quer
 
 export async function lastSearch(account: number, category: SearchCategory) {
   const db = await getDatabase();
-  const row = await db.getFirstAsync<{ query: string }>('SELECT query FROM last_search WHERE account_id=? AND category=?', [account, category]);
-  return row?.query;
+  return db.getFirstAsync<{ query: string; category: SearchCategory }>(
+    "SELECT query, category FROM last_search WHERE account_id=? AND (?='all' OR category=?) ORDER BY rowid DESC LIMIT 1",
+    [account, category, category]);
 }
 
 export async function readSearch(account: number, category: SearchCategory, query: string) {

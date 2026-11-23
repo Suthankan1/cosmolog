@@ -1,3 +1,4 @@
+import { fetchNasaMediaItem } from '../../services/api/nasaMediaService';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getDiscoveryItemById, upsertDiscoveryItems } from '../../database/repositories/discoveryRepository';
 import type { DiscoveryItem } from '../../database/models';
@@ -36,7 +37,7 @@ export function useDiscoveryRecord(params: DetailsRouteParams | null) {
           return;
         }
         if (abort.signal.aborted) return;
-        const fetchItem = source === 'nasa-apod' ? fetchNasaApodItem : fetchSpaceflightNewsItem;
+        const fetchItem = source === 'nasa-apod' ? fetchNasaApodItem : source === 'nasa-media' ? fetchNasaMediaItem : fetchSpaceflightNewsItem;
         const item = await fetchItem(id, abort.signal);
         if (abort.signal.aborted) return;
         if (!item) {
