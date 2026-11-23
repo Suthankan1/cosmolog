@@ -251,3 +251,7 @@ Details can open the native Android or iOS share sheet from a cached discovery. 
 ## 2026-11-23 — Offline reading packs
 
 Discover offers A Tour of Saturn and Apollo at the Moon. SQLite commits each downloaded plate with the account's pack membership, so interrupted downloads can resume. The existing media worker handles eligible images and keeps a shared file while a bookmark or pack still owns it. Verified HTTP 200 and matching dates for all six NASA entries. The full 69-test Jest suite, ESLint, and TypeScript passed.
+
+## 2026-11-23 — Archive extension verification
+
+Android native lint and the optimized ARM64 release build passed. The Pixel 9 emulator restored the cached anniversary plate, reading completion, note, collection and Saturn pack after a force-stop in airplane mode. The pack's licensed image rendered from local storage without a bookmark. The Android share sheet displayed the public attribution and link. Apollo downloaded on reconnection. The README includes two screenshots from the offline run. The iOS bundle exported successfully. Native iOS behaviour for these extensions remains unverified.

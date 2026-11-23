@@ -76,6 +76,10 @@ NASA APOD and Spaceflight News retain the original publication link, available c
 | --- | --- | --- |
 | ![Cocoon Nebula Wide Field](docs/screenshots/07-browse-by-date.png) | ![Continue Reading card](docs/screenshots/08-continue-reading.png) | ![Offline search results](docs/screenshots/09-offline-search.png) |
 
+| Field Shelf collection in airplane mode | Reading pack in airplane mode |
+| --- | --- |
+| ![Offline Saturn study collection](docs/screenshots/11-offline-collection.png) | ![The Saturn reading pack with three downloaded plates and one available image](docs/screenshots/12-offline-reading-packs.png) |
+
 ## Architecture and state
 
 Expo Router protects the main stack and passes a source and ID to Details. A Redux Toolkit coordinator loads SQLite before starting remote refresh. It shares connection, request, and save state across the screens. Validated and normalized source responses become SQLite transactions. Each transaction updates a source snapshot and its last successful timestamp together.
