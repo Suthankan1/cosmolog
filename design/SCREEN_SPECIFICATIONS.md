@@ -2,12 +2,12 @@
 
 [Figma file](https://www.figma.com/design/TSztxI5A8AxSFqOpHftL4N?node-id=11-5). V2 screens and offline/error examples are retained there as historical references. Current layouts follow the magazine boards and production app.
 
-The production mastheads use NASA Earthrise. The Figma screens use illustrative example articles, profiles, counts and sync times. Production content must be populated from actual APIs/local database and must not present samples as live data.
+The launch uses NASA’s Apollo 17 Blue Marble. The sign-in masthead uses NASA Earthrise. The Figma screens use illustrative example articles, profiles, counts and sync times. Production content must be populated from actual APIs/local database and must not present samples as live data.
 
 ## Primary screens (7)
 | Screen | Figma Node | Requirements |
 |---|---|---|
-| Launch Reveal | `16:2` | In-app brand reveal: dark forest + cut C, outlined wordmark and Earthrise crop. Native splash icon remains static; reduced-motion alternative |
+| Launch Reveal | `16:2` | In-app brand reveal: dark forest + cut C, outlined wordmark and transparent Apollo 17 globe. Native splash icon remains static; reduced-motion alternative |
 | Login | `16:25` | Username/password labels, validation, password reveal, DummyJSON login, SecureStore session, loading and error states |
 | Create Account | `16:70` | Simulated DummyJSON registration, inline disclosure, no fake persistent user |
 | Discover | `17:42` | Curated NASA image, space dispatch list, local search, offline banner, article cards, loading/retry/empty states, last refresh |
