@@ -8,6 +8,7 @@ import { useToggleFavourite } from '../../src/features/journal/useToggleFavourit
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { selectFeed } from '../../src/features/discovery/selectFeed';
 import { BrowseByDate } from '../../src/features/discovery/BrowseByDate';
+import { OnThisDay } from '../../src/features/discovery/OnThisDay';
 import { useLibrarySearch } from '../../src/features/discovery/useLibrarySearch';
 import { clearReadingCheckpoint, getReadingCheckpoint } from '../../src/database/repositories/readingRepository';
 import { navigateToDetails } from '../../src/navigation/types';
@@ -106,7 +107,12 @@ export default function DiscoverScreen() {
       {checkpointError && <Text accessibilityRole="alert" style={styles.noticeText}>Could not update your reading position.</Text>}
       {!searching && hero ? <DailyPlateCard {...cardProps(hero)} /> : null}
       <CategoryChips selectedCategory={selectedCategory} onSelectCategory={category => dispatch(setSelectedCategory(category))} />
-      {!searching && selectedCategory !== 'spaceflight-news' && <BrowseByDate />}
+      {!searching && selectedCategory !== 'spaceflight-news' && (
+        <>
+          <BrowseByDate />
+          <OnThisDay connection={connection} />
+        </>
+      )}
       {searching && library.data && <Text style={styles.subtitle} accessibilityLiveRegion="polite">
         {library.data.total > 100 ? 'Showing the first 100 of ' : ''}{library.data.total} matches on this device
       </Text>}

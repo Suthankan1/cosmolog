@@ -7,6 +7,7 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { isCalendarDate, navigateToDetails } from '../../navigation/types';
 import { colors, spacing, typography } from '../../theme/tokens';
+import { APOD_ARCHIVE_START, localCalendarDate } from './plateDates';
 
 export function BrowseByDate() {
   const router = useRouter();
@@ -18,10 +19,8 @@ export function BrowseByDate() {
 
   const open = () => {
     const value = date.trim();
-    const now = new Date();
-    const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'),
-      String(now.getDate()).padStart(2, '0')].join('-');
-    if (!isCalendarDate(value) || value > today || value < '1995-06-16') {
+    const today = localCalendarDate(new Date());
+    if (!isCalendarDate(value) || value > today || value < APOD_ARCHIVE_START) {
       setError('Enter a date from 1995-06-16 through today (YYYY-MM-DD).');
       return;
     }

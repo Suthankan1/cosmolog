@@ -239,3 +239,7 @@ Mark as read now records an account-owned completion and clears that discovery's
 ## 2026-11-23 — Field Shelf collections
 
 The Field Shelf opens a protected Collections screen. Accounts can create and rename collections, select existing favourites, and open their selections offline. SQLite enforces ownership and automatically removes memberships when a favourite is removed. Deleting a collection keeps its favourites and notes. TypeScript, ESLint, and the 10 SQLite repository tests passed.
+
+## 2026-11-23 — On This Day
+
+Discover looks for the most recent past NASA plate on the same month and day in SQLite. A cache miss offers a valid earlier date when connected and explains the offline state otherwise. Dated opens reuse the existing Details lookup and leave Discover's source snapshots intact. TypeScript, ESLint, and 12 focused date and SQLite tests passed.

@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync as mockDatabaseSync } from 'node:sqlite';
 import { CREATE_TABLES_SQL } from '../src/database/schema';
-import { commitFeedSnapshot, getCachedFeed, getDiscoveryItemById, upsertDiscoveryItems } from '../src/database/repositories/discoveryRepository';
+import { commitFeedSnapshot, findCachedPlateAnniversary, getCachedFeed, getDiscoveryItemById,
+  upsertDiscoveryItems } from '../src/database/repositories/discoveryRepository';
 import { getFavourites, getLegacyFavouriteCount, importLegacyFavourites, saveFieldNote, setFavourite } from '../src/database/repositories/favouritesRepository';
 import { getSyncMetadata, recordSyncFailure } from '../src/database/repositories/syncMetadataRepository';
 import { finishImage, getPendingImages, reconcileSavedImages } from '../src/database/repositories/mediaRepository';
@@ -192,6 +193,15 @@ it('keeps collection membership private, supports multiple collections and remov
   expect((await getFavourites(31))[0].localId).toBe(plate.localId);
   await setFavourite(31, plate.localId, false);
   expect(await getCollections(31)).toEqual([{ id: saturn.id, name: 'Rings', itemIds: [] }]);
+});
+
+it('locates the newest past APOD from the same month and day in the local archive', async () => {
+  const dates = ['2020-02-29', '2024-02-29', '2028-02-28', '2028-02-29', '2032-02-29'];
+  await upsertDiscoveryItems(dates.map(date => (
+    { ...item, localId: 'nasa-apod:' + date, source: 'nasa-apod', externalId: date, publishedAt: date }
+  )));
+  expect(await findCachedPlateAnniversary('2028-02-29')).toMatchObject({ externalId: '2024-02-29' });
+  expect(await findCachedPlateAnniversary('2028-03-01')).toBeNull();
 });
 
 it('searches the cached public article text, ranks title matches first and excludes private notes', async () => {

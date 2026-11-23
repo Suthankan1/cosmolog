@@ -45,6 +45,8 @@ Scroll into a story to save a reading position. **Continue Reading** on Discover
 
 **Search offline library** searches public cached story text, including recent dated lookups and the current account's saved records. Titles rank ahead of matches in the body or credits. Search the Shelf for private notes. **Browse by date** opens a NASA plate from SQLite or retrieves it online the first time it is needed. Opening an older plate does not change the latest feed snapshot.
 
+**On This Day** offers an earlier NASA plate from the same month and day. Discover checks the local archive first. If no match is stored, it offers an online lookup for the most recent eligible prior year.
+
 On the Field Shelf, open **Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
 
 ### Media and provenance

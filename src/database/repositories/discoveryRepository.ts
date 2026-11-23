@@ -74,3 +74,13 @@ export async function getDiscoveryItemById(localId: string): Promise<DiscoveryIt
   const row = await db.getFirstAsync<CachedItemRow>('SELECT * FROM cached_items WHERE local_id = ?', [localId]);
   return row ? mapRowToDiscoveryItem(row) : null;
 }
+
+export async function findCachedPlateAnniversary(today: string): Promise<DiscoveryItem | null> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<CachedItemRow>(
+    `SELECT * FROM cached_items WHERE source = 'nasa-apod' AND external_id < ?
+     AND substr(external_id, 6) = ? ORDER BY external_id DESC LIMIT 1`,
+    [today, today.slice(5)],
+  );
+  return row ? mapRowToDiscoveryItem(row) : null;
+}
