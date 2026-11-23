@@ -17,7 +17,8 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.ACTIVITY_RECOGNITION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/cosmolog-mark.png",
@@ -36,6 +37,17 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow COSMOLOG to use your location to calculate the sky overhead.",
+          "locationAlwaysPermission": false,
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationFullAccuracyPermission": false,
+          "motionUsagePermission": "Allow COSMOLOG to use phone motion to orient the sky chart."
+        }
+      ],
+      ["expo-sensors", { "motionPermission": "Allow COSMOLOG to use phone motion to orient the sky chart." }],
       "expo-sqlite",
       "expo-image",
       "expo-asset"

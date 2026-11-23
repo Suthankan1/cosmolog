@@ -259,3 +259,7 @@ Android native lint and the optimized ARM64 release build passed. The Pixel 9 em
 ## 2026-11-23 — Offline Sky Viewer
 
 Discover opens a protected sky chart with manual panning, coordinate entry, and a labelled Colombo preview. The bundled catalog includes 80 stars, six Messier objects, the Moon, and seven planets. The chart and accessible object list open the same detail sheet with local summaries and source links. The Moon position matched the U.S. Naval Observatory reference within 0.2°. TypeScript, ESLint, seven focused tests, and the Android bundle export passed.
+
+## 2026-11-23 — Phone pointing
+
+Sky Viewer uses a foreground device location when permission is available, and it can use manual coordinates or a Colombo preview. It derives phone pointing from gravity and the magnetic field and corrects the bearing to true north. Manual controls remain available for missing readings and reduced-motion preferences. The Android release emulator verified location denial, approximate location, a direct chart marker tap, simulated sensor pointing, and manual fallback. TypeScript, ESLint, 12 focused tests, the Android release build, and the iOS bundle export passed. Physical-device pointing remains open.

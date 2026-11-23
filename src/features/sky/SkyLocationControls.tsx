@@ -1,24 +1,24 @@
 import { useState } from 'react';
-import { Keyboard, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Linking, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { colors, spacing, typography } from '../../theme/tokens';
-import { colombo, parseCoordinates, type ObserverLocation } from './skyMath';
+import { parseCoordinates } from './skyMath';
+import { previewLocation, type useSkyLocation } from './useSkyLocation';
 
-export type SkyLocation = ObserverLocation & { kind: 'preview' | 'manual' };
-export const previewLocation: SkyLocation = { ...colombo, kind: 'preview' };
+type Props = ReturnType<typeof useSkyLocation>;
 
-export function SkyLocationControls({ onChange }: { onChange: (location: SkyLocation) => void }) {
+export function SkyLocationControls({ location, status, useLocation, chooseLocation }: Props) {
   const [editing, setEditing] = useState(false);
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [invalid, setInvalid] = useState(false);
 
-  function choose(location: SkyLocation) {
+  function choose(location: Parameters<Props['chooseLocation']>[0]) {
     setInvalid(false);
     setEditing(false);
     Keyboard.dismiss();
-    onChange(location);
+    chooseLocation(location);
   }
 
   const save = () => {
@@ -27,7 +27,7 @@ export function SkyLocationControls({ onChange }: { onChange: (location: SkyLoca
     else setInvalid(true);
   };
 
-  return editing ? (
+  if (editing) return (
     <View style={styles.form}>
       <Input label="Latitude" value={latitude} onChangeText={setLatitude} placeholder="6.9271" keyboardType="numbers-and-punctuation" maxLength={18} />
       <Input label="Longitude" value={longitude} onChangeText={setLongitude} placeholder="79.8612" keyboardType="numbers-and-punctuation" maxLength={18} />
@@ -36,10 +36,36 @@ export function SkyLocationControls({ onChange }: { onChange: (location: SkyLoca
       <Button title="Preview Colombo" variant="outline" onPress={() => choose(previewLocation)} />
       <Button title="Cancel" variant="outline" onPress={() => { Keyboard.dismiss(); setEditing(false); setInvalid(false); }} />
     </View>
-  ) : <Button title="Change location" icon="map-pin" variant="outline" onPress={() => setEditing(true)} />;
+  );
+
+  const finding = location.kind !== 'manual' && (status === 'locating' || status === 'checking');
+  const canUseLocation = status !== 'unsupported' && (location.kind !== 'device' || status === 'unavailable');
+  return (
+    <View style={styles.form}>
+      {finding && <Text accessibilityLiveRegion="polite" style={styles.note}>
+        {status === 'locating' ? 'Finding device location…' : 'Checking location access…'}
+      </Text>}
+      {location.kind !== 'manual' && status === 'unavailable' && (
+        <Text style={styles.note}>A fresh device location is unavailable. You can enter coordinates or try again.</Text>
+      )}
+      {location.kind !== 'manual' && status === 'choose' && (
+        <Text style={styles.note}>Use your phone’s location to see the sky overhead and enable phone pointing.</Text>
+      )}
+      {status === 'blocked' && (
+        <Text style={styles.note}>To use device location, allow location access in your device settings.</Text>
+      )}
+      {canUseLocation && !finding && (
+        status === 'blocked' ? (
+          <Button title="Open location settings" icon="settings" variant="outline" onPress={() => { void Linking.openSettings().catch(() => undefined); }} />
+        ) : <Button title="Use my location" icon="navigation" onPress={useLocation} />
+      )}
+      <Button title="Change location" icon="map-pin" variant="outline" onPress={() => setEditing(true)} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   form: { gap: spacing[2] },
+  note: { ...typography.bodySmall, color: colors.muted },
   error: { ...typography.body, color: colors.danger },
 });
