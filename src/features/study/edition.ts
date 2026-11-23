@@ -54,7 +54,7 @@ const lessons: Lesson[] = [
   [
     'small-bodies',
     'Small bodies and visitors',
-    'solar-system/small-bodies/',
+    'asteroids-comets-meteors/',
     [
       'Asteroids and comets\nSmall bodies preserve material from the early Solar System. Many asteroids orbit between Mars and Jupiter. A comet approaching the Sun can release gas and dust as its ices warm. Solar radiation and the solar wind shape its tails.',
       'Three names for a journey\nA small fragment in space is a meteoroid. Its luminous passage through an atmosphere produces a meteor. Material that survives to reach the surface is a meteorite. A meteor shower occurs when Earth passes through a stream of debris.',

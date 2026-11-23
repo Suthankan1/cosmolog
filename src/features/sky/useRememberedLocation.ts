@@ -7,25 +7,31 @@ export function useRememberedLocation(active: boolean) {
   const [restored, setRestored] = useState(false);
   const controls = useSkyLocation(active && restored);
   const choose = useRef(controls.chooseLocation);
-  const changed = useRef(false);
+  const clearCity = useRef(controls.clearRememberedCity);
+  const changes = useRef(0);
   useEffect(() => {
+    if (!active) return;
+    const startingRevision = changes.current;
     let mounted = true;
     async function restore() {
       const db = await getDatabase();
       const row = await db.getFirstAsync<{ value: string }>(
         "SELECT value FROM study_meta WHERE key='sky-city'",
       );
-      if (row && mounted && !changed.current) {
-        const place: ManualLocation = JSON.parse(row.value);
-        if (
-          place.city &&
-          place.kind === 'manual' &&
-          Number.isFinite(place.latitude) &&
-          Number.isFinite(place.longitude)
-        ) {
-          Intl.DateTimeFormat(undefined, { timeZone: place.city.zone });
-          choose.current(place);
-        }
+      if (!mounted || changes.current !== startingRevision) return;
+      if (!row) {
+        clearCity.current();
+        return;
+      }
+      const place: ManualLocation = JSON.parse(row.value);
+      if (
+        place.city &&
+        place.kind === 'manual' &&
+        Number.isFinite(place.latitude) &&
+        Number.isFinite(place.longitude)
+      ) {
+        new Intl.DateTimeFormat(undefined, { timeZone: place.city.zone });
+        choose.current(place);
       }
     }
     void restore()
@@ -36,9 +42,9 @@ export function useRememberedLocation(active: boolean) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [active]);
   function remember(place?: ManualLocation) {
-    changed.current = true;
+    changes.current += 1;
     void writeDatabase((db) =>
       place?.city
         ? db.runAsync("INSERT OR REPLACE INTO study_meta VALUES ('sky-city',?)", [JSON.stringify(place)])

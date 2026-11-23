@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { useEffect, useState } from 'react';
 import {
-  readSatelliteCache, recordSatelliteFailure, reserveSatelliteRefresh, saveSatelliteOrbit, type SatelliteCacheEntry,
+  readSatelliteCache, resumeOrbitSource, satelliteRefreshInterval, recordSatelliteFailure, reserveSatelliteRefresh, saveSatelliteOrbit, type SatelliteCacheEntry,
 } from '../../database/repositories/satelliteOrbitRepository';
 import { fetchJson, HttpError } from '../../services/http';
 import type { Connection } from '../../services/network/networkObserver';
@@ -34,6 +34,12 @@ const refreshSkySatellites = createAsyncThunk('sky/refreshSatellites', async (_,
 
 export function useSkySatellites(active: boolean, connection: Connection) {
   const dispatch = useAppDispatch();
+  const [attempt, setAttempt] = useState(0);
+  useEffect(()=>{
+    if(!active || connection!=='online') return;
+    const timer=setInterval(()=>setAttempt(n=>n+1),satelliteRefreshInterval);
+    return ()=>clearInterval(timer);
+  },[active,connection]);
   const [rows, setRows] = useState<SatelliteCacheEntry[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
 
@@ -60,7 +66,8 @@ export function useSkySatellites(active: boolean, connection: Connection) {
       stopped = true;
       abort?.();
     };
-  }, [active, connection, dispatch]);
+  }, [active, connection, dispatch, attempt]);
 
-  return { rows, status };
+  const resume=()=>{void resumeOrbitSource(Date.now()).then(()=>setAttempt(n=>n+1)).catch(()=>setStatus('unavailable'));};
+  return { rows, status, resume };
 }

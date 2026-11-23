@@ -107,6 +107,7 @@ export function useSkyLocation(active: boolean) {
   return {
     location: manual ?? device ?? previewLocation,
     status: supportsDevice ? status : 'unsupported' as const,
+    clearRememberedCity: () => setManual(previous => previous?.city ? undefined : previous),
     useLocation: () => {
       setManual(undefined);
       setAttempt(value => value + 1);

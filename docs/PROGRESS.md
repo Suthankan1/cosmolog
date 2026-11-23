@@ -291,3 +291,7 @@ Added stable chapter-section anchors, private study notes, per-chapter glossary 
 ## Native pack-write verification
 
 The first Pixel 9 pack-install check exposed the asynchronous native file-write contract. The installer now awaits writes and validates SHA-256 before parsing each part. Regression tests simulate delayed writes, connection loss after a complete part, insufficient free space and corruption. All 95 Jest tests, TypeScript, ESLint, Android release assembly and native lint passed.
+
+## Sky Viewer location and refresh policy
+
+Re-read the selected city when the viewer regains focus so multiple open viewer screens share the preference. Keep coordinate and device fixes out of persistent storage. Refresh due orbit data while the viewer remains active. A provider HTTP error now keeps requests paused across restarts until an explicit resume after the two-hour cooldown. Updated the guide’s small-body reference and bundled revision. All 95 tests, ESLint and TypeScript passed.

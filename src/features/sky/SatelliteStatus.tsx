@@ -1,3 +1,4 @@
+import { Button } from '../../components/common/Button';
 import { StyleSheet, Text, View } from 'react-native';
 import type { SatelliteCacheEntry } from '../../database/repositories/satelliteOrbitRepository';
 import { colors, radii, spacing, typography } from '../../theme/tokens';
@@ -11,9 +12,10 @@ interface Props {
   status: 'loading' | 'ready' | 'unavailable';
   offline: boolean;
   now: number;
+  resume?: () => void;
 }
 
-export function SatelliteStatus({ rows, positions, status, offline, now }: Props) {
+export function SatelliteStatus({ rows, positions, status, offline, now, resume }: Props) {
   const paused = rows.some(row => row.failure === 'paused');
   const message = status === 'unavailable' ? 'Could not read or refresh the orbit cache.'
     : paused ? 'The orbit source paused requests. Cached predictions are shown where available.'
@@ -40,6 +42,7 @@ export function SatelliteStatus({ rows, positions, status, offline, now }: Props
         }
         return <Text key={object.id} style={styles.note}>{object.name} · {label}</Text>;
       })}
+      {paused && !offline && resume && <Button title="Resume orbit checks after provider cooldown" variant="outline" onPress={resume}/>}
       {message && <Text style={styles.note}>{message}</Text>}
     </View>
   );

@@ -37,7 +37,7 @@ export async function reserveSatelliteRefresh(noradId: SatelliteId, now: number)
   return writeDatabase(async db => {
     const cutoff = now - satelliteRefreshInterval;
     const paused = await db.getFirstAsync(
-      'SELECT 1 FROM sky_satellite_orbits WHERE failure = ? AND attempted_at > ? LIMIT 1', ['paused', cutoff],
+      'SELECT 1 FROM sky_satellite_orbits WHERE failure = ? LIMIT 1', ['paused'],
     );
     if (paused) return false;
     const result = await db.runAsync(
@@ -60,4 +60,10 @@ export async function saveSatelliteOrbit(noradId: SatelliteId, elements: Satelli
 
 export async function recordSatelliteFailure(noradId: SatelliteId, failure: SatelliteFailure): Promise<void> {
   await writeDatabase(db => db.runAsync('UPDATE sky_satellite_orbits SET failure = ? WHERE norad_id = ?', [failure, noradId]));
+}
+
+export async function resumeOrbitSource(now:number) {
+  await writeDatabase(db=>db.runAsync(
+    "UPDATE sky_satellite_orbits SET failure=NULL WHERE failure='paused' AND attempted_at<=?",
+    [now-satelliteRefreshInterval]));
 }

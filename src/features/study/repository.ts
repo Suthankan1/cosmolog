@@ -13,11 +13,12 @@ export interface StudyRow {
   sky: number;
 }
 export type Listing = Pick<StudyRow, 'id' | 'title' | 'category'> & { anchor: string | null };
+const bundledRevision = edition + ' (2)';
 let ready: Promise<void> | undefined;
 export function prepareGuide() {
   ready ??= writeDatabase(async (db) => {
     const row = await db.getFirstAsync<{ value: string }>("SELECT value FROM study_meta WHERE key='edition'");
-    if (row?.value === edition) return;
+    if (row?.value === bundledRevision) return;
     for (const e of studyEntries) {
       await db.runAsync(
         `INSERT INTO study_entries (id,title,category,body,source,url,related,chapter,sky) VALUES (?,?,?,?,?,?,?,?,?)
@@ -39,7 +40,7 @@ export function prepareGuide() {
       for (const alias of e.aliases)
         await db.runAsync('INSERT OR IGNORE INTO study_aliases VALUES (?,?)', [alias, e.id]);
     }
-    await db.runAsync("INSERT OR REPLACE INTO study_meta VALUES ('edition',?)", [edition]);
+    await db.runAsync("INSERT OR REPLACE INTO study_meta VALUES ('edition',?)", [bundledRevision]);
   }).catch((error) => {
     ready = undefined;
     throw error;

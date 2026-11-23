@@ -21,7 +21,7 @@ import { searchLibrary } from '../src/features/discovery/librarySearch';
 import { getCollections, removeCollection, saveCollectionName, setCollectionItems } from '../src/database/repositories/collectionsRepository';
 import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../src/database/repositories/readingPacksRepository';
 import {
-  readSatelliteCache, recordSatelliteFailure, reserveSatelliteRefresh, satelliteRefreshInterval, saveSatelliteOrbit,
+  readSatelliteCache, recordSatelliteFailure, resumeOrbitSource, reserveSatelliteRefresh, satelliteRefreshInterval, saveSatelliteOrbit,
 } from '../src/database/repositories/satelliteOrbitRepository';
 import { parseSatelliteElements } from '../src/features/sky/satelliteElements';
 import type { DiscoveryItem } from '../src/database/models';
@@ -114,6 +114,8 @@ it('keeps the newest orbit through refresh failures and enforces a durable per-s
   expect(await readSatelliteCache()).toEqual([{ noradId: 25544, elements: orbit, downloadedAt: now, failure: 'paused' }]);
 
   const later = now + satelliteRefreshInterval;
+  expect(await reserveSatelliteRefresh(25544, later)).toBe(false);
+  await resumeOrbitSource(later);
   expect(await reserveSatelliteRefresh(25544, later)).toBe(true);
   const older = parseSatelliteElements({ ...omm, EPOCH: new Date(now - 1000).toISOString() }, 25544)!;
   await saveSatelliteOrbit(25544, older, later);
