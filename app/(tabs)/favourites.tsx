@@ -1,3 +1,4 @@
+import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ function Filter({ title, selected, onPress }: { title: string; selected: boolean
 }
 
 export default function FavouritesScreen() {
+  const paddingBottom = useTabContentInset();
   const router = useRouter();
   const { top } = useSafeAreaInsets();
   const dispatch = useAppDispatch();
@@ -108,7 +110,7 @@ export default function FavouritesScreen() {
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom }]}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={reload} tintColor={colors.forest} />}
         renderItem={({ item }) => (
           <DispatchRow item={item} isSaved pending={Boolean(pending[item.localId])} offline={offline}

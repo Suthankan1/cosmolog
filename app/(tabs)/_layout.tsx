@@ -1,71 +1,51 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Tabs } from 'expo-router/js-tabs';
+import { StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon } from '../../src/components/common/Icon';
-import { colors, layout, typography } from '../../src/theme/tokens';
+import { FloatingSurface } from '../../src/components/common/FloatingSurface';
+import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
+import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+
+const destinations = [
+  { name: 'discover', title: 'Discover', icon: 'compass' },
+  { name: 'favourites', title: 'Favourites', icon: 'bookmark' },
+  { name: 'profile', title: 'Profile', icon: 'user' },
+] as const satisfies ReadonlyArray<{ name: string; title: string; icon: FeatherIconName }>;
 
 export default function TabLayout() {
-  const { bottom } = useSafeAreaInsets();
-  const { fontScale } = useWindowDimensions();
+  const { bottom, left, right } = useSafeAreaInsets();
+  const { fontScale, width } = useWindowDimensions();
+  const side = width <= 360 || fontScale > 1.3 ? spacing[1] : layout.floatingInset;
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.forest,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: [styles.tabBar, { height: Math.max(60, 48 + 14 * fontScale) + bottom }],
-        tabBarAllowFontScaling: true,
-        tabBarLabelStyle: styles.tabBarLabel,
-        tabBarItemStyle: styles.tabBarItem,
-      }}
-    >
-      <Tabs.Screen
-        name="discover"
-        options={{
-          title: 'Discover',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="home" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="favourites"
-        options={{
-          title: 'Favourites',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="book-open" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="user" color={color} size={size} />
-          ),
-        }}
-      />
+    <Tabs screenOptions={{
+      headerShown: false,
+      tabBarHideOnKeyboard: true,
+      tabBarLabelPosition: 'below-icon',
+      tabBarActiveTintColor: colors.forest,
+      tabBarInactiveTintColor: colors.ink,
+      tabBarActiveBackgroundColor: colors.sageLight,
+      tabBarBackground: () => <FloatingSurface />,
+      tabBarStyle: [styles.bar, {
+        height: 'auto', minHeight: 52 + Math.ceil(17 * fontScale), bottom: bottom + spacing[2], start: left + side, end: right + side,
+      }],
+      tabBarItemStyle: styles.item,
+    }}>
+      {destinations.map(({ name, title, icon }) => (
+        <Tabs.Screen key={name} name={name} options={{
+          title,
+          tabBarIcon: ({ color }) => <Icon name={icon} size={24} color={color} />,
+          tabBarLabel: ({ color }) => <Text style={[styles.label, { color }]}>{title}</Text>,
+        }} />
+      ))}
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingTop: 4,
-    elevation: 0,
+  bar: {
+    position: 'absolute', paddingHorizontal: 6, paddingVertical: 5, paddingBottom: 5,
+    borderTopWidth: 0, borderRadius: radii.pill, backgroundColor: 'transparent',
+    boxShadow: '0px 3px 12px rgba(24, 66, 53, 0.16)',
   },
-  tabBarItem: {
-    minHeight: layout.minimumTouchTarget,
-  },
-  tabBarLabel: {
-    fontFamily: typography.label.fontFamily,
-    fontSize: 11,
-    lineHeight: 14,
-    marginTop: 2,
-  },
+  item: { minHeight: layout.minimumTouchTarget, borderRadius: radii.pill, overflow: 'hidden', paddingVertical: 3 },
+  label: { ...typography.label, textAlign: 'center', paddingHorizontal: 2 },
 });

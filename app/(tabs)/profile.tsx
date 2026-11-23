@@ -1,3 +1,4 @@
+import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
@@ -30,6 +31,7 @@ function formatBytes(bytes: number) {
 }
 
 export default function ProfileScreen() {
+  const paddingBottom = useTabContentInset();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useAppSelector(state => state.auth);
@@ -56,7 +58,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.scroll}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.scroll, { paddingBottom }]}>
       {focused && <StatusBar style="light" />}
       <View style={[styles.masthead, { paddingTop: insets.top + spacing[4] }]}>
         <Earthrise style={styles.horizon} />

@@ -305,3 +305,5 @@ An iPhone 17 simulator running Expo Go exercised the native reader. XCTest passe
 ## Editorial control refresh
 
 Added platform material selection, primary and tonal actions, destination rows and a circular back control. TypeScript, ESLint and four focused tests passed. Tests cover live Reduce Transparency changes and the accessible loading state.
+
+The floating tab bar retains Expo Router tab presses, selection and keyboard handling. Each tab uses the router's measured bar height plus its safe-area offset for scroll clearance.

@@ -1,3 +1,4 @@
+import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -22,6 +23,7 @@ import { EmptyState } from '../../src/components/common/EmptyState';
 import { Button } from '../../src/components/common/Button';
 
 export default function DiscoverScreen() {
+  const paddingBottom = useTabContentInset();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
@@ -155,7 +157,7 @@ export default function DiscoverScreen() {
         renderItem={({ item }) => <DispatchRow {...cardProps(item)} />}
         ListHeaderComponent={header}
         ListEmptyComponent={empty ?? undefined}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom }]}
         keyboardShouldPersistTaps="handled"
         refreshControl={connection === 'online' ? <RefreshControl refreshing={isRefreshing} onRefresh={refresh} tintColor={colors.forest} /> : undefined}
       />
