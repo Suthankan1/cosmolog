@@ -2,7 +2,7 @@ import manifest from '../study-releases/manifest.json';
 import space from '../study-releases/observatories/1/space.json';
 import ground from '../study-releases/observatories/1/ground.json';
 import {activatePack,installedPacks,removePack,manifestSchema,packEntries} from '../src/features/study/packRepository';
-import {listStudy,bookmarkStudy,resumeStudy,checkpoint,readStudy} from '../src/features/study/repository';
+import {listStudy,bookmarkStudy,saveStudyNote,resumeStudy,checkpoint,readStudy} from '../src/features/study/repository';
 import {studyEntries} from '../src/features/study/edition';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -337,4 +337,15 @@ it('changes pack revisions atomically and retains bookmarked articles on removal
   expect(await installedPacks()).toHaveLength(0);
   expect((await readStudy(id,5)).marked).toBe(true);
   expect((await readStudy('pack:observatories:alma',5)).entry).toBeFalsy();
+});
+
+it('remembers a bookmarked chapter section and keeps field notes account-owned',async()=>{
+  const id='chapter:worlds';
+  await bookmarkStudy(61,id,true,1);
+  await saveStudyNote(61,id,'Compare inner and outer rings');
+  const saved=await listStudy('',true,61,10);
+  expect(saved[0].anchor).toBe('rings');
+  expect((await readStudy(id,61)).note).toContain('rings');
+  expect((await readStudy(id,62)).note).toBeNull();
+  await expect(saveStudyNote(62,id,'Unowned')).rejects.toThrow();
 });

@@ -283,3 +283,7 @@ Bundled 52,004 GeoNames places in an indexed database, with optional city select
 ## Study pack revisions and Starlink profiles
 
 Added versioned static manifests, resumable verified parts, transactional installation and bookmark-preserving removal. Included a two-entry observatories supplement with the app. Added STARLINK-1008 and STARLINK-1012 from the 23 November 2026 CelesTrak catalog. ESLint, TypeScript and all 90 tests passed, including failed pack activation, account bookmarks and six-digit catalog IDs.
+
+## Field Guide section anchors, notes and edition validation
+
+Added stable chapter-section anchors, private study notes, per-chapter glossary entries, an accessible bundled Earthrise figure, and content/pack validation tests. Both selected Starlink GP endpoints returned matching NORAD identifiers. Strict TypeScript, ESLint and all 93 tests passed.

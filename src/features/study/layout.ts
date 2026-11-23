@@ -8,5 +8,11 @@ export const studyStyles = StyleSheet.create({
   section: { ...typography.h2, color: colors.ink },
   body: { ...typography.body, color: colors.ink, fontSize: 16, lineHeight: 25 },
   note: { ...typography.bodySmall, color: colors.muted },
-  row: { minHeight: 48, justifyContent: 'center', borderBottomWidth: 1, borderColor: colors.border, paddingVertical: spacing[2] },
+  row: {
+    minHeight: 48,
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing[2],
+  },
 });

@@ -194,3 +194,10 @@ export const MIGRATE_TO_STUDY_PACKS_SQL = `
   ALTER TABLE study_entries ADD COLUMN pack_id TEXT;
   PRAGMA user_version = 11;
 `;
+
+export const MIGRATE_TO_STUDY_ANCHORS_SQL = `
+  ALTER TABLE study_bookmarks ADD COLUMN section_anchor TEXT;
+  ALTER TABLE study_bookmarks ADD COLUMN note TEXT;
+  ALTER TABLE study_progress ADD COLUMN section_anchor TEXT;
+  PRAGMA user_version = 12;
+`;
