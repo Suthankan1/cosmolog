@@ -53,7 +53,7 @@ afterAll(() => {
 });
 
 describe('Expedition Progress SQLite Repository', () => {
-  it('migrates to version 15 and creates expedition_progress table', async () => {
+  it('migrates to version 16 and creates expedition_progress table', async () => {
     const steps = await getExpeditionCompletedStepIds(1, 'saturn');
     expect(steps.size).toBe(0);
   });
