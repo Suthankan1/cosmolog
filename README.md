@@ -64,17 +64,17 @@ From Discover or Profile, open **Expedition packs** to embark on structured scie
 
 ### Expedition Packs & Offline Library Management
 - **Curated Multi-Step Expeditions (F01):** Expeditions guide astronomers through structured science journeys. Each step is tagged by type (`CELESTIAL PLATE`, `SPACE STUDY`, `FIELD OBSERVATION`) and status (`REQUIRED` vs `OPTIONAL`). Sourced attributions link directly to verified NASA, Cassini-Huygens, and Space Study references.
-- **Decoupled Learning Progress:** Downloading plates for offline reading does not automatically mark steps as learned or completed. Human observation checkboxes track authentic study progress independently in SQLite schema version 15 (`expedition_progress` with `revision`).
+- **Decoupled Learning Progress:** Downloading plates for offline reading does not automatically mark steps as learned or completed. Human observation checkboxes track authentic study progress independently in SQLite schema version 16 (`expedition_progress` with `revision`). Removing offline downloads frees storage while preserving completed learning checkmarks intact; a separate "Reset progress" action with confirmation is provided.
 - **Resumption & Cancellation:** Downloads enforce storage preflight quotas, provide an explicit **Cancel download** button to safely abort in-flight transfers, and resume missing steps deterministically.
 - **Offline Library Manager (F02):** Dedicated storage and ownership console (`/offline-library`) accessible from Profile and Field Shelf. Distinctly measures and labels:
   - **Physical Media on Disk:** Verified deduplicated binary image files stored in app documents storage.
-  - **Space Study Curriculum:** Installed database text records from Space Study supplements.
-  - **Eligible to Clear:** Unowned discovery feed image binaries safe to reclaim.
-- **Coordinated Safe Cache Cleanup:** Tapping **Clean unowned cache** calculates an exact preview of reclaimable storage while protecting all user favourites, notes, and expedition downloads across all accounts. Pruning synchronizes with the active media worker (`waitForMediaWorker`) to eliminate race conditions.
+  - **Space Study Curriculum:** Installed database text records from Space Study supplements (labeled as content size).
+  - **Eligible to Clear:** Unowned discovery feed image binaries safe to reclaim (excluding any file referenced by retained items across accounts).
+- **Exclusive Lock Coordination & Safe Cache Cleanup:** Tapping **Clean unowned cache** calculates an exact preview of reclaimable storage while protecting all user favourites, notes, and expedition downloads across all accounts. Pruning and downloads synchronize under a service-level exclusive lock coordinator (`withExclusiveMediaLock`) to eliminate race conditions. Exact deleted bytes and files are reported.
 
-| Guided expedition | Learning checklist | Offline storage telemetry | Safe cache cleanup |
+| Guided expedition | Preserved progress on remove | Offline storage telemetry | Clean reset confirmation |
 | --- | --- | --- | --- |
-| ![Expedition checklist](docs/screenshots/28-expeditions-checklist.png) | ![Checked step](docs/screenshots/29-expeditions-checked.png) | ![Offline library telemetry](docs/screenshots/30-offline-library-telemetry.png) | ![Clean cache alert](docs/screenshots/31-clean-cache-alert.png) |
+| ![Guided expedition](docs/screenshots/41-expeditions-deeplink.png) | ![Preserved progress](docs/screenshots/45-download-removed-progress-preserved.png) | ![Offline library telemetry](docs/screenshots/37-upgrade-offline-library.png) | ![Reset confirmation](docs/screenshots/48-reset-progress-dialog.png) |
 
 ### Sky Viewer
 

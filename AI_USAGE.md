@@ -89,3 +89,14 @@ Antigravity implemented F01 (Expedition Packs) and F02 (Offline Library Manager)
 | 2026-11-26 | Antigravity | Queried non-existent table `schema_migrations` in migration verification test | Replaced with standard SQLite `PRAGMA user_version` query | COSMOLOG's SQLite architecture uses SQLite's built-in `PRAGMA user_version` register rather than a separate `schema_migrations` table | `tests/hardeningRegression.test.ts` |
 | 2026-11-26 | Antigravity | Conflated SQLite text size from `study_packs` with physical media bytes | Separated `physicalMediaBytes` from `installedStudyTextBytes` across projection and UI | `study_packs` stores JSON text in SQLite; conflating database text records with binary media files on disk misleads users about reclaimable disk space | `src/features/storage/offlineStorageProjection.ts`, `app/offline-library.tsx` |
 
+## 2026-11-26 — v1.2.0 Migration & Media Safety Blocker Correction
+
+Antigravity resolved four release-blocker findings: migration 16 safety across both clean and modified v15 databases, service-level exclusive media lock coordinator, accurate physical disk accounting with active-owner exclusion, and decoupling learning progress from download removal. Three concrete technical corrections arose during this pass:
+
+| Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
+|---|---|---|---|---|---|
+| 2026-11-26 | Antigravity | Maximum database version check threw `Unsupported database version` on version 16 | Updated check from `version > 15` to `version > 16` in `src/database/db.ts` | Introducing migration 16 advances `PRAGMA user_version` to 16; leaving the upper bound check at 15 caused subsequent database opens and app restarts to reject the database | `src/database/db.ts`, `tests/migrationSafety.test.ts` |
+| 2026-11-26 | Antigravity | Concurrency lock test checked `opStarted` immediately without microtask tick | Added `await new Promise(r => setTimeout(r, 0))` microtask yield | In promise-queue based lock mechanisms, `action()` executes in the next microtask turn after `previousLock` resolves; synchronously asserting execution flags without yielding causes false-negative test failures | `tests/mediaCoordinator.test.ts` |
+| 2026-11-26 | Antigravity | Attributed physical bytes to unowned cache items whose files are shared with active favourites | Assigned `0` bytes and added dedicated `Recent discovery cache (file retained by active records)` reason | If an unowned cache row references a physical file also held by an active favourite or pack, the file cannot be pruned, so presenting it as reclaimable bytes misinforms the user | `src/features/storage/offlineStorageProjection.ts`, `tests/offlineStorageProjection.test.ts` |
+
+

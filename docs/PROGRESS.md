@@ -526,3 +526,56 @@ Completed strict engineering hardening pass on branch `fix/offline-explorer-rele
     - `31-clean-cache-alert.png`: Cache cleanup preview dialog confirming protected favourites and pack downloads.
     - `32-offline-cold-restart.png`: Cold restart in airplane mode after force-stop with offline banner and cached archive.
     - `33-expeditions-offline.png`: Fully readable and functional expedition checklist in airplane mode.
+
+## 2026-11-26 — Task v1.2.0: Migration & Media Safety Final Blocker Pass
+
+Completed:
+1. **Database Migration Safety & Schema Version 16 (Issue 1):**
+   - Cleaned `MIGRATE_TO_EXPEDITIONS_SQL` to pure version 15 without the revision column.
+   - Introduced `MIGRATE_TO_EXPEDITION_REVISIONS_SQL` for version 16: `ALTER TABLE expedition_progress ADD COLUMN revision INTEGER NOT NULL DEFAULT 1; PRAGMA user_version = 16;`.
+   - Updated `openDatabase()` in `src/database/db.ts` to inspect `PRAGMA table_info(expedition_progress)`. Dynamically runs migration 16 if `revision` is missing; if already present (modified v15), executes `PRAGMA user_version = 16;`. Raised maximum supported version check to 16.
+   - Created `tests/migrationSafety.test.ts` covering fresh install (0 -> 16), upgrade from v14, upgrade from clean v15, upgrade from modified v15, and transaction rollback.
+   - Guaranteed zero data loss across user databases.
+
+2. **Exclusive Media Operation Coordination (Issue 2):**
+   - Implemented service-level mutual exclusion in `src/services/storage/mediaCoordinator.ts`:
+     - `withExclusiveMediaLock<T>(action)`: queues critical media actions on a shared FIFO promise chain.
+     - `waitForMediaOperations()`: awaits completion of all currently queued media operations.
+     - `isMediaOperationInProgress()`: inspects active operation status.
+   - Integrated `withExclusiveMediaLock` in `refreshImagesThunk()` (`favouritesSlice.ts`) and `clearEligibleCache()` (`offlineStorageProjection.ts`), decoupling storage domain from Redux internals.
+   - Created `tests/mediaCoordinator.test.ts` providing deterministic concurrency tests using deferred promises to prove mutual exclusion, error propagation, and wait coordination.
+
+3. **Accurate Physical Storage Accounting & Active Owner Protection (Issue 3):**
+   - Deduplicated physical media on disk (`deviceTotalMediaBytes`, `accountMediaBytes`, `sharedMediaBytes`, `reclaimableMediaBytes`).
+   - Excluded files referenced by ANY retained owner across all accounts from reclaimable storage in both `previewClearCache` and `clearEligibleCache`.
+   - Updated `pruneImageFiles` in `src/services/storage/imageStorage.ts` to return exact disk metrics (`deletedCount`, `deletedBytes`, `deletedFiles`) and reported genuine freed bytes in cleanup alerts.
+   - Correctly labeled study supplement storage as "content size" rather than physical disk media.
+
+4. **Preserve Independent Learning Progress (Issue 4):**
+   - Completely decoupled removing expedition downloads from learning completion (`removeExpeditionDownload` does not call `resetExpeditionProgress`).
+   - Added an explicit, separate "Reset progress" action with confirmation alert dialog in `app/reading-packs.tsx`.
+   - Verified that removing a download purges cached plates while leaving learning checklist checkmarks 100% intact.
+
+5. **Automated Verification:**
+   - `npm run lint`: 0 errors, 0 warnings.
+   - `npm run typecheck`: 0 errors.
+   - `npm test -- --runInBand`: 45 test suites, 179 tests (100% passing).
+
+6. **Native Android Upgrade Evidence (Pixel 9 Emulator):**
+   - Upgraded existing installation with pre-hardening database without clearing app data (`adb install -r`).
+   - Verified complete data survival: 2 favourites preserved, private field notes preserved, cached discoveries preserved, reading positions preserved.
+   - Verified offline library telemetry with accurate physical media metrics and content size labels.
+   - Verified download removal preserved learning checkmarks.
+   - Verified cold restart in airplane mode preserved learning checkmarks.
+   - Verified explicit "Reset progress" confirmation dialog and clean reset.
+   - Genuine screenshots captured in `docs/screenshots/`:
+     - `34-upgrade-launch.png`: Upgrade launch on Pixel 9 with preserved cached discoveries and reading checkpoint.
+     - `35-upgrade-favourites.png`: Field Shelf with 2 of 2 saved favourites and private field notes intact.
+     - `36-shelf-tools.png`: Shelf tools menu with Offline library entry.
+     - `37-upgrade-offline-library.png`: Masthead telemetry showing physical media on disk and separated study content size.
+     - `41-expeditions-deeplink.png`: Guided Saturn expedition with 1 of 4 completed steps and 3 of 3 plates saved.
+     - `44-remove-download-dialog.png`: Confirmation alert explaining plates will be freed while learning steps stay preserved.
+     - `45-download-removed-progress-preserved.png`: Download removed (0 of 3 plates saved) with step 1 checkmark preserved.
+     - `46-cold-restart-preserved-progress.png`: Cold restart in airplane mode confirming progress survived process death.
+     - `48-reset-progress-dialog.png`: Separate explicit confirmation alert for resetting learning checklist.
+     - `49-progress-reset-clean.png`: Learning progress cleanly reset to 0 of 4 steps after confirmation.
