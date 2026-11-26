@@ -226,10 +226,14 @@ export const MIGRATE_TO_EXPEDITIONS_SQL = `
     account_id INTEGER NOT NULL CHECK (account_id > 0),
     expedition_id TEXT NOT NULL,
     step_id TEXT NOT NULL,
-    revision INTEGER NOT NULL DEFAULT 1,
     completed_at TEXT NOT NULL,
     PRIMARY KEY (account_id, expedition_id, step_id)
   );
   CREATE INDEX idx_expedition_progress_account ON expedition_progress(account_id, expedition_id);
   PRAGMA user_version = 15;
+`;
+
+export const MIGRATE_TO_EXPEDITION_REVISIONS_SQL = `
+  ALTER TABLE expedition_progress ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;
+  PRAGMA user_version = 16;
 `;

@@ -132,9 +132,21 @@ describe('Expedition Download Orchestrator', () => {
     expect(keepReadingPackItem).toHaveBeenCalledTimes(2);
   });
 
-  it('removes expedition items and resets progress on remove', async () => {
+  it('removes expedition items without resetting learning progress', async () => {
     await removeExpeditionDownload(1, saturn.id);
     expect(removeReadingPack).toHaveBeenCalledWith(1, saturn.id);
-    expect(resetExpeditionProgress).toHaveBeenCalledWith(1, saturn.id);
+    expect(resetExpeditionProgress).not.toHaveBeenCalled();
+  });
+
+  it('redownloading an expedition preserves completed learning steps', async () => {
+    jest.mocked(fetchNasaApodItem)
+      .mockResolvedValueOnce(plate(first.date!))
+      .mockResolvedValueOnce(plate(second.date!))
+      .mockResolvedValueOnce(plate(third.date!));
+
+    const { signal } = new AbortController();
+    const result = await downloadExpedition(1, saturn, signal);
+    expect(result.downloadedCount).toBe(3);
+    expect(resetExpeditionProgress).not.toHaveBeenCalled();
   });
 });

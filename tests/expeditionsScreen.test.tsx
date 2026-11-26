@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import ReadingPacksScreen from '../app/reading-packs';
 import { getReadingPackItems } from '../src/database/repositories/readingPacksRepository';
 import {
@@ -191,5 +191,32 @@ describe('Expedition Packs Screen (ReadingPacksScreen)', () => {
     });
 
     expect(capturedSignal?.aborted).toBe(true);
+  });
+
+  it('renders reset progress button when steps are completed and shows confirmation alert', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    jest.mocked(getAllCompletedStepIds).mockResolvedValue(
+      new Map([['saturn', new Set(['step-saturn-field-observation'])]]),
+    );
+
+    await act(async () => {
+      render(<ReadingPacksScreen />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Reset learning checklist progress for A Tour of Saturn')).toBeTruthy();
+    });
+
+    const resetBtn = screen.getByLabelText('Reset learning checklist progress for A Tour of Saturn');
+    await act(async () => {
+      fireEvent.press(resetBtn);
+    });
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Reset learning progress?',
+      'This will clear all completed steps for this expedition. Downloaded offline plates are preserved.',
+      expect.any(Array),
+    );
+    alertSpy.mockRestore();
   });
 });

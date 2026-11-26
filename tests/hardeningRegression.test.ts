@@ -27,11 +27,23 @@ jest.mock('../src/services/storage/imageStorage', () => ({
     return { uri: 'file:///images/' + name, bytes: mockDiskFiles.get(name)! };
   },
   pruneImageFiles: jest.fn((keep: Set<string>) => {
+    let deletedBytes = 0;
+    let deletedCount = 0;
+    const deletedFiles: string[] = [];
     for (const key of Array.from(mockDiskFiles.keys())) {
       if (!keep.has(key)) {
+        deletedBytes += mockDiskFiles.get(key) || 0;
+        deletedCount++;
+        deletedFiles.push(key);
         mockDiskFiles.delete(key);
       }
     }
+    return { deletedCount, deletedBytes, deletedFiles };
+  }),
+  getDeviceTotalMediaBytes: jest.fn(() => {
+    let total = 0;
+    for (const b of mockDiskFiles.values()) total += b;
+    return { totalBytes: total, fileCount: mockDiskFiles.size };
   }),
 }));
 
@@ -180,11 +192,11 @@ describe('Hardening Pass Regression Verification (Finding 9 & 10)', () => {
     expect(reset201.size).toBe(0);
   });
 
-  it('verifies migration safety to schema version 15 with revision column', async () => {
+  it('verifies migration safety to schema version 16 with revision column', async () => {
     const row = await writeDatabase(async db =>
       db.getFirstAsync<{ user_version: number }>('PRAGMA user_version'),
     );
-    expect(row?.user_version).toBeGreaterThanOrEqual(15);
+    expect(row?.user_version).toBeGreaterThanOrEqual(16);
 
     // Verify expedition_progress table structure
     const cols = await writeDatabase(async db =>

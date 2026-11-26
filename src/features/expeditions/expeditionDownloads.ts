@@ -2,7 +2,6 @@ import { Paths } from 'expo-file-system';
 import { getDiscoveryItemById } from '../../database/repositories/discoveryRepository';
 import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../../database/repositories/readingPacksRepository';
 import { fetchNasaApodItem } from '../../services/api/nasaApodService';
-import { resetExpeditionProgress } from '../../database/repositories/expeditionsRepository';
 import type { ExpeditionManifest } from './manifest';
 
 export interface ExpeditionDownloadResult {
@@ -76,6 +75,6 @@ export async function downloadExpedition(
 
 export async function removeExpeditionDownload(accountId: number, expeditionId: string): Promise<void> {
   if (accountId <= 0) return;
+  // Learning progress is intentionally preserved independently of download removal
   await removeReadingPack(accountId, expeditionId);
-  await resetExpeditionProgress(accountId, expeditionId);
 }

@@ -20,6 +20,7 @@ import { getReadingPackItems } from '../src/database/repositories/readingPacksRe
 import {
   getAllCompletedStepIds,
   markExpeditionStepCompleted,
+  resetExpeditionProgress,
   unmarkExpeditionStepCompleted,
 } from '../src/database/repositories/expeditionsRepository';
 import { mediaLabel } from '../src/features/discovery/mediaLabel';
@@ -158,6 +159,19 @@ export default function ReadingPacksScreen() {
       void dispatch(refreshImagesThunk());
     } catch {
       setNotice({ packId: expedition.id, text: 'Could not remove this expedition. Try again.' });
+    } finally {
+      setBusy(undefined);
+    }
+  };
+
+  const resetProgress = async (expedition: ExpeditionManifest) => {
+    if (!accountId || busy) return;
+    setBusy(expedition.id);
+    try {
+      await resetExpeditionProgress(accountId, expedition.id);
+      await reload(accountId);
+    } catch {
+      setNotice({ packId: expedition.id, text: 'Could not reset learning progress.' });
     } finally {
       setBusy(undefined);
     }
@@ -417,10 +431,30 @@ export default function ReadingPacksScreen() {
                       onPress={() =>
                         Alert.alert(
                           'Remove this download?',
-                          'Any favourites, field notes, and completed study bookmarks stay preserved.',
+                          'Downloaded offline plates will be removed to free storage. Your completed learning steps, notes, and favourites stay preserved.',
                           [
                             { text: 'Cancel', style: 'cancel' },
                             { text: 'Remove', style: 'destructive', onPress: () => { void remove(expedition); } },
+                          ],
+                        )
+                      }
+                    />
+                  )}
+
+                  {expCompleted.size > 0 && !isCurrentlyDownloading && (
+                    <Button
+                      title="Reset progress"
+                      icon="rotate-ccw"
+                      variant="outline"
+                      disabled={Boolean(busy)}
+                      accessibilityLabel={'Reset learning checklist progress for ' + expedition.title}
+                      onPress={() =>
+                        Alert.alert(
+                          'Reset learning progress?',
+                          'This will clear all completed steps for this expedition. Downloaded offline plates are preserved.',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Reset progress', style: 'destructive', onPress: () => { void resetProgress(expedition); } },
                           ],
                         )
                       }

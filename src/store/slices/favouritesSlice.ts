@@ -5,6 +5,11 @@ import {
 } from '../../database/repositories/favouritesRepository';
 import { finishImage, invalidateSavedImage, getPendingImages, reconcileSavedImages } from '../../database/repositories/mediaRepository';
 import { deleteImageFile, downloadImage, pruneImageFiles } from '../../services/storage/imageStorage';
+import {
+  isMediaOperationInProgress,
+  waitForMediaOperations,
+  withExclusiveMediaLock,
+} from '../../services/storage/mediaCoordinator';
 import { sessionChanged } from './authSlice';
 
 export interface FavouritesState {
@@ -53,24 +58,18 @@ let mediaWork: Promise<void> | undefined;
 let mediaQueued = false;
 
 export function isMediaWorkerBusy(): boolean {
-  return Boolean(mediaWork);
+  return isMediaOperationInProgress();
 }
 
 export async function waitForMediaWorker(): Promise<void> {
-  if (mediaWork) {
-    try {
-      await mediaWork;
-    } catch {
-      // Ignore background worker failure in awaiter
-    }
-  }
+  await waitForMediaOperations();
 }
 
 export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
   mediaQueued = true;
   if (mediaWork) return mediaWork;
 
-  mediaWork = (async () => {
+  mediaWork = withExclusiveMediaLock(async () => {
     while (mediaQueued) {
       mediaQueued = false;
       const accountId = getState().favourites.accountId;
@@ -109,7 +108,7 @@ export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch
         dispatch(imageWorkChanged({ accountId, busy: false }));
       }
     }
-  })().finally(() => { mediaWork = undefined; });
+  }).finally(() => { mediaWork = undefined; });
 
   return mediaWork;
 };
