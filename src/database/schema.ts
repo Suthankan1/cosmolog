@@ -226,6 +226,7 @@ export const MIGRATE_TO_EXPEDITIONS_SQL = `
     account_id INTEGER NOT NULL CHECK (account_id > 0),
     expedition_id TEXT NOT NULL,
     step_id TEXT NOT NULL,
+    revision INTEGER NOT NULL DEFAULT 1,
     completed_at TEXT NOT NULL,
     PRIMARY KEY (account_id, expedition_id, step_id)
   );

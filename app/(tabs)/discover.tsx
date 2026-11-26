@@ -165,7 +165,7 @@ export default function DiscoverScreen() {
       {!searching && <DestinationGroup title="Study, sky and archives" icon="layers">
         <Button title="Space Study" icon="book-open" variant="destination" onPress={() => router.push('/study')} />
         <Button title="Sky Viewer" icon="compass" variant="destination" onPress={() => router.push('/sky-viewer')} />
-        <Button title="Offline reading packs" icon="download" variant="destination" onPress={() => router.push('/reading-packs')} />
+        <Button title="Expedition packs" icon="compass" variant="destination" onPress={() => router.push('/reading-packs')} />
         {selectedCategory !== 'spaceflight-news' && <>
           <BrowseByDate />
           <OnThisDay connection={connection} />

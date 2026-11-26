@@ -60,7 +60,21 @@ Under **Study, sky and archives**, **On This Day** offers an earlier NASA plate 
 
 On the Field Shelf, open **Shelf tools → Collections**, create a named collection, then tap **Choose discoveries** to group existing favourites. A discovery can belong to multiple collections. You can create, rename, edit, and browse collections offline. Deleting a collection keeps its favourites and field notes.
 
-From Discover, open **Study, sky and archives → Offline reading packs** to download **A Tour of Saturn** or **Apollo at the Moon**. Each card shows which plates are stored and the status of images eligible for offline storage. If the connection drops, reopen the pack and resume the missing entries. Removing a download keeps any matching favourites, notes, and reading history.
+From Discover or Profile, open **Expedition packs** to embark on structured science expeditions such as **A Tour of Saturn** or **Apollo at the Moon**. Each expedition combines celestial plates, Space Study theory chapters, and observational fieldwork prompts.
+
+### Expedition Packs & Offline Library Management
+- **Curated Multi-Step Expeditions (F01):** Expeditions guide astronomers through structured science journeys. Each step is tagged by type (`CELESTIAL PLATE`, `SPACE STUDY`, `FIELD OBSERVATION`) and status (`REQUIRED` vs `OPTIONAL`). Sourced attributions link directly to verified NASA, Cassini-Huygens, and Space Study references.
+- **Decoupled Learning Progress:** Downloading plates for offline reading does not automatically mark steps as learned or completed. Human observation checkboxes track authentic study progress independently in SQLite schema version 15 (`expedition_progress` with `revision`).
+- **Resumption & Cancellation:** Downloads enforce storage preflight quotas, provide an explicit **Cancel download** button to safely abort in-flight transfers, and resume missing steps deterministically.
+- **Offline Library Manager (F02):** Dedicated storage and ownership console (`/offline-library`) accessible from Profile and Field Shelf. Distinctly measures and labels:
+  - **Physical Media on Disk:** Verified deduplicated binary image files stored in app documents storage.
+  - **Space Study Curriculum:** Installed database text records from Space Study supplements.
+  - **Eligible to Clear:** Unowned discovery feed image binaries safe to reclaim.
+- **Coordinated Safe Cache Cleanup:** Tapping **Clean unowned cache** calculates an exact preview of reclaimable storage while protecting all user favourites, notes, and expedition downloads across all accounts. Pruning synchronizes with the active media worker (`waitForMediaWorker`) to eliminate race conditions.
+
+| Guided expedition | Learning checklist | Offline storage telemetry | Safe cache cleanup |
+| --- | --- | --- | --- |
+| ![Expedition checklist](docs/screenshots/28-expeditions-checklist.png) | ![Checked step](docs/screenshots/29-expeditions-checked.png) | ![Offline library telemetry](docs/screenshots/30-offline-library-telemetry.png) | ![Clean cache alert](docs/screenshots/31-clean-cache-alert.png) |
 
 ### Sky Viewer
 

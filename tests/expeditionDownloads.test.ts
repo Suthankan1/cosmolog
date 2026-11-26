@@ -91,17 +91,15 @@ describe('Expedition Download Orchestrator', () => {
     expect(result.missingSteps).toEqual([]);
     expect(result.aborted).toBe(false);
 
-    // First was already installed, so markExpeditionStepCompleted called for it
-    expect(markExpeditionStepCompleted).toHaveBeenCalledWith(1, saturn.id, first.id);
+    // Finding 1: Download availability must NOT automatically mark steps as learned/completed
+    expect(markExpeditionStepCompleted).not.toHaveBeenCalled();
 
     // Second was from cache
     expect(keepReadingPackItem).toHaveBeenCalledWith(1, saturn.id, plate(second.date!));
-    expect(markExpeditionStepCompleted).toHaveBeenCalledWith(1, saturn.id, second.id);
 
     // Third was fetched
     expect(fetchNasaApodItem).toHaveBeenCalledWith(third.date, signal);
     expect(keepReadingPackItem).toHaveBeenCalledWith(1, saturn.id, plate(third.date!));
-    expect(markExpeditionStepCompleted).toHaveBeenCalledWith(1, saturn.id, third.id);
 
     expect(onStepSaved).toHaveBeenCalledTimes(2); // for second and third
   });

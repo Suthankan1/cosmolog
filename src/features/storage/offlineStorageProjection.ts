@@ -1,9 +1,14 @@
 import { getDatabase } from '../../database/db';
 import { getLocalImage, pruneImageFiles } from '../../services/storage/imageStorage';
-import { mayDownloadImage } from '../../services/api/mediaPolicy';
-import { reconcileSavedImages, type MediaStatus } from '../../database/repositories/mediaRepository';
+import {
+  mapSavedMedia,
+  reconcileSavedImages,
+  type MediaStatus,
+  type SavedMediaRow,
+} from '../../database/repositories/mediaRepository';
 import { installedPacks } from '../study/packRepository';
 import { getAllExpeditions } from '../expeditions/manifest';
+import { waitForMediaWorker } from '../../store/slices/favouritesSlice';
 
 export interface StorageItemDetail {
   id: string;
@@ -17,8 +22,14 @@ export interface StorageItemDetail {
 }
 
 export interface OfflineStorageSummary {
-  totalPhysicalBytes: number;
-  totalUniqueFilesCount: number;
+  // Finding 5: Honest, deduplicated and distinct telemetry labels
+  physicalMediaBytes: number;        // Physical on-disk media files in app storage (deduplicated)
+  installedStudyTextBytes: number;   // Installed Space Study curriculum text records in database
+  reclaimableMediaBytes: number;     // Physical media bytes of unowned cache eligible to prune
+  totalRetainedBytes: number;        // physicalMediaBytes + installedStudyTextBytes
+  totalUniqueFilesCount: number;     // Count of distinct physical media files on disk
+
+  // Breakdown metrics
   favouritesBytes: number;
   favouritesCount: number;
   expeditionsBytes: number;
@@ -27,8 +38,10 @@ export interface OfflineStorageSummary {
   studyCount: number;
   cacheBytes: number;
   cacheCount: number;
-  reclaimableBytes: number;
+  reclaimableBytes: number;          // alias for reclaimableMediaBytes
   reclaimableCount: number;
+  totalPhysicalBytes: number;        // backward-compatibility alias for physicalMediaBytes
+
   items: {
     favourites: StorageItemDetail[];
     expeditions: StorageItemDetail[];
@@ -47,7 +60,7 @@ export interface ClearCachePreview {
 export async function getOfflineStorageSummary(accountId: number): Promise<OfflineStorageSummary> {
   const db = await getDatabase();
   const seenFiles = new Set<string>();
-  let totalPhysicalBytes = 0;
+  let physicalMediaBytes = 0;
 
   const measureFile = (fileName: string | null): number => {
     if (!fileName) return 0;
@@ -55,23 +68,15 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
     if (!file) return 0;
     if (!seenFiles.has(fileName)) {
       seenFiles.add(fileName);
-      totalPhysicalBytes += file.bytes;
+      physicalMediaBytes += file.bytes;
     }
     return file.bytes;
   };
 
   // 1. Favourites for current account
-  const favRows = await db.getAllAsync<{
+  const favRows = await db.getAllAsync<SavedMediaRow & {
     local_id: string;
     title: string;
-    source: string;
-    attribution: string | null;
-    image_remote_url: string | null;
-    image_license_url: string | null;
-    file_name: string | null;
-    status: string | null;
-    source_url: string | null;
-    license_url: string | null;
     other_owners_count: number;
   }>(
     `SELECT c.local_id, c.title, c.source, c.attribution, c.image_remote_url, c.image_license_url,
@@ -87,15 +92,10 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
 
   let favouritesBytes = 0;
   const favourites: StorageItemDetail[] = favRows.map(row => {
+    // Finding 3: Reuse canonical media validation and licensing logic
+    const media = mapSavedMedia(row);
     const bytes = measureFile(row.file_name);
     favouritesBytes += bytes;
-    const eligible = mayDownloadImage(row.source, row.image_remote_url, row.attribution, row.image_license_url);
-    const hasImage = Boolean(row.file_name && getLocalImage(row.file_name));
-    const status: MediaStatus = eligible
-      ? hasImage
-        ? row.source_url === row.image_remote_url ? 'ready' : 'previous'
-        : row.status === 'failed' ? 'failed' : 'waiting'
-      : 'text-only';
 
     return {
       id: row.local_id,
@@ -103,25 +103,17 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       category: 'favourite',
       bytes,
       fileName: row.file_name,
-      status,
+      status: media.mediaStatus,
       isShared: row.other_owners_count > 0,
       ownershipReason: 'Field Shelf favourite',
     };
   });
 
   // 2. Expedition / Reading Pack items for current account
-  const packRows = await db.getAllAsync<{
+  const packRows = await db.getAllAsync<SavedMediaRow & {
     pack_id: string;
     local_id: string;
     title: string;
-    source: string;
-    attribution: string | null;
-    image_remote_url: string | null;
-    image_license_url: string | null;
-    file_name: string | null;
-    status: string | null;
-    source_url: string | null;
-    license_url: string | null;
     other_owners_count: number;
   }>(
     `SELECT p.pack_id, c.local_id, c.title, c.source, c.attribution, c.image_remote_url, c.image_license_url,
@@ -138,15 +130,10 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
   const expeditionsList = getAllExpeditions();
   let expeditionsBytes = 0;
   const expeditions: StorageItemDetail[] = packRows.map(row => {
+    // Finding 3: Reuse canonical media validation and licensing logic
+    const media = mapSavedMedia(row);
     const bytes = measureFile(row.file_name);
     expeditionsBytes += bytes;
-    const eligible = mayDownloadImage(row.source, row.image_remote_url, row.attribution, row.image_license_url);
-    const hasImage = Boolean(row.file_name && getLocalImage(row.file_name));
-    const status: MediaStatus = eligible
-      ? hasImage
-        ? row.source_url === row.image_remote_url ? 'ready' : 'previous'
-        : row.status === 'failed' ? 'failed' : 'waiting'
-      : 'text-only';
 
     const exp = expeditionsList.find(e => e.id === row.pack_id);
     const packName = exp?.title ?? row.pack_id;
@@ -157,17 +144,18 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       category: 'expedition',
       bytes,
       fileName: row.file_name,
-      status,
+      status: media.mediaStatus,
       isShared: row.other_owners_count > 0,
       ownershipReason: `Expedition pack: ${packName}`,
     };
   });
 
   // 3. Space Study supplements (installed on device, shared across accounts)
+  // Finding 5: Kept distinct from physical disk media bytes
   const studyRows = await installedPacks();
-  let studyBytes = 0;
+  let installedStudyTextBytes = 0;
   const study: StorageItemDetail[] = studyRows.map(p => {
-    studyBytes += p.bytes;
+    installedStudyTextBytes += p.bytes;
     return {
       id: p.id,
       title: `Study Pack: ${p.id} (rev ${p.revision})`,
@@ -179,51 +167,65 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       ownershipReason: 'Installed Space Study supplement (shared on device)',
     };
   });
-  totalPhysicalBytes += studyBytes;
 
   // 4. Feed cache (items not favourited or in packs by ANY account)
-  const cacheRows = await db.getAllAsync<{
+  const cacheRows = await db.getAllAsync<SavedMediaRow & {
     local_id: string;
     title: string;
-    file_name: string | null;
-    status: string | null;
   }>(
-    `SELECT c.local_id, c.title, m.file_name, m.status
+    `SELECT c.local_id, c.title, c.source, c.attribution, c.image_remote_url, c.image_license_url,
+            m.file_name, m.status, m.source_url, m.license_url
      FROM cached_items c
      LEFT JOIN saved_media m ON m.local_id = c.local_id
      WHERE NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = c.local_id)
      ORDER BY c.fetched_at DESC`,
   );
 
-  let cacheBytes = 0;
+  let reclaimableMediaBytes = 0;
+  const seenReclaimableFiles = new Set<string>();
+
   const cache: StorageItemDetail[] = cacheRows.map(row => {
-    const bytes = measureFile(row.file_name);
-    cacheBytes += bytes;
+    const media = mapSavedMedia(row);
+    let bytes = 0;
+    if (row.file_name) {
+      const file = getLocalImage(row.file_name);
+      if (file) {
+        bytes = file.bytes;
+        if (!seenReclaimableFiles.has(row.file_name)) {
+          seenReclaimableFiles.add(row.file_name);
+          reclaimableMediaBytes += file.bytes;
+        }
+      }
+    }
     return {
       id: row.local_id,
       title: row.title,
       category: 'feed_cache',
       bytes,
       fileName: row.file_name,
-      status: row.file_name && getLocalImage(row.file_name) ? 'ready' : 'text-only',
+      status: media.mediaStatus,
       isShared: false,
       ownershipReason: 'Recent discovery cache (eligible to clear)',
     };
   });
 
   return {
-    totalPhysicalBytes,
+    physicalMediaBytes,
+    installedStudyTextBytes,
+    reclaimableMediaBytes,
+    totalRetainedBytes: physicalMediaBytes + installedStudyTextBytes,
     totalUniqueFilesCount: seenFiles.size,
     favouritesBytes,
     favouritesCount: favourites.length,
     expeditionsBytes,
     expeditionsCount: expeditions.length,
-    studyBytes,
+    studyBytes: installedStudyTextBytes,
     studyCount: study.length,
-    cacheBytes,
+    cacheBytes: reclaimableMediaBytes,
     cacheCount: cache.length,
-    reclaimableBytes: cacheBytes,
+    reclaimableBytes: reclaimableMediaBytes,
     reclaimableCount: cache.length,
+    totalPhysicalBytes: physicalMediaBytes,
     items: {
       favourites,
       expeditions,
@@ -254,8 +256,10 @@ export async function previewClearCache(accountId: number): Promise<ClearCachePr
   );
 
   let reclaimableBytes = 0;
+  const seenFiles = new Set<string>();
   for (const row of cacheRows) {
-    if (row.file_name) {
+    if (row.file_name && !seenFiles.has(row.file_name)) {
+      seenFiles.add(row.file_name);
       const file = getLocalImage(row.file_name);
       if (file) reclaimableBytes += file.bytes;
     }
@@ -270,19 +274,24 @@ export async function previewClearCache(accountId: number): Promise<ClearCachePr
 }
 
 export async function clearEligibleCache(): Promise<{ clearedCount: number; freedBytes: number }> {
+  // Finding 4: Coordinate with media download worker to prevent concurrent deletion
+  await waitForMediaWorker();
+
   const db = await getDatabase();
   const unownedMedia = await db.getAllAsync<{ file_name: string | null }>(
     `SELECT file_name FROM saved_media WHERE NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = saved_media.local_id)`,
   );
   let freedBytes = 0;
+  const seenFreed = new Set<string>();
   for (const m of unownedMedia) {
-    if (m.file_name) {
+    if (m.file_name && !seenFreed.has(m.file_name)) {
+      seenFreed.add(m.file_name);
       const file = getLocalImage(m.file_name);
       if (file) freedBytes += file.bytes;
     }
   }
 
-  // Reconcile saved images database rows (calls writeDatabase internally)
+  // Reconcile saved images database rows
   const retainedFiles = await reconcileSavedImages();
   // Prune unowned physical files from filesystem
   pruneImageFiles(retainedFiles);
