@@ -2,7 +2,7 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
-## Unreleased — v1.2.0 (Offline Explorer)
+## v1.2.0 — Offline Explorer (2026-11-26)
 
 - **F01 Expedition Packs:** Structured, multi-step science expeditions (Saturn, Apollo) combining NASA APOD celestial plates, Space Study literature chapters, and observational fieldwork prompts. Sourced credits, schema migration 15 for account-owned progress (`expedition_progress` with `revision`), and download orchestrator with storage preflight checks, explicit cancellation, and resumption.
 - **F02 Offline Library Manager:** Dedicated storage and ownership management surface (`/offline-library`) accessible from Profile and Field Shelf. Physical disk deduplication, honest telemetry distinguishing physical on-disk media, installed Space Study curriculum text records, and unowned cache. Preflight preview and safe cache cleaning coordinated with the active media worker (`waitForMediaWorker`), preserving all user-owned records.
