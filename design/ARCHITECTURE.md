@@ -21,3 +21,7 @@ flowchart TD
 - **Details** reads by composite key on its own. It requests the direct source endpoint on an online miss. A Details lookup can populate the record cache without inserting the item into a feed snapshot.
 - **Shelf** owns bookmarks and notes per DummyJSON user ID. Media availability is derived from checked files, and an interrupted save of an image cannot undo the bookmark.
 - **State choice** uses Redux Toolkit thunks for remote and local orchestration. The project chose this permitted option because the coordinator owns the durable reconciliation. See [decision records](../docs/DECISIONS.md).
+
+## Planned cumulative expansion
+
+The [expansion architecture](EXPANSION_ARCHITECTURE.md) and [data contracts](EXPANSION_DATA_CONTRACTS.md) extend this implemented architecture without replacing Redux Toolkit thunks, SQLite, the protected shell, existing pack systems or source adapters. Proposed modules/routes are not yet implemented. See the [roadmap](../PRODUCT_ROADMAP.md) and [release tasks](../tasks/releases/README.md).

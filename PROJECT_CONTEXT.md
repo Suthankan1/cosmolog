@@ -100,3 +100,7 @@ The Expo app implements verified offline session restoration, protected routes, 
 ## Space Study extension
 
 Discover also opens the COSMOLOG Field Guide and object atlas. The first edition includes eight original chapters, 112 object profiles and a bundled city index. Study reading, city selection, bookmarks and account notes work locally after session restoration. The separate sky viewer can identify supported study objects and use recent cached orbital elements. See docs/PROGRESS.md for the release evidence.
+
+## Cumulative product expansion (planned, 2026-11-26)
+
+All twelve features in [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) are accepted as cumulative scope: Expedition Packs, Offline Library Manager, LightTrace, Cosmic Scale Laboratory, Advanced Field Notes, Celestial Field Instrument, Behind the Discovery, One Sky Many Stories, Personal Sky Timeline, Meteor Calendar, Read Aloud and Night Observation Mode. Main currently declares v1.1.1; roadmap begins at v1.2.0 and reuses existing packs, study atlas, sensors, account notes, recognition, search and history. Preserve magazine design, thunks, local ownership and current working app. No custom backend. See [feature catalogue](docs/FEATURE_CATALOG.md), [expansion architecture](design/EXPANSION_ARCHITECTURE.md) and [release tasks](tasks/releases/README.md). Only verified releases are shipped; defer remaining optional work after the assignment deadline rather than jeopardize core requirements.

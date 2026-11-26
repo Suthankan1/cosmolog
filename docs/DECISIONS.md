@@ -80,3 +80,7 @@ Use the approved magazine C throughout the launcher, masthead and five-second co
 ## ADR-016 — Paginated dispatches and hybrid archive search
 
 Keep Redux Toolkit thunks (ADR-008), the serialized SQLite writer and the native FlatList. Store validated pages and continuations atomically so refresh and interrupted pagination preserve offline reading. Keep search membership separate from editorial feed membership. NASA's public media catalogue extends in-app topic coverage. A user-initiated browser search covers the broader web without a hosted proxy or provider credentials.
+
+## ADR-017 — Cumulative local-first expansion
+
+**Status:** Proposed for review. **Decision:** plan the twelve approved features in PRODUCT_ROADMAP.md as successive releases starting at v1.2.0, extending the current magazine app, existing Redux Toolkit thunks, account-scoped SQLite, pack/Study pipelines, Sky Viewer and private notes. No custom backend or duplicate cache. Public scientific content uses sourced/versioned local datasets; private observations remain on-device. Keep the three-tab dock and add protected hubs first, pending navigation UX review. **Trade-off:** incremental migration, source/license review, shared media retention and device QA are essential; not all optional features can safely ship before the assignment. Full release gates are documented in docs/RELEASE_STRATEGY.md. Actual detailed schema, dependencies, and navigation decisions require implementation evidence/review; this ADR is not a runtime change.

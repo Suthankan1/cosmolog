@@ -1,2 +1,4 @@
 # GitHub Copilot instructions
 Follow `AGENTS.md`, `PROJECT_CONTEXT.md`, `docs/ASSIGNMENT_REQUIREMENTS.md` and relevant `design/` documents. Never violate the offline-first invariants or secure-token-storage requirement. Use TypeScript, feature-based structure, Feather icons, theme tokens, tests and accessible touch targets. Keep changes small and avoid unrelated refactors.
+
+For cumulative release work, read root `MASTER_IMPLEMENTATION_PROMPT.md`, `PRODUCT_ROADMAP.md`, `docs/FEATURE_CATALOG.md`, `docs/RELEASE_STRATEGY.md`, `docs/expansion/SOURCE_REGISTRY.md` and the applicable `tasks/releases/` task. Preserve the actual v1.1.1 baseline and magazine design; use existing thunks and SQLite rather than duplicating features. Begin with the baseline gate and one small tested slice. Do not mark planned features or release tags as complete until verified.
