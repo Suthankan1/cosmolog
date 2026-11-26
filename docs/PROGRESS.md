@@ -721,3 +721,22 @@ Completed implementation and verification of F04 Cosmic Scale Laboratory:
    - Full test suite: 49 test suites, 239 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-26 — Issue #25: [release][v1.3.0] Beyond Time and Scale Verification and Release Candidate Complete
+
+Completed full release gate verification for COSMOLOG v1.3.0 (Beyond Time and Scale):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Verified F03 LightTrace: exact BIPM speed of light ($c = 299,792,458\text{ m/s}$), IAU distance constants, logarithmic distance track, and flat-space local approximations vs cosmological expansion.
+   - [x] Verified F04 Cosmic Scale Laboratory: volumetric mean diameter conventions from NASA Planetary Fact Sheets (S05), separation of heliocentric vs geocentric distances, straight-line travel time calculations ($t = d/v$) with strict speed $< c$ validation, and Keplerian orbital limitations disclosure.
+   - [x] Verified cross-feature deep linking to Space Study chapters (`/study/[id]`), Expeditions (`/reading-packs`), and Sky Viewer celestial targets (`/sky-viewer`).
+   - [x] Verified offline cold start, airplane-mode persistence, and responsive magazine styling across all new surfaces (`app/explore/index.tsx`, `app/explore/lighttrace.tsx`, `app/explore/scale.tsx`).
+   - [x] Prior regression gates: all existing SQLite migration 16 safety tests, media coordinator exclusive locks, storage telemetry, and expedition downloads pass 100%.
+   - [x] Verified version and build configuration consistency:
+     - `package.json`: `1.3.0`
+     - `app.json`: `1.3.0` (versionCode: 5, buildNumber: "5")
+     - `android/app/build.gradle`: `versionName "1.3.0"`, `versionCode 5`
+   - [x] Automated test suite:
+     - 49 test suites, 239 automated tests passing (100%).
+     - ESLint 9: 0 errors, 0 warnings.
+     - TypeScript: 0 errors.

@@ -2,7 +2,7 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
-## Unreleased — v1.3.0 (Beyond Time and Scale)
+## v1.3.0 — Beyond Time and Scale (2026-11-26)
 
 - **F03 LightTrace (Offline Cosmic Light-Travel Explorer):**
   - Interactive laboratory surface (`/explore/lighttrace`) investigating the finite velocity of light and observable lookback time delay across the universe.

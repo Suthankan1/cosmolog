@@ -76,6 +76,15 @@ From Discover or Profile, open **Expedition packs** to embark on structured scie
 | --- | --- | --- | --- |
 | ![Guided expedition](docs/screenshots/41-expeditions-deeplink.png) | ![Preserved progress](docs/screenshots/45-download-removed-progress-preserved.png) | ![Offline library telemetry](docs/screenshots/37-upgrade-offline-library.png) | ![Reset confirmation](docs/screenshots/48-reset-progress-dialog.png) |
 
+### Interactive Astronomical Laboratories (Explore Hub & Beyond)
+- **Explore Hub (`/explore`):** Central offline scientific discovery surface accessible via **LightTrace & Labs** from Discover. Hosts interactive computational models adhering strictly to International Bureau of Weights and Measures (BIPM) SI base units and International Astronomical Union (IAU) constants.
+- **LightTrace (F03):** Offline cosmic light-travel lookback time calculator (`/explore/lighttrace`). Demonstrates how the finite speed of light ($c = 299,792,458\text{ m/s}$, exact BIPM definition S01) creates an observable lookback time across space: from the Moon's 1.3-second echo to Andromeda's 2.5-million-year ancient starlight. Features a logarithmic cosmic distance track, measurement details table, flat-space vs high-redshift cosmic expansion disclosures, actionable external citations, and deep links to related Space Study chapters and Sky Viewer targets.
+- **Cosmic Scale Laboratory (F04):** Offline planetary scale and travel simulator (`/explore/scale`). Features:
+  - **Diameter Mode:** Proportional volumetric mean diameter comparisons against selectable celestial baselines (Sun, Mercury, Venus, Earth, Moon, Mars, Jupiter, Saturn) from NASA Planetary Fact Sheets (S05).
+  - **Distance Mode:** Explores heliocentric semi-major axes (AU/km) and clearly separates variable geocentric distances (mean, closest approach, and superior conjunction).
+  - **Travel Time Simulator:** Straight-line Euclidean duration simulator ($t = d/v$) with speed presets (Commercial Jet, Voyager 1, Parker Solar Probe, 0.1c) and custom velocity inputs with strict physical validation rejecting speeds $\ge c$. Discloses straight-line Euclidean assumptions vs curved Keplerian orbital mechanics.
+  - **Interconnected Learning:** Deep links to Space Study curriculum chapters (`/study/[id]`), Expeditions (`/reading-packs`), and Sky Viewer targets (`/sky-viewer`).
+
 ### Sky Viewer
 
 Open **Discover → Study, sky and archives → Sky Viewer** and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.
