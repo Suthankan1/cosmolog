@@ -115,4 +115,79 @@ describe('Expedition Progress SQLite Repository', () => {
     const resetSteps = await getExpeditionCompletedStepIds(5, 'apollo');
     expect(resetSteps.size).toBe(0);
   });
+
+  it('respects required vs optional steps when calculating completion (Finding 2)', async () => {
+    const mockManifest = {
+      id: 'apollo',
+      revision: 1,
+      title: 'Apollo at the Moon',
+      description: 'Lunar expedition',
+      estimatedBytes: 1000,
+      sources: [],
+      steps: [
+        { id: 'step-req-1', order: 1, kind: 'discovery' as const, title: 'Req 1', summary: 'R1', required: true },
+        { id: 'step-req-2', order: 2, kind: 'study' as const, title: 'Req 2', summary: 'R2', required: true },
+        { id: 'step-opt-1', order: 3, kind: 'prompt' as const, title: 'Opt 1', summary: 'O1', required: false },
+      ],
+    };
+
+    // Account 6 marks only 1 required step
+    await markExpeditionStepCompleted(6, 'apollo', 'step-req-1');
+    let summary = await getExpeditionProgressSummary(6, mockManifest);
+    expect(summary.completedRequiredCount).toBe(1);
+    expect(summary.totalRequiredCount).toBe(2);
+    expect(summary.completedOptionalCount).toBe(0);
+    expect(summary.totalOptionalCount).toBe(1);
+    expect(summary.isCompleted).toBe(false);
+
+    // Account 6 marks the optional step, but still missing 1 required step
+    await markExpeditionStepCompleted(6, 'apollo', 'step-opt-1');
+    summary = await getExpeditionProgressSummary(6, mockManifest);
+    expect(summary.completedRequiredCount).toBe(1);
+    expect(summary.completedOptionalCount).toBe(1);
+    expect(summary.isCompleted).toBe(false);
+
+    // Account 6 marks the 2nd required step -> expedition is completed even if optional step was pending
+    await markExpeditionStepCompleted(6, 'apollo', 'step-req-2');
+    summary = await getExpeditionProgressSummary(6, mockManifest);
+    expect(summary.completedRequiredCount).toBe(2);
+    expect(summary.totalRequiredCount).toBe(2);
+    expect(summary.isCompleted).toBe(true);
+  });
+
+  it('persists revision and reconciles compatible step progress on revision changes (Finding 6)', async () => {
+    // Save progress with revision
+    await markExpeditionStepCompleted(7, 'saturn', 'step-saturn-shadow', 2);
+
+    // Direct database inspection verifies revision column is persisted
+    const rows = await writeDatabase(async db =>
+      db.getAllAsync<{ step_id: string; revision: number }>(
+        'SELECT step_id, revision FROM expedition_progress WHERE account_id = 7 AND expedition_id = ?',
+        ['saturn'],
+      ),
+    );
+    expect(rows).toEqual([{ step_id: 'step-saturn-shadow', revision: 2 }]);
+
+    // Query with manifest filters out orphaned step IDs if manifest steps change
+    const dummyManifest = {
+      id: 'saturn',
+      revision: 1,
+      title: 'Saturn',
+      description: 'Desc',
+      estimatedBytes: 1000,
+      sources: [],
+      steps: [
+        { id: 'step-saturn-shadow', order: 1, kind: 'discovery' as const, title: 'Shadow', summary: 'S', required: true },
+      ],
+    };
+
+    const completed = await getExpeditionCompletedStepIds(7, 'saturn', dummyManifest);
+    expect(completed.has('step-saturn-shadow')).toBe(true);
+
+    // If an unknown step exists in DB from legacy revision, it is filtered out by manifest reconciliation
+    await markExpeditionStepCompleted(7, 'saturn', 'removed-legacy-step', 1);
+    const reconciled = await getExpeditionCompletedStepIds(7, 'saturn', dummyManifest);
+    expect(reconciled.has('step-saturn-shadow')).toBe(true);
+    expect(reconciled.has('removed-legacy-step')).toBe(false);
+  });
 });

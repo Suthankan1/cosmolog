@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button } from '../src/components/common/Button';
 import { EmptyState } from '../src/components/common/EmptyState';
@@ -80,8 +89,8 @@ export default function ReadingPacksScreen() {
     }
   }, [accountId, mediaRevision, reload]);
 
+  // Finding 9: Abort outstanding async download work immediately on logout or connection loss
   useEffect(() => () => work.current?.abort(), [accountId]);
-
   useEffect(() => {
     if (connection === 'offline') work.current?.abort();
   }, [connection]);
@@ -92,13 +101,13 @@ export default function ReadingPacksScreen() {
   const syncedAt = metadata['nasa-apod'].lastSyncedAt ?? legacySyncedAt;
   const allExpeditions = getAllExpeditions();
 
-  const toggleStep = async (expeditionId: string, stepId: string) => {
+  const toggleStep = async (expedition: ExpeditionManifest, stepId: string) => {
     if (!accountId) return;
-    const isDone = completedSteps.get(expeditionId)?.has(stepId);
+    const isDone = completedSteps.get(expedition.id)?.has(stepId);
     if (isDone) {
-      await unmarkExpeditionStepCompleted(accountId, expeditionId, stepId);
+      await unmarkExpeditionStepCompleted(accountId, expedition.id, stepId);
     } else {
-      await markExpeditionStepCompleted(accountId, expeditionId, stepId);
+      await markExpeditionStepCompleted(accountId, expedition.id, stepId, expedition.revision);
     }
     await reload(accountId);
   };
@@ -117,7 +126,7 @@ export default function ReadingPacksScreen() {
         () => reload(accountId, () => !controller.signal.aborted),
       );
       if (res.aborted) {
-        setNotice({ packId: expedition.id, text: 'Download paused. Reconnect and resume to finish.' });
+        setNotice({ packId: expedition.id, text: 'Download cancelled. Downloaded plates are saved. Resume to finish.' });
       } else if (res.missingSteps.length) {
         setNotice({ packId: expedition.id, text: 'Some plates could not be downloaded. Resume to retry.' });
       }
@@ -129,6 +138,13 @@ export default function ReadingPacksScreen() {
       work.current = null;
       await reload(accountId);
       setBusy(undefined);
+    }
+  };
+
+  // Finding 7: Explicit cancellation action
+  const cancel = () => {
+    if (work.current) {
+      work.current.abort();
     }
   };
 
@@ -144,6 +160,19 @@ export default function ReadingPacksScreen() {
       setNotice({ packId: expedition.id, text: 'Could not remove this expedition. Try again.' });
     } finally {
       setBusy(undefined);
+    }
+  };
+
+  const openSourceUrl = async (url: string, title: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Unable to open link', `Could not open ${url}`);
+      }
+    } catch {
+      Alert.alert('Unable to open link', `Could not navigate to source for ${title}.`);
     }
   };
 
@@ -170,11 +199,15 @@ export default function ReadingPacksScreen() {
             const imageCount = eligible.filter(item => item.mediaStatus === 'ready').length;
             const textReady = packItems.length >= discoverySteps.length;
             const hasWork = !textReady || imageCount < eligible.length;
+            const isCurrentlyDownloading = busy === expedition.id;
 
             const expCompleted = completedSteps.get(expedition.id) ?? new Set<string>();
-            const totalSteps = expedition.steps.length;
-            const doneSteps = expCompleted.size;
-            const isFinished = doneSteps >= totalSteps;
+            const requiredSteps = expedition.steps.filter(s => s.required);
+            const optionalSteps = expedition.steps.filter(s => !s.required);
+            const completedRequired = requiredSteps.filter(s => expCompleted.has(s.id)).length;
+            const completedOptional = optionalSteps.filter(s => expCompleted.has(s.id)).length;
+            // Finding 2: Expedition completion strictly depends on all required steps being completed
+            const isFinished = requiredSteps.length > 0 && completedRequired >= requiredSteps.length;
 
             return (
               <View key={expedition.id} style={styles.pack}>
@@ -182,27 +215,43 @@ export default function ReadingPacksScreen() {
                   <Text accessibilityRole="header" style={styles.title}>{expedition.title}</Text>
                   <View style={styles.badgeRow}>
                     <Text style={styles.kindBadge}>GUIDED EXPEDITION</Text>
-                    {isFinished && <Text style={styles.completedBadge}>COMPLETED</Text>}
+                    <Text style={styles.revisionBadge}>REV {expedition.revision}</Text>
+                    {isFinished && <Text style={styles.completedBadge}>EXPEDITION COMPLETED</Text>}
                   </View>
                 </View>
 
                 <Text style={styles.copy}>{expedition.description}</Text>
 
-                {/* Sourced provenance metadata */}
+                {/* Finding 8: Actionable and accessible source links */}
                 <View style={styles.sourcesBox}>
-                  <Text style={styles.sourcesLabel}>Sources & Credits:</Text>
+                  <Text style={styles.sourcesLabel}>Sources & Attributions:</Text>
                   {expedition.sources.map(src => (
-                    <Text key={src.url} style={styles.sourceText}>
-                      • {src.title} ({src.publisher})
-                    </Text>
+                    <Pressable
+                      key={src.url}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Open source: ${src.title} from ${src.publisher}`}
+                      accessibilityHint="Opens external web page in device browser"
+                      style={styles.sourceLink}
+                      onPress={() => void openSourceUrl(src.url, src.title)}
+                    >
+                      <View style={styles.sourceTextCol}>
+                        <Text style={styles.sourceTitleText}>{src.title}</Text>
+                        <Text style={styles.sourcePublisherText}>{src.publisher}</Text>
+                      </View>
+                      <Icon name="external-link" size={13} color={colors.forest} />
+                    </Pressable>
                   ))}
                 </View>
 
-                {/* Progress summary */}
+                {/* Finding 1 & 2: Honest dual status: Download availability vs Learning progress */}
                 <View style={styles.progressRow}>
                   <Text accessibilityLiveRegion="polite" style={styles.status}>
-                    {doneSteps} of {totalSteps} steps completed · {packItems.length} of {discoverySteps.length} plates saved
-                    {eligible.length ? ' (' + imageCount + ' of ' + eligible.length + ' images ready)' : ''}
+                    Learning progress: {completedRequired} of {requiredSteps.length} required steps completed
+                    {completedOptional > 0 ? ` (+${completedOptional} optional observation)` : ''}
+                  </Text>
+                  <Text style={styles.downloadStatusText}>
+                    Offline download: {packItems.length} of {discoverySteps.length} plates saved
+                    {eligible.length ? ` · ${imageCount} of ${eligible.length} images ready` : ''}
                   </Text>
                 </View>
 
@@ -219,6 +268,9 @@ export default function ReadingPacksScreen() {
                             <View style={styles.stepTypeTag}>
                               <Icon name="image" size={14} color={colors.forest} />
                               <Text style={styles.stepTypeLabel}>CELESTIAL PLATE</Text>
+                              <Text style={[styles.requirementBadge, !step.required && styles.optionalBadge]}>
+                                {step.required ? 'REQUIRED' : 'OPTIONAL'}
+                              </Text>
                             </View>
                             <Pressable
                               accessibilityRole="checkbox"
@@ -226,7 +278,7 @@ export default function ReadingPacksScreen() {
                               accessibilityLabel={`Mark ${step.title} ${isStepDone ? 'incomplete' : 'complete'}`}
                               hitSlop={8}
                               style={[styles.checkbox, isStepDone && styles.checkboxActive]}
-                              onPress={() => void toggleStep(expedition.id, step.id)}
+                              onPress={() => void toggleStep(expedition, step.id)}
                             >
                               {isStepDone && <Icon name="check" size={14} color={colors.ivory} />}
                             </Pressable>
@@ -261,6 +313,9 @@ export default function ReadingPacksScreen() {
                             <View style={styles.stepTypeTag}>
                               <Icon name="book-open" size={14} color={colors.brass} />
                               <Text style={[styles.stepTypeLabel, { color: colors.brass }]}>SPACE STUDY</Text>
+                              <Text style={[styles.requirementBadge, !step.required && styles.optionalBadge]}>
+                                {step.required ? 'REQUIRED' : 'OPTIONAL'}
+                              </Text>
                             </View>
                             <Pressable
                               accessibilityRole="checkbox"
@@ -268,7 +323,7 @@ export default function ReadingPacksScreen() {
                               accessibilityLabel={`Mark ${step.title} ${isStepDone ? 'incomplete' : 'complete'}`}
                               hitSlop={8}
                               style={[styles.checkbox, isStepDone && styles.checkboxActive]}
-                              onPress={() => void toggleStep(expedition.id, step.id)}
+                              onPress={() => void toggleStep(expedition, step.id)}
                             >
                               {isStepDone && <Icon name="check" size={14} color={colors.ivory} />}
                             </Pressable>
@@ -298,6 +353,9 @@ export default function ReadingPacksScreen() {
                           <View style={styles.stepTypeTag}>
                             <Icon name="compass" size={14} color={colors.terracotta} />
                             <Text style={[styles.stepTypeLabel, { color: colors.terracotta }]}>FIELD OBSERVATION</Text>
+                            <Text style={[styles.requirementBadge, !step.required && styles.optionalBadge]}>
+                              {step.required ? 'REQUIRED' : 'OPTIONAL'}
+                            </Text>
                           </View>
                           <Pressable
                             accessibilityRole="checkbox"
@@ -305,7 +363,7 @@ export default function ReadingPacksScreen() {
                             accessibilityLabel={`Mark ${step.title} ${isStepDone ? 'incomplete' : 'complete'}`}
                             hitSlop={8}
                             style={[styles.checkbox, isStepDone && styles.checkboxActive]}
-                            onPress={() => void toggleStep(expedition.id, step.id)}
+                            onPress={() => void toggleStep(expedition, step.id)}
                           >
                             {isStepDone && <Icon name="check" size={14} color={colors.ivory} />}
                           </Pressable>
@@ -323,41 +381,55 @@ export default function ReadingPacksScreen() {
                   })}
                 </View>
 
-                {/* Actions */}
-                {hasWork && (
-                  <Button
-                    title={textReady ? 'Retry pack images' : packItems.length ? 'Resume download' : 'Download expedition'}
-                    icon="download"
-                    disabled={connection !== 'online' || Boolean(busy && busy !== expedition.id)}
-                    loading={busy === expedition.id || (textReady && isDownloading)}
-                    accessibilityLabel={
-                      (textReady ? 'Retry images for ' : packItems.length ? 'Resume download for ' : 'Download ') +
-                      expedition.title
-                    }
-                    onPress={() => { void start(expedition); }}
-                  />
-                )}
-                {hasWork && offline && (
+                {/* Finding 7: Actions with explicit cancel button */}
+                <View style={styles.buttonGroup}>
+                  {isCurrentlyDownloading ? (
+                    <Button
+                      title="Cancel download"
+                      icon="x-circle"
+                      variant="outline"
+                      accessibilityLabel="Cancel in-progress expedition download"
+                      onPress={cancel}
+                    />
+                  ) : (
+                    hasWork && (
+                      <Button
+                        title={textReady ? 'Retry pack images' : packItems.length ? 'Resume download' : 'Download expedition'}
+                        icon="download"
+                        disabled={connection !== 'online' || Boolean(busy && busy !== expedition.id)}
+                        loading={isCurrentlyDownloading || (textReady && isDownloading)}
+                        accessibilityLabel={
+                          (textReady ? 'Retry images for ' : packItems.length ? 'Resume download for ' : 'Download ') +
+                          expedition.title
+                        }
+                        onPress={() => { void start(expedition); }}
+                      />
+                    )
+                  )}
+
+                  {packItems.length > 0 && !isCurrentlyDownloading && (
+                    <Button
+                      title="Remove download"
+                      icon="trash-2"
+                      variant="outline"
+                      disabled={Boolean(busy)}
+                      accessibilityLabel={'Remove download for ' + expedition.title}
+                      onPress={() =>
+                        Alert.alert(
+                          'Remove this download?',
+                          'Any favourites, field notes, and completed study bookmarks stay preserved.',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Remove', style: 'destructive', onPress: () => { void remove(expedition); } },
+                          ],
+                        )
+                      }
+                    />
+                  )}
+                </View>
+
+                {hasWork && offline && !isCurrentlyDownloading && (
                   <Text style={styles.metadata}>Connect to download the rest of this expedition.</Text>
-                )}
-                {packItems.length > 0 && (
-                  <Button
-                    title="Remove download"
-                    icon="trash-2"
-                    variant="outline"
-                    disabled={Boolean(busy)}
-                    accessibilityLabel={'Remove download for ' + expedition.title}
-                    onPress={() =>
-                      Alert.alert(
-                        'Remove this download?',
-                        'Any favourites, field notes, and completed study bookmarks stay preserved.',
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'Remove', style: 'destructive', onPress: () => { void remove(expedition); } },
-                        ],
-                      )
-                    }
-                  />
                 )}
                 {notice?.packId === expedition.id && (
                   <Text accessibilityRole="alert" style={styles.error}>{notice.text}</Text>
@@ -384,12 +456,21 @@ const styles = StyleSheet.create({
   },
   packHeader: { gap: spacing[1] },
   title: { ...typography.h1, color: colors.forest },
-  badgeRow: { flexDirection: 'row', gap: spacing[2], alignItems: 'center', marginTop: 2 },
+  badgeRow: { flexDirection: 'row', gap: spacing[2], alignItems: 'center', marginTop: 2, flexWrap: 'wrap' },
   kindBadge: {
     ...typography.label,
     fontSize: 10,
     color: colors.forest,
     backgroundColor: colors.sageLight,
+    paddingHorizontal: spacing[1],
+    paddingVertical: 2,
+    borderRadius: radii.sm,
+  },
+  revisionBadge: {
+    ...typography.label,
+    fontSize: 10,
+    color: colors.ink,
+    backgroundColor: colors.border,
     paddingHorizontal: spacing[1],
     paddingVertical: 2,
     borderRadius: radii.sm,
@@ -407,11 +488,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ivory,
     padding: spacing[2],
     borderRadius: radii.sm,
-    gap: 2,
+    gap: spacing[1],
   },
   sourcesLabel: { ...typography.label, fontSize: 11, color: colors.muted },
-  sourceText: { ...typography.bodySmall, color: colors.ink },
-  progressRow: { marginVertical: spacing[1] },
+  sourceLink: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing[1],
+    minHeight: layout.minimumTouchTarget,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+  },
+  sourceTextCol: { flex: 1, marginRight: spacing[2] },
+  sourceTitleText: { ...typography.label, color: colors.forest },
+  sourcePublisherText: { ...typography.bodySmall, color: colors.muted },
+  progressRow: { marginVertical: spacing[1], gap: 2 },
   stepList: { gap: spacing[3], marginVertical: spacing[2] },
   stepCard: {
     backgroundColor: colors.ivory,
@@ -422,8 +514,20 @@ const styles = StyleSheet.create({
     gap: spacing[1],
   },
   stepHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  stepTypeTag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  stepTypeTag: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap', flex: 1 },
   stepTypeLabel: { ...typography.label, fontSize: 10, color: colors.forest },
+  requirementBadge: {
+    ...typography.label,
+    fontSize: 9,
+    color: colors.terracotta,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  optionalBadge: {
+    color: colors.muted,
+  },
   checkbox: {
     width: 24,
     height: 24,
@@ -461,6 +565,8 @@ const styles = StyleSheet.create({
   missing: { paddingVertical: spacing[2], gap: spacing[1] },
   copy: { ...typography.body, color: colors.ink },
   status: { ...typography.label, color: colors.forest },
+  downloadStatusText: { ...typography.bodySmall, color: colors.muted },
+  buttonGroup: { gap: spacing[2] },
   metadata: { ...typography.bodySmall, color: colors.muted },
   error: { ...typography.bodySmall, color: colors.danger },
   loading: { marginTop: spacing[5] },

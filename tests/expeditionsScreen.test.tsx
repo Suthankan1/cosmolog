@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import ReadingPacksScreen from '../app/reading-packs';
 import { getReadingPackItems } from '../src/database/repositories/readingPacksRepository';
 import {
@@ -7,6 +8,9 @@ import {
   markExpeditionStepCompleted,
 } from '../src/database/repositories/expeditionsRepository';
 import { useAppDispatch, useAppSelector } from '../src/store';
+import { downloadExpedition } from '../src/features/expeditions/expeditionDownloads';
+
+jest.mock('../src/features/expeditions/expeditionDownloads');
 
 jest.mock('../src/store', () => ({
   useAppDispatch: jest.fn(),
@@ -54,7 +58,7 @@ describe('Expedition Packs Screen (ReadingPacksScreen)', () => {
       expect(screen.getByText('Apollo at the Moon')).toBeTruthy();
     });
 
-    expect(screen.getAllByText(/Sources & Credits:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Sources/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/NASA Astronomy Picture of the Day Archive/)).toBeTruthy();
     expect(screen.getByText(/Cassini-Huygens Mission at Saturn/)).toBeTruthy();
   });
@@ -92,7 +96,7 @@ describe('Expedition Packs Screen (ReadingPacksScreen)', () => {
       fireEvent.press(checkbox);
     });
 
-    expect(markExpeditionStepCompleted).toHaveBeenCalledWith(10, 'saturn', 'step-saturn-field-observation');
+    expect(markExpeditionStepCompleted).toHaveBeenCalledWith(10, 'saturn', 'step-saturn-field-observation', 1);
   });
 
   it('displays offline banner and disabled download when connection is offline', async () => {
@@ -116,5 +120,76 @@ describe('Expedition Packs Screen (ReadingPacksScreen)', () => {
       expect(screen.getByText('You’re offline')).toBeTruthy();
       expect(screen.getAllByText('Connect to download the rest of this expedition.').length).toBeGreaterThan(0);
     });
+  });
+
+  it('renders required and optional step indicators (Finding 2)', async () => {
+    await act(async () => {
+      render(<ReadingPacksScreen />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByText('REQUIRED').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('OPTIONAL').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('opens external source links when clicked (Finding 8)', async () => {
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never);
+
+    await act(async () => {
+      render(<ReadingPacksScreen />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('NASA Astronomy Picture of the Day Archive')).toBeTruthy();
+    });
+
+    const link = screen.getByText('NASA Astronomy Picture of the Day Archive');
+    await act(async () => {
+      fireEvent.press(link);
+    });
+
+    expect(openURLSpy).toHaveBeenCalledWith('https://science.nasa.gov/astronomy/');
+    openURLSpy.mockRestore();
+  });
+
+  it('provides explicit download cancellation and safe abort (Finding 7)', async () => {
+    let capturedSignal: AbortSignal | undefined;
+    jest.mocked(downloadExpedition).mockImplementation(async (_acc, _exp, signal) => {
+      capturedSignal = signal;
+      // Simulate ongoing download waiting for abort
+      return new Promise((resolve) => {
+        signal.addEventListener('abort', () => {
+          resolve({ downloadedCount: 0, missingSteps: [], aborted: true });
+        });
+      });
+    });
+
+    await act(async () => {
+      render(<ReadingPacksScreen />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('A Tour of Saturn')).toBeTruthy();
+    });
+
+    // Start download for Saturn
+    const downloadBtns = screen.getAllByText('Download expedition');
+    await act(async () => {
+      fireEvent.press(downloadBtns[0]);
+    });
+
+    // Cancel download button appears
+    await waitFor(() => {
+      expect(screen.getByText('Cancel download')).toBeTruthy();
+    });
+
+    // Tap cancel
+    const cancelBtn = screen.getByText('Cancel download');
+    await act(async () => {
+      fireEvent.press(cancelBtn);
+    });
+
+    expect(capturedSignal?.aborted).toBe(true);
   });
 });

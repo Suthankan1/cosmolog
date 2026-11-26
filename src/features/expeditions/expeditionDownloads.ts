@@ -2,15 +2,12 @@ import { Paths } from 'expo-file-system';
 import { getDiscoveryItemById } from '../../database/repositories/discoveryRepository';
 import { getReadingPackItems, keepReadingPackItem, removeReadingPack } from '../../database/repositories/readingPacksRepository';
 import { fetchNasaApodItem } from '../../services/api/nasaApodService';
-import {
-  getExpeditionCompletedStepIds,
-  markExpeditionStepCompleted,
-  resetExpeditionProgress,
-} from '../../database/repositories/expeditionsRepository';
+import { resetExpeditionProgress } from '../../database/repositories/expeditionsRepository';
 import type { ExpeditionManifest } from './manifest';
 
 export interface ExpeditionDownloadResult {
   missingSteps: string[];
+  downloadedCount: number;
   aborted: boolean;
 }
 
@@ -32,17 +29,15 @@ export async function downloadExpedition(
   const installedDates = new Set(
     existingPackItems.filter(item => item.packId === expedition.id).map(item => item.externalId),
   );
-  const completedStepIds = await getExpeditionCompletedStepIds(accountId, expedition.id);
   const missingSteps: string[] = [];
+  let downloadedCount = 0;
 
   for (const step of expedition.steps) {
     if (signal.aborted) break;
 
     if (step.kind === 'discovery' && step.date) {
       if (installedDates.has(step.date)) {
-        if (!completedStepIds.has(step.id)) {
-          await markExpeditionStepCompleted(accountId, expedition.id, step.id);
-        }
+        // Finding 1: Already installed for offline reading; do NOT auto-mark as learned/completed
         continue;
       }
 
@@ -54,9 +49,10 @@ export async function downloadExpedition(
         if (signal.aborted) break;
 
         if (item) {
+          // Finding 1: Only saves to offline reading pack. Actual learning completion is separate!
           await keepReadingPackItem(accountId, expedition.id, item);
-          await markExpeditionStepCompleted(accountId, expedition.id, step.id);
           saved = true;
+          downloadedCount++;
           installedDates.add(step.date);
         }
       } catch {
@@ -73,6 +69,7 @@ export async function downloadExpedition(
 
   return {
     missingSteps,
+    downloadedCount,
     aborted: signal.aborted,
   };
 }

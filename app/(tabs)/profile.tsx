@@ -84,6 +84,12 @@ export default function ProfileScreen() {
           </View>
         </View>
         <Button
+          title="Expedition packs"
+          icon="compass"
+          variant="outline"
+          onPress={() => router.push('/reading-packs' as never)}
+        />
+        <Button
           title="Offline library & storage"
           icon="hard-drive"
           variant="outline"
