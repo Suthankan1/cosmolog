@@ -11,6 +11,14 @@ This file records the existing published release baseline and planned work separ
   - Interactive controls: celestial target tabs, previous/next stepper buttons, logarithmic distance track indicator, measurement details table, and scientific disclosure regarding flat vacuum space vs high-redshift cosmic expansion.
   - Actionable external source links ($\ge 48\text{ dp}$ touch targets via `Linking.openURL`), and deep links to related Space Study chapters and Sky Viewer celestial targets.
   - Explore Hub screen (`app/explore/index.tsx`) with magazine editorial styling and accessible navigation card from Discover tab.
+- **F04 Cosmic Scale Laboratory (Planetary Diameters & Travel Time Simulator):**
+  - Interactive scale comparison and travel simulator laboratory surface (`/explore/scale`) with Diameter, Distance, and Travel Time modes.
+  - Curated authoritative dataset (`src/features/labs/data/scale.ts`) for Sun, Mercury, Venus, Earth, Moon, Mars, Jupiter, and Saturn citing NASA Planetary Fact Sheets (S05) and BIPM standard (S01).
+  - Strict physical convention: volumetric mean diameter in km, clearly separated heliocentric semi-major axis (AU/km) from geocentric variable distance (mean, closest approach, conjunction).
+  - Pure scale math engine (`src/features/labs/scaleMath.ts`): relative diameter ratios against selectable reference bodies (default Earth), proportional schematic comparison bars, and constant-speed straight-line travel times ($t = d/v$).
+  - Physical boundary validation: strictly rejects speeds $\ge c$ and non-positive speeds/distances. Discloses straight-line Euclidean scope vs curved Keplerian orbital mechanics.
+  - Speed presets (Commercial Jet, Voyager 1, Parker Solar Probe, 0.1c) plus custom speed input with live validation.
+  - Cross-feature deep links to Space Study chapters (`/study/[id]`), Expeditions (`/reading-packs`), and Sky Viewer (`/sky-viewer`).
 
 
 ## v1.2.0 — Offline Explorer (2026-11-26)
