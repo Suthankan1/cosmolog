@@ -62,3 +62,13 @@ Codex helped implement the cut-C artwork, the timed launch sequence, compact tab
 ## Launch motion revision
 
 Codex helped trace the five-second launch, prepare the credited Apollo 17 cutout, and implement the shorter reveal. The student selected a forest field and the one-second timing. The implementation uses native image display and route layout to coordinate the transition, replacing the previous independent completion timer.
+
+## Voice-to-text (search and field note dictation)
+
+Antigravity designed and implemented the full voice-to-text feature using `expo-speech-recognition` (the community TurboModule wrapping native `SpeechRecognizer` on Android and `SFSpeechRecognizer` on iOS). The initial draft placed `ref.current` assignments in the hook render body. ESLint 9 with the `react-hooks/refs` rule flagged all three assignments as render-time side effects. The corrected implementation wraps those updates in a `useEffect` with the callback as a dependency. A second correction followed during RNTL v14 hook testing: the first mock for `useSpeechRecognitionEvent` pushed listeners into a bare array without cleanup, so successive re-renders accumulated duplicate handlers and test assertions saw double emissions. The revised mock uses `React.useEffect` for registration and an unsubscribe return to mirror the real hook lifecycle. A third correction replaced a non-existent `radii.full` design token with the documented `radii.pill` (999) token from `src/constants/tokens.ts`. All 128 tests pass after these corrections. The Android native build was verified with `assembleDebug` (BUILD SUCCESSFUL). On-device microphone permission, voice search and dictation must be verified by the student on a physical device or running emulator.
+
+| Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
+|---|---|---|---|---|---|
+| 2026-11-26 | Antigravity | Set `onTranscriptRef.current` in render body of `useVoiceToText` | Moved all three ref updates into a `useEffect` | ESLint 9 `react-hooks/refs` disallows ref mutation during render | `src/hooks/useVoiceToText.ts` |
+| 2026-11-26 | Antigravity | `useSpeechRecognitionEvent` mock used bare array push without cleanup | Reimplemented mock with `React.useEffect` for registration/unregistration | Duplicate listeners accumulated across re-renders, causing double emissions in tests | `tests/setup.ts` |
+| 2026-11-26 | Antigravity | Used `radii.full` for mic button border radius | Replaced with `radii.pill` | `radii.full` does not exist in the COSMOLOG token system; only `radii.pill` (999) is defined | `src/components/discovery/SearchBar.tsx`, `src/features/journal/FieldNote.tsx` |
