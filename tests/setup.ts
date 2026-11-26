@@ -52,3 +52,53 @@ jest.mock('react-native-safe-area-context', () => {
     useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
   };
 });
+
+// Mock expo-speech-recognition for Node / Jest test environments
+const speechListeners: Record<string, ((event: any) => void)[]> = {};
+
+(global as any).__mockSpeechRecognition = {
+  emit: (event: string, payload: any) => {
+    const list = [...(speechListeners[event] || [])];
+    list.forEach((fn) => fn(payload));
+  },
+  clear: () => {
+    Object.keys(speechListeners).forEach((k) => delete speechListeners[k]);
+  },
+};
+
+jest.mock('expo-speech-recognition', () => {
+  const React = require('react');
+  return {
+    ExpoSpeechRecognitionModule: {
+      requestPermissionsAsync: jest.fn().mockResolvedValue({ granted: true, status: 'granted', canAskAgain: true }),
+      getPermissionsAsync: jest.fn().mockResolvedValue({ granted: true, status: 'granted', canAskAgain: true }),
+      supportsOnDeviceRecognition: jest.fn().mockReturnValue(true),
+      start: jest.fn(() => {
+        const list = [...(speechListeners['start'] || [])];
+        list.forEach((fn) => fn(null));
+      }),
+      stop: jest.fn(() => {
+        const list = [...(speechListeners['end'] || [])];
+        list.forEach((fn) => fn(null));
+      }),
+      abort: jest.fn(() => {
+        // Abort cancels native session without emitting 'end' to listeners
+      }),
+    },
+    useSpeechRecognitionEvent: (event: string, listener: (arg: any) => void) => {
+      const listenerRef = React.useRef(listener);
+      listenerRef.current = listener;
+      React.useEffect(() => {
+        const handler = (arg: any) => listenerRef.current(arg);
+        if (!speechListeners[event]) {
+          speechListeners[event] = [];
+        }
+        speechListeners[event].push(handler);
+        return () => {
+          speechListeners[event] = (speechListeners[event] || []).filter((fn) => fn !== handler);
+        };
+      }, [event]);
+    },
+  };
+});
+

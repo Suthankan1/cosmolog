@@ -378,3 +378,21 @@ Replaced the five-second logo sequence and photo strip with a one-second globe a
 ### COSMOLOG 1.1.1 release verification
 
 Built Android ARM64 and Apple Silicon iOS Simulator artifacts at version 1.1.1, build 3. Android release lint passed. The APK signature matches 1.1.0 and the emulator upgrade reached cached Discover in airplane mode. The iPhone 17 upgrade reached Discover and a separate iPhone 17e reached sign-in. The new launch still comes from the iOS release recording. The 158.5-second demo adds that opening to the prior narrated walkthrough. Physical-device frame pacing remains unmeasured.
+
+### Voice-to-Text for Search and Celestial Field Notes
+
+Implemented speech-to-text recognition across discovery search and observation note taking:
+- Integrated `expo-speech-recognition` TurboModule and configured permissions in `app.json` (`RECORD_AUDIO` on Android, `NSMicrophoneUsageDescription` and `NSSpeechRecognitionUsageDescription` on iOS).
+- Built core service `src/services/voice/speechService.ts` with permission orchestration, on-device offline model verification, transcript cleaning, and astronomical contextual terms biasing.
+- Created reusable hook `src/hooks/useVoiceToText.ts` with error handling, state cleanup, and React 19 concurrent lifecycle guards.
+- Integrated hands-free Voice Search in `src/components/discovery/SearchBar.tsx`:
+  - Vector Feather `mic` button with dynamic accessibility labels and $\ge 48\text{ dp}$ touch target.
+  - Live real-time speech streaming into Redux search query with immediate local SQLite article filtering.
+- Integrated Voice Dictation in `src/features/journal/FieldNote.tsx`:
+  - Dictation action bar in observation modal editor with live "Listening..." badge.
+  - Safe multi-sentence concatenation, real-time character counting, and 1,000-character ceiling guard.
+  - Commits dictated observation notes directly into SQLite `favourites.note` column.
+- Added comprehensive unit and component test suites (`tests/voiceToText.test.ts`, `tests/SearchBar.test.tsx`, `tests/FieldNoteVoice.test.tsx`).
+- Total automated tests expanded to 36 test suites / 128 tests (all passing).
+- Clean ESLint 9 and strict TypeScript checks pass with 0 errors.
+- Prebuilt native Android project and assembled native Debug APK via Gradle (`android/app/build/outputs/apk/debug/app-debug.apk`, 238MB).

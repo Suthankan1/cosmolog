@@ -50,10 +50,22 @@
           "motionUsagePermission": "Allow COSMOLOG to use phone motion to orient the sky chart."
         }
       ],
-      ["expo-sensors", { "motionPermission": "Allow COSMOLOG to use phone motion to orient the sky chart." }],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow COSMOLOG to use phone motion to orient the sky chart."
+        }
+      ],
       "expo-sqlite",
       "expo-image",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow COSMOLOG to access your microphone for voice search and field note dictation.",
+          "speechRecognitionPermission": "Allow COSMOLOG to safely convert your speech to text for observation records."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

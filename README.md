@@ -45,6 +45,11 @@ Scroll into a story to save a reading position. **Continue Reading** on Discover
 
 **Search space materials** checks SQLite immediately. With an internet connection, enter at least two characters to search the Spaceflight News and NASA media archives. Device results appear first. Scroll or tap **Load more results** for more matches. Select **NASA Media** for images, video and audio. **Search the wider web** opens a topic search in your browser. The Field Shelf searches private notes.
 
+### Voice-to-Text: Voice Search & Observation Dictation
+- **Hands-Free Celestial Search:** Tap the vector Feather `mic` button in the Search Bar to speak queries (*"Jupiter"*, *"James Webb"*, *"SpaceX"*). Spoken words stream live into the search input with real-time SQLite filtering and astronomical term biasing.
+- **Voice Field Notes:** When viewing a saved discovery in the reading room, open **Add a note** or **Edit note** and tap **Dictate observation**. Real-time speech transcribes directly into the private field note editor with multi-sentence concatenation, live character limits (`draft.length / 1000`), and durable SQLite persistence.
+- **Offline On-Device Recognition:** Utilizes hardware-accelerated on-device speech engines on supported devices (Android 13+ / iOS 17+) via `expo-speech-recognition`, allowing astronomers to search and dictate notes in remote dark-sky locations with zero internet connection.
+
 Space Dispatches load in pages of 15. Older pages stay on the device through refreshes and restarts. **Reopen search** restores the latest stored search for the selected edition. Saved NASA media records preserve their description, date, credit and source link. Open the original online for playback or the full-resolution asset.
 
 [Online archive search](docs/screenshots/22-online-archive-search.png) · [Search after an offline restart](docs/screenshots/23-offline-archive-search.png)
