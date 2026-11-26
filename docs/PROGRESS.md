@@ -407,6 +407,13 @@ Implemented speech-to-text recognition across discovery search and observation n
   - Tapped "Stop dictating": gracefully stops listening, releases audio stream, and restores idle button state.
   - Captured verification evidence: `24-voice-search-bar.png`, `25-voice-search-permission.png`, `26-voice-dictation-idle.png`, `27-voice-dictation-active.png`.
 
-## 2026-11-26 — Expanded release roadmap (documentation only)
+## 2026-11-26 — Baseline regression check (tasks/releases/00-baseline-regression.md)
 
-Inspected main commit 971df1033ac3349edbfa95d8debc93700e893646 and actual package/schema, README, current magazine design, pack, notes, voice and sensor modules. Existing release is v1.1.1; all twelve selected expansion capabilities are now specified as planned cumulative releases in PRODUCT_ROADMAP.md. Added source registry and candidate scientific seed records, proposed architecture/data contracts, UI entry specifications, release tasks and agent prompt. No app code, dependencies, migrations, Figma edits, native build, release tag or feature completion in this documentation change. Historical test/device reports above were not rerun. Next: baseline regression (tasks/releases/00-baseline-regression.md), then the first incomplete F01 slice in v1.2.0. Assignment deadline remains 13 Dec 2026; keep optional work within release gates.
+- Verified main commit `1f7b62944b52ddbd7838009beea836176021596f` on `main`.
+- Environment: Node `v24.22.3`, npm `11.19.1`, Expo SDK 58, React Native 0.88.1.
+- Open PRs: 0 open pull requests on `Suthankan1/cosmolog`.
+- Full verification passed:
+  - `npm run lint`: passed cleanly (0 errors, 0 warnings).
+  - `npm run typecheck`: passed cleanly (0 errors).
+  - `npm test -- --runInBand`: all 36 test suites, 128 tests passed cleanly.
+- Baseline gate complete. Ready to begin v1.2.0 Offline Explorer (`tasks/releases/v1.2.0-offline-explorer.md`).
