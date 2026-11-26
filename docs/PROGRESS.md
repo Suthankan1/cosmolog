@@ -418,7 +418,25 @@ Implemented speech-to-text recognition across discovery search and observation n
   - `npm test -- --runInBand`: all 36 test suites, 128 tests passed cleanly.
 - Baseline gate complete. Ready to begin v1.2.0 Offline Explorer (`tasks/releases/v1.2.0-offline-explorer.md`).
 
-## 2026-11-26 — F01 Expedition Packs (v1.2.0 Offline Explorer)
+## 2026-11-26 — F02 Offline Library Manager (v1.2.0 Offline Explorer)
+
+- Built read-only storage and ownership projection (`src/features/storage/offlineStorageProjection.ts`):
+  - Deduplicates physical disk space measurements across unique media filenames.
+  - Distinguishes shared device assets (Space Study supplements, multi-user shared discoveries) from account-owned items.
+  - Gracefully reconciles missing or unverified files to 0 bytes with appropriate status flags.
+- Built safe cache cleanup and preview mechanisms:
+  - `previewClearCache` calculates reclaimable bytes/counts while confirming counts of protected favourites, field notes, and expedition downloads.
+  - `clearEligibleCache` reconciles unowned `saved_media` rows and calls `pruneImageFiles` without touching any owned favourites, notes, or reading packs across any account.
+- Implemented Offline Library surface and navigation (`app/offline-library.tsx`):
+  - Added entry points in Profile (`app/(tabs)/profile.tsx`) and Field Shelf tools (`app/(tabs)/favourites.tsx`).
+  - Rendered total physical storage telemetry card, breakdown metrics, and category accordions (Field Shelf, Expeditions, Space Study, Discovery cache).
+  - Integrated explicit destructive confirmation dialog with preflight safety metrics.
+  - Offline-first behavior: fully readable and functional in airplane mode.
+- Added comprehensive automated test suites:
+  - `tests/offlineStorageProjection.test.ts` (file deduplication, missing file handling, multi-account sharing, cache clearing).
+  - `tests/offlineLibraryScreen.test.tsx` (telemetry rendering, status badges, clean cache alert preview, offline banner).
+- Total automated tests: 42 test suites, 156 tests passing cleanly.
+- Added ADR-019 in `docs/DECISIONS.md`.
 
 - Implemented Expedition Manifest and step contracts (`src/features/expeditions/manifest.ts`) with strict Zod validation:
   - Bundled reviewed expeditions for Saturn (`saturn`) and Apollo (`apollo`) composed of ordered celestial plates, Space Study literature chapters, and observational fieldwork prompts.

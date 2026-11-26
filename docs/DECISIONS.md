@@ -91,3 +91,10 @@ Keep Redux Toolkit thunks (ADR-008), the serialized SQLite writer and the native
 **Decision:** Evolve reading packs into structured multi-step ExpeditionManifests (composed of celestial plates, Space Study literature chapters, and observational fieldwork prompts) with backward-compatible pack IDs. Discovery plates download into `cached_items` and `reading_pack_items`, study steps integrate existing `study_entries`, and prompt steps guide sky observations. Account-scoped step completion is persisted additively in SQLite schema version 15 (`expedition_progress`).
 **Reason:** Creates cohesive, curated scientific learning journeys that combine telescope/probe imagery, reference theory, and hands-on observation while reusing the validated media download pipeline, license policies, and storage quotas without a custom backend.
 **Trade-off:** Requires mapping composite steps while retaining the existing `reading_pack_items` schema, media owner views, and backward-compatible route parameters. Removing an expedition download never cascades to delete user favourites, notes, or study bookmarks.
+
+## ADR-019 — Offline storage projection and verified file retention
+
+**Status:** Accepted.
+**Decision:** Build a unified read-only storage and ownership projection (`offlineStorageProjection.ts`) across `saved_media`, `favourites`, `reading_pack_items`, and `study_packs`. Total physical bytes are calculated by verifying unique on-disk files via `imageStorage.ts`, preventing duplicate counting when multiple bookmarks or packs reference the same file. Cache clearing is restricted strictly to unowned discovery media where no account holds a favourite or reading pack reference.
+**Reason:** Provides users with honest, transparent insight into storage consumption, distinguishes device-wide shared supplements from account-owned items, and guarantees that cleanup operations cannot corrupt or delete user favourites, field notes, or expedition media.
+**Trade-off:** File existence and size checks require synchronous or fast file-system inspections during telemetry calculation; disk deduping requires tracking seen filenames.

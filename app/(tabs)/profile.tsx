@@ -1,7 +1,7 @@
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../src/store';
@@ -30,6 +30,7 @@ function formatBytes(bytes: number) {
 }
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const paddingBottom = useTabContentInset();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
@@ -82,6 +83,12 @@ export default function ProfileScreen() {
             <Text style={styles.secondary}>{items.length} feed discoveries · {downloadCount} downloaded favourite images</Text>
           </View>
         </View>
+        <Button
+          title="Offline library & storage"
+          icon="hard-drive"
+          variant="outline"
+          onPress={() => router.push('/offline-library' as never)}
+        />
         <View style={styles.stats}>
           <Stat label="Saved discoveries" value={String(favourites.length)} icon="bookmark" />
           <Stat label="Favourite images" value={formatBytes(imageBytes)} icon="hard-drive" />

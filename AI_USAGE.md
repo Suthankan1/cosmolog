@@ -76,3 +76,14 @@ Antigravity designed and implemented the full voice-to-text feature using `expo-
 ## 2026-11-26 — Expansion planning
 
 ChatGPT inspected the actual repository using GitHub, compared the uploaded research/approved feature roadmap with existing code, and drafted the proposed release specs, architecture, source registry, task checklists and coding-agent prompt. It corrected the planning assumption that the project was still a starter and that RTK Query should be introduced, because main already implements Redux Toolkit thunks, reading packs, Study, sensor pointing, private notes and speech recognition. This is an AI planning revision, not a student-authored correction or implementation test. The student should review the PR, verify sources and decisions, and document any actual correction/verification with evidence. No runtime checks or builds were run for this documentation task.
+
+## 2026-11-26 — v1.2.0 Offline Explorer (Expedition Packs & Offline Library Manager)
+
+Antigravity implemented F01 (Expedition Packs) and F02 (Offline Library Manager) across `src/features/expeditions/`, `src/features/storage/`, `app/reading-packs.tsx`, and `app/offline-library.tsx`. Three genuine technical corrections arose during development:
+
+| Date | Tool | Initial output | Student correction | Why it was changed | Evidence |
+|---|---|---|---|---|---|
+| 2026-11-26 | Antigravity | Used standard `z.string().url()` for source reference URLs | Added `.refine(u => /^https:\/\//.test(u))` to strictly enforce HTTPS | Zod standard url validator allows `javascript:` or `http:` schemes; project constraints require HTTPS for all external science and source links | `src/features/expeditions/manifest.ts`, `tests/expeditionManifest.test.ts` |
+| 2026-11-26 | Antigravity | Wrapped `reconcileSavedImages()` inside `writeDatabase(async db => ...)` in `clearEligibleCache` | Removed nested `writeDatabase` wrapper and called `reconcileSavedImages` directly | `writeDatabase` serializes all transactions onto a single Promise chain (`writeQueue`). Calling `writeDatabase` inside another `writeDatabase` operation causes a fatal Promise queue deadlock | `src/features/storage/offlineStorageProjection.ts`, `tests/offlineStorageProjection.test.ts` |
+| 2026-11-26 | Antigravity | Synchronous state reload call inside `useEffect` in `app/reading-packs.tsx` | Deferred state update via timer cleanup pattern (`setTimeout(..., 0)`) | React 19 / ESLint `react-hooks/set-state-in-effect` flags synchronous setState inside effects as causing cascading render penalties | `app/reading-packs.tsx` |
+
