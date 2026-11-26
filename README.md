@@ -166,7 +166,7 @@ npm run typecheck
 npm test -- --runInBand
 ```
 
-Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver, reconnect and source failure behavior, route validation, media normalization, checkpoints, and archive search. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The Smart Reading Android run verified paragraph restore and local search after an airplane-mode cold launch, date lookup, and automatic recovery for an uncached plate on reconnect. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
+Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver (including migration 16 supporting v14, unmodified v15, and modified v15 upgrade paths), reconnect and source failure behavior, route validation, media normalization, checkpoints, archive search, media lock mutual exclusion, and expedition manifest boundary validation. 45 test suites and 188 automated tests pass 100% cleanly. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The v1.2.0 Android run verified upgrade without data loss, paragraph restore, local search after an airplane-mode cold launch, expedition download cancellation and resumption, and cache pruning with genuine disk telemetry. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
 
 ## Space Study
 

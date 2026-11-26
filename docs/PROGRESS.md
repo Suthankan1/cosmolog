@@ -626,3 +626,24 @@ Resolved all review findings in GitHub Issue #10 (`[P1][v1.2.0] Validate expedit
    - `npm test -- --runInBand`: 45 test suites, 188 tests (100% passing).
    - Expanded `tests/expeditionManifest.test.ts` to test invalid dates, mismatched targets, study anchors, bounded bytes, duplicate steps, and readiness calculations.
    - Expanded `tests/expeditionsRepository.test.ts` to test revision compatibility and orphaned step pruning.
+
+
+## 2026-11-26 — Issue #11: Offline Explorer Release Gate and Upgrade Verification Complete
+
+Completed release gate and upgrade verification for COSMOLOG v1.2.0 (Offline Explorer):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Fresh install (0 -> 16), upgrade from v14, upgrade from unmodified v15, and upgrade from modified v15: verified in automated SQLite test suite (`tests/migrationSafety.test.ts`) and on live Pixel 9 emulator (`adb install -r`). All user favourites, private notes, cached discoveries, reading positions, and checklist progress preserved with zero data loss.
+   - [x] Full core assignment journey: DummyJSON sign-in and simulated registration, real NASA APOD and Spaceflight News data, typed reading room route params, bookmark toggle with Reanimated spring physics, offline cold start without Metro in airplane mode, network restoration with automatic feed refresh, strict two-account data isolation, and safe abort on logout during async work.
+   - [x] Expedition journeys: Partial download, explicit cancellation, deterministic resume, required study anchor navigation (`sectionNumber` resolving to Section 2 of Worlds), storage preflight quota checks, unowned cache pruning with service-level exclusive lock (`withExclusiveMediaLock`), and decoupled learning checklist with explicit confirmation reset dialog.
+   - [x] Version and build consistency:
+     - `package.json`: `1.2.0`
+     - `app.json`: `1.2.0` (versionCode 4, buildNumber 4)
+     - `android/app/build.gradle`: `versionName "1.2.0"`, `versionCode 4`
+     - GitHub Actions `.github/workflows/verify.yml` and `package-release.yml` inspected and verified.
+   - [x] Documentation & Artifacts:
+     - Updated `README.md` with v1.2.0 features, telemetry details, and verification results.
+     - Updated `CHANGELOG.md` with v1.2.0 release notes.
+     - Updated `AI_USAGE.md` with technical corrections.
+     - Updated task checkboxes in `tasks/releases/v1.2.0-offline-explorer.md`.
+     - 45 test suites, 188 automated tests passing (100%).
