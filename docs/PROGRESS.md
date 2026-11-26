@@ -417,3 +417,45 @@ Implemented speech-to-text recognition across discovery search and observation n
   - `npm run typecheck`: passed cleanly (0 errors).
   - `npm test -- --runInBand`: all 36 test suites, 128 tests passed cleanly.
 - Baseline gate complete. Ready to begin v1.2.0 Offline Explorer (`tasks/releases/v1.2.0-offline-explorer.md`).
+
+## 2026-11-26 — F02 Offline Library Manager (v1.2.0 Offline Explorer)
+
+- Built read-only storage and ownership projection (`src/features/storage/offlineStorageProjection.ts`):
+  - Deduplicates physical disk space measurements across unique media filenames.
+  - Distinguishes shared device assets (Space Study supplements, multi-user shared discoveries) from account-owned items.
+  - Gracefully reconciles missing or unverified files to 0 bytes with appropriate status flags.
+- Built safe cache cleanup and preview mechanisms:
+  - `previewClearCache` calculates reclaimable bytes/counts while confirming counts of protected favourites, field notes, and expedition downloads.
+  - `clearEligibleCache` reconciles unowned `saved_media` rows and calls `pruneImageFiles` without touching any owned favourites, notes, or reading packs across any account.
+- Implemented Offline Library surface and navigation (`app/offline-library.tsx`):
+  - Added entry points in Profile (`app/(tabs)/profile.tsx`) and Field Shelf tools (`app/(tabs)/favourites.tsx`).
+  - Rendered total physical storage telemetry card, breakdown metrics, and category accordions (Field Shelf, Expeditions, Space Study, Discovery cache).
+  - Integrated explicit destructive confirmation dialog with preflight safety metrics.
+  - Offline-first behavior: fully readable and functional in airplane mode.
+- Added comprehensive automated test suites:
+  - `tests/offlineStorageProjection.test.ts` (file deduplication, missing file handling, multi-account sharing, cache clearing).
+  - `tests/offlineLibraryScreen.test.tsx` (telemetry rendering, status badges, clean cache alert preview, offline banner).
+- Total automated tests: 42 test suites, 156 tests passing cleanly.
+- Added ADR-019 in `docs/DECISIONS.md`.
+
+- Implemented Expedition Manifest and step contracts (`src/features/expeditions/manifest.ts`) with strict Zod validation:
+  - Bundled reviewed expeditions for Saturn (`saturn`) and Apollo (`apollo`) composed of ordered celestial plates, Space Study literature chapters, and observational fieldwork prompts.
+  - Sourced credits to NASA APOD, Cassini-Huygens Mission at Saturn, and COSMOLOG Space Study.
+  - Backward compatibility with legacy `readingPacks` export maintained.
+- Created SQLite schema migration version 15 (`MIGRATE_TO_EXPEDITIONS_SQL` in `src/database/schema.ts` and `src/database/db.ts`):
+  - Created `expedition_progress` table with composite primary key `(account_id, expedition_id, step_id)` and foreign account verification.
+  - Built repository `src/database/repositories/expeditionsRepository.ts` for account-scoped step completion tracking, progress summaries, and resets.
+- Built expedition download orchestrator `src/features/expeditions/expeditionDownloads.ts`:
+  - Enforced storage preflight check against estimated bytes + safety buffer.
+  - Reused existing `keepReadingPackItem` and `offline_item_owners` views.
+  - Added deterministic resumption of missing steps and clean `AbortSignal` cancellation without orphan partial commits.
+- Upgraded `app/reading-packs.tsx` to provide the full Expedition experience:
+  - Editorial magazine panel styling (ivory `#F8F4EA`, forest `#184235`, brass `#C79B4D`, terracotta `#C1654A`).
+  - Sourced attribution block, progress badge, ordered step cards with step kind tags (Celestial Plate, Space Study, Field Observation), interactive completion checkboxes, and download/remove actions.
+- Added comprehensive automated test suites:
+  - `tests/expeditionManifest.test.ts` (contracts, schema validation, negative cases, backward compatibility).
+  - `tests/expeditionsRepository.test.ts` (SQLite migration 15, account isolation, transaction rollback).
+  - `tests/expeditionDownloads.test.ts` (orchestrator storage check, resumption, cancellation, removal).
+  - `tests/expeditionsScreen.test.tsx` (screen rendering, ordered steps, observation toggle, offline banner).
+- Total automated tests: 40 test suites, 148 tests (all passing cleanly).
+- Added ADR-018 in `docs/DECISIONS.md`.

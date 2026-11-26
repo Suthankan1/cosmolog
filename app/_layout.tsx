@@ -55,6 +55,7 @@ function RootNavigator() {
             <Stack.Screen name="reading-history" />
             <Stack.Screen name="collections" />
             <Stack.Screen name="reading-packs" />
+            <Stack.Screen name="offline-library" />
             <Stack.Screen name="study/index" />
             <Stack.Screen name="study/downloads" />
             <Stack.Screen name="study/[id]" />

@@ -42,6 +42,7 @@ jest.mock('expo-router', () => ({
   }),
   useLocalSearchParams: () => ({}),
   useSegments: () => [],
+  useFocusEffect: (fn: any) => require('react').useEffect(fn, []),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
