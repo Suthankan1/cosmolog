@@ -2,6 +2,10 @@
 
 Use this file with Codex, Claude Code, Cursor, Copilot, Antigravity/Gemini or another coding agent. Implement the next verified feature slice, not a fresh scaffold or the whole roadmap at once.
 
+## GitHub issue-driven execution
+
+The [agent task queue (#31)](https://github.com/Suthankan1/cosmolog/issues/31) is the live execution index. Read it and the first eligible open issue, including comments, linked PRs and dependencies, before beginning implementation. The detailed issue is the task specification; no new per-feature user prompt is needed. Start with release blockers #6 and #7, then follow the queue; never bypass prerequisites or assignment freeze. Re-check latest main, avoid duplicating active work, implement on a focused branch, run real checks and open a PR. Use Closes #N only when the entire issue is verified, otherwise Refs #N. Do not self-merge, publish or tag without owner review. Report blockers honestly and move to independent eligible work if available. Issues do not automatically launch a coding agent; an agent must be invoked or configured separately.
+
 ## Mandatory context
 Read AGENTS.md, PROJECT_CONTEXT.md, README.md, PRODUCT_ROADMAP.md, docs/FEATURE_CATALOG.md, docs/RELEASE_STRATEGY.md, docs/ASSIGNMENT_REQUIREMENTS.md, docs/DECISIONS.md, docs/PROGRESS.md, design/ARCHITECTURE.md, design/DATA_MODEL.md, design/EXPANSION_ARCHITECTURE.md, design/EXPANSION_DATA_CONTRACTS.md, design/SCREEN_SPECIFICATIONS.md, docs/expansion/SOURCE_REGISTRY.md, design/magazine/ and the active tasks/releases document. Inspect git status, main HEAD, existing PRs, actual code, package.json and lockfile. Never treat proposed routes, entities, or research estimates as implemented. If existing implementation differs, document the discrepancy and adapt a small slice without overwriting user work.
 

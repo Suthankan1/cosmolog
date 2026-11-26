@@ -187,3 +187,5 @@ The first-edition city index occupies 11,960,320 bytes uncompressed and 5,279,87
 ## Planned cumulative expansion
 
 The next releases extend the existing archive, Space Study, Sky Viewer and voice features into an offline-first field journal and exploration platform. See the [product roadmap](PRODUCT_ROADMAP.md), [feature catalogue](docs/FEATURE_CATALOG.md), [expansion architecture](design/EXPANSION_ARCHITECTURE.md), [source registry](docs/expansion/SOURCE_REGISTRY.md), [release tasks](tasks/releases/README.md) and [implementation prompt](MASTER_IMPLEMENTATION_PROMPT.md). All twelve expansions are planned; this documentation does not imply they are shipped. The assignment remains a separately gated stable milestone.
+
+Development is tracked in [GitHub issue #31 — agent task queue](https://github.com/Suthankan1/cosmolog/issues/31). Read this issue for dependencies, release blockers and the next eligible implementation task.

@@ -2,6 +2,10 @@
 
 You are working in the COSMOLOG project for IN3210 Assignment 2. Treat `PROJECT_CONTEXT.md`, `docs/ASSIGNMENT_REQUIREMENTS.md`, the implemented repository, `design/magazine/`, and `PRODUCT_ROADMAP.md` as the project source of truth. Proposed expansion files describe planned work, not shipped code.
 
+## GitHub issue-driven execution
+
+The [agent task queue (#31)](https://github.com/Suthankan1/cosmolog/issues/31) is the live execution index. Read it and the first eligible open issue, including comments, linked PRs and dependencies, before beginning implementation. The detailed issue is the task specification; no new per-feature user prompt is needed. Start with release blockers #6 and #7, then follow the queue; never bypass prerequisites or assignment freeze. Re-check latest main, avoid duplicating active work, implement on a focused branch, run real checks and open a PR. Use Closes #N only when the entire issue is verified, otherwise Refs #N. Do not self-merge, publish or tag without owner review. Report blockers honestly and move to independent eligible work if available. Issues do not automatically launch a coding agent; an agent must be invoked or configured separately.
+
 ## Before acting
 1. Read `PROJECT_CONTEXT.md`.
 2. Read `docs/ASSIGNMENT_REQUIREMENTS.md`.
