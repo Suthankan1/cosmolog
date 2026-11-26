@@ -2,6 +2,17 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
+## Unreleased — v1.3.0 (Beyond Time and Scale)
+
+- **F03 LightTrace (Offline Cosmic Light-Travel Explorer):**
+  - Interactive laboratory surface (`/explore/lighttrace`) investigating the finite velocity of light and observable lookback time delay across the universe.
+  - Curated, versioned reference dataset (`src/features/labs/data/lighttrace.ts`) covering Moon (384,400 km), Sun (1 AU), Proxima Centauri (4.2465 ly), and Andromeda Galaxy (2.5 million ly), referencing authoritative metrological sources (BIPM, IAU, NASA JPL Basics of Space Flight).
+  - Pure astronomical math module (`src/features/labs/lightMath.ts`): exact vacuum speed of light ($c = 299,792,458\text{ m/s}$), IAU distance constants (AU, ly, pc), Euclidean lookback delay ($t = d/c$), duration formatting, and logarithmic cosmic scale normalization.
+  - Interactive controls: celestial target tabs, previous/next stepper buttons, logarithmic distance track indicator, measurement details table, and scientific disclosure regarding flat vacuum space vs high-redshift cosmic expansion.
+  - Actionable external source links ($\ge 48\text{ dp}$ touch targets via `Linking.openURL`), and deep links to related Space Study chapters and Sky Viewer celestial targets.
+  - Explore Hub screen (`app/explore/index.tsx`) with magazine editorial styling and accessible navigation card from Discover tab.
+
+
 ## v1.2.0 — Offline Explorer (2026-11-26)
 
 - **F01 Expedition Packs:** Structured, multi-step science expeditions (Saturn, Apollo) combining NASA APOD celestial plates, Space Study literature chapters, and observational fieldwork prompts. Sourced credits, schema migration 15 for account-owned progress (`expedition_progress` with `revision`), and download orchestrator with storage preflight checks, explicit cancellation, and resumption.
