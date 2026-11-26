@@ -1,0 +1,79 @@
+{
+  "status": "planning/test seed only; verify per-record before production",
+  "revision": 1,
+  "reviewDate": "2026-11-26",
+  "constants": [
+    {
+      "id": "speed-of-light-vacuum",
+      "value": 299792458,
+      "unit": "m/s",
+      "precision": "exact",
+      "source": "S01"
+    }
+  ],
+  "distances": [
+    {
+      "id": "body:Moon",
+      "value": 384400,
+      "unit": "km",
+      "reference": "approximate mean Earth-Moon distance",
+      "precision": "approximate",
+      "source": "S03"
+    },
+    {
+      "id": "body:Sun",
+      "value": 150000000,
+      "unit": "km",
+      "reference": "rounded mean Earth-Sun distance",
+      "precision": "approximate",
+      "source": "S02"
+    },
+    {
+      "id": "star:proxima-centauri",
+      "value": 4.24,
+      "unit": "ly",
+      "reference": "estimated distance from Solar System",
+      "precision": "approximate",
+      "source": "S04"
+    },
+    {
+      "id": "messier:31",
+      "value": 2500000,
+      "unit": "ly",
+      "reference": "approximate nearby-galaxy distance; not cosmological lookback model",
+      "precision": "approximate; recheck S06 distance before production",
+      "source": "S06"
+    }
+  ],
+  "evidenceCandidates": [
+    {
+      "id": "evidence:wasp39b-co2",
+      "relatedTarget": "WASP-39 b",
+      "source": "S07",
+      "reviewRequired": true,
+      "outline": {
+        "observation": "A transit spectrum of light filtered through the planet's atmosphere.",
+        "method": "Webb NIRSpec transmission spectroscopy.",
+        "inference": "A spectral feature supports the presence of carbon dioxide.",
+        "uncertainty": "Atmospheric composition inference is not evidence of life; distinguish measured spectrum from artist illustration."
+      }
+    }
+  ],
+  "pendingContent": [
+    {
+      "feature": "F08",
+      "status": "select two documented traditions, verify individual redistribution licenses, source star IDs and review cultural wording",
+      "source": "S09"
+    },
+    {
+      "feature": "F10",
+      "status": "review IMO 2026/2027 edition and record only verified dates/precision with permission",
+      "source": "S10"
+    },
+    {
+      "feature": "F04",
+      "status": "select consistent planet diameter convention and verify each fact",
+      "source": "S05"
+    }
+  ]
+}
