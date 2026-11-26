@@ -3,7 +3,9 @@ import { mapRowToDiscoveryItem, type CachedItemRow, type DiscoveryItem } from '.
 import { upsertItem } from './discoveryRepository';
 import { mapSavedMedia, type SavedMediaRow } from './mediaRepository';
 
-export async function getReadingPackItems(accountId: number) {
+export type ReadingPackItem = DiscoveryItem & ReturnType<typeof mapSavedMedia> & { packId: string };
+
+export async function getReadingPackItems(accountId: number): Promise<ReadingPackItem[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<CachedItemRow & SavedMediaRow & { pack_id: string }>(
     `SELECT c.*, p.pack_id, m.status, m.file_name, m.source_url, m.license_url

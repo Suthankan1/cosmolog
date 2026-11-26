@@ -37,10 +37,15 @@ export async function getExpeditionCompletedStepIds(
   const validStepIds = manifest ? new Set(manifest.steps.map(s => s.id)) : null;
 
   for (const row of rows) {
-    // Reconcile: If a manifest is supplied, verify step still exists in current revision
-    if (!validStepIds || validStepIds.has(row.step_id)) {
-      set.add(row.step_id);
+    if (manifest) {
+      if (manifest.minCompatibleRevision && row.revision < manifest.minCompatibleRevision) {
+        continue;
+      }
+      if (validStepIds && !validStepIds.has(row.step_id)) {
+        continue;
+      }
     }
+    set.add(row.step_id);
   }
 
   return set;
@@ -57,19 +62,26 @@ export async function getAllCompletedStepIds(
     [accountId],
   );
 
-  const manifestMap = manifests ? new Map(manifests.map(m => [m.id, new Set(m.steps.map(s => s.id))])) : null;
+  const manifestMap = manifests ? new Map(manifests.map(m => [m.id, m])) : null;
   const result = new Map<string, Set<string>>();
 
   for (const row of rows) {
-    const validStepIds = manifestMap?.get(row.expedition_id);
-    if (!manifestMap || (validStepIds && validStepIds.has(row.step_id))) {
-      let set = result.get(row.expedition_id);
-      if (!set) {
-        set = new Set();
-        result.set(row.expedition_id, set);
+    const manifest = manifestMap?.get(row.expedition_id);
+    if (manifest) {
+      if (manifest.minCompatibleRevision && row.revision < manifest.minCompatibleRevision) {
+        continue;
       }
-      set.add(row.step_id);
+      const validStepIds = new Set(manifest.steps.map(s => s.id));
+      if (!validStepIds.has(row.step_id)) {
+        continue;
+      }
     }
+    let set = result.get(row.expedition_id);
+    if (!set) {
+      set = new Set();
+      result.set(row.expedition_id, set);
+    }
+    set.add(row.step_id);
   }
   return result;
 }

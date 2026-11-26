@@ -29,6 +29,7 @@ import {
   removeExpeditionDownload,
 } from '../src/features/expeditions/expeditionDownloads';
 import {
+  computeExpeditionReadiness,
   getAllExpeditions,
   type ExpeditionManifest,
 } from '../src/features/expeditions/manifest';
@@ -64,7 +65,7 @@ export default function ReadingPacksScreen() {
     try {
       const [items, completed] = await Promise.all([
         getReadingPackItems(owner).catch(() => null),
-        getAllCompletedStepIds(owner).catch(() => new Map()),
+        getAllCompletedStepIds(owner, getAllExpeditions()).catch(() => new Map()),
       ]);
       if (isActive() && readRequest.current === request) {
         setResult({ owner, items, completed });
@@ -207,12 +208,9 @@ export default function ReadingPacksScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           {allExpeditions.map(expedition => {
+            const readiness = computeExpeditionReadiness(expedition, installed);
             const packItems = installed.filter(item => item.packId === expedition.id);
-            const discoverySteps = expedition.steps.filter(s => s.kind === 'discovery' && s.date);
-            const eligible = packItems.filter(item => item.mediaStatus !== 'text-only');
-            const imageCount = eligible.filter(item => item.mediaStatus === 'ready').length;
-            const textReady = packItems.length >= discoverySteps.length;
-            const hasWork = !textReady || imageCount < eligible.length;
+            const hasWork = readiness.hasWork;
             const isCurrentlyDownloading = busy === expedition.id;
 
             const expCompleted = completedSteps.get(expedition.id) ?? new Set<string>();
@@ -264,8 +262,8 @@ export default function ReadingPacksScreen() {
                     {completedOptional > 0 ? ` (+${completedOptional} optional observation)` : ''}
                   </Text>
                   <Text style={styles.downloadStatusText}>
-                    Offline download: {packItems.length} of {discoverySteps.length} plates saved
-                    {eligible.length ? ` · ${imageCount} of ${eligible.length} images ready` : ''}
+                    Offline download: {readiness.savedDiscoveryCount} of {readiness.requiredDiscoveryCount} plates saved
+                    {readiness.eligibleMediaCount ? ` · ${readiness.readyMediaCount} of ${readiness.eligibleMediaCount} images ready` : ''}
                   </Text>
                 </View>
 
@@ -350,7 +348,17 @@ export default function ReadingPacksScreen() {
                               accessibilityRole="button"
                               accessibilityLabel={`Open study guide: ${step.title}`}
                               style={styles.actionPill}
-                              onPress={() => router.push(`/study/${step.targetId}` as never)}
+                              onPress={() => {
+                                const target = step.targetId ?? '';
+                                const chapterId = target.startsWith('chapter:') ? target : `chapter:${target}`;
+                                router.push({
+                                  pathname: '/study/[id]',
+                                  params: {
+                                    id: chapterId,
+                                    section: step.sectionAnchor ?? '',
+                                  },
+                                } as never);
+                              }}
                             >
                               <Icon name="book-open" size={14} color={colors.forest} />
                               <Text style={styles.actionPillText}>Read study chapter</Text>
@@ -408,12 +416,12 @@ export default function ReadingPacksScreen() {
                   ) : (
                     hasWork && (
                       <Button
-                        title={textReady ? 'Retry pack images' : packItems.length ? 'Resume download' : 'Download expedition'}
+                        title={readiness.isTextReady ? 'Retry pack images' : packItems.length ? 'Resume download' : 'Download expedition'}
                         icon="download"
                         disabled={connection !== 'online' || Boolean(busy && busy !== expedition.id)}
-                        loading={isCurrentlyDownloading || (textReady && isDownloading)}
+                        loading={isCurrentlyDownloading || (readiness.isTextReady && isDownloading)}
                         accessibilityLabel={
-                          (textReady ? 'Retry images for ' : packItems.length ? 'Resume download for ' : 'Download ') +
+                          (readiness.isTextReady ? 'Retry images for ' : packItems.length ? 'Resume download for ' : 'Download ') +
                           expedition.title
                         }
                         onPress={() => { void start(expedition); }}

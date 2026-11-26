@@ -123,11 +123,11 @@ describe('Expedition Progress SQLite Repository', () => {
       title: 'Apollo at the Moon',
       description: 'Lunar expedition',
       estimatedBytes: 1000,
-      sources: [],
+      sources: [{ title: 'NASA', publisher: 'NASA', url: 'https://science.nasa.gov/' }],
       steps: [
-        { id: 'step-req-1', order: 1, kind: 'discovery' as const, title: 'Req 1', summary: 'R1', required: true },
-        { id: 'step-req-2', order: 2, kind: 'study' as const, title: 'Req 2', summary: 'R2', required: true },
-        { id: 'step-opt-1', order: 3, kind: 'prompt' as const, title: 'Opt 1', summary: 'O1', required: false },
+        { id: 'step-req-1', order: 1, kind: 'discovery' as const, title: 'Req 1', summary: 'R1', targetId: 'nasa-apod:2015-09-06', date: '2015-09-06', required: true },
+        { id: 'step-req-2', order: 2, kind: 'study' as const, title: 'Req 2', summary: 'R2', targetId: 'sun-earth-moon', sectionAnchor: 'phases', required: true },
+        { id: 'step-opt-1', order: 3, kind: 'prompt' as const, title: 'Opt 1', summary: 'O1', promptInstruction: 'Check crater relief', required: false },
       ],
     };
 
@@ -175,9 +175,9 @@ describe('Expedition Progress SQLite Repository', () => {
       title: 'Saturn',
       description: 'Desc',
       estimatedBytes: 1000,
-      sources: [],
+      sources: [{ title: 'NASA', publisher: 'NASA', url: 'https://science.nasa.gov/' }],
       steps: [
-        { id: 'step-saturn-shadow', order: 1, kind: 'discovery' as const, title: 'Shadow', summary: 'S', required: true },
+        { id: 'step-saturn-shadow', order: 1, kind: 'discovery' as const, title: 'Shadow', summary: 'S', targetId: 'nasa-apod:2013-11-13', date: '2013-11-13', required: true },
       ],
     };
 
@@ -189,5 +189,35 @@ describe('Expedition Progress SQLite Repository', () => {
     const reconciled = await getExpeditionCompletedStepIds(7, 'saturn', dummyManifest);
     expect(reconciled.has('step-saturn-shadow')).toBe(true);
     expect(reconciled.has('removed-legacy-step')).toBe(false);
+  });
+
+  it('enforces minCompatibleRevision and filters out obsolete revisions', async () => {
+    // Account 8 has step completed at revision 1
+    await markExpeditionStepCompleted(8, 'saturn', 'step-saturn-shadow', 1);
+
+    // Manifest requiring at least revision 2 drops revision 1 progress
+    const strictManifest = {
+      id: 'saturn',
+      revision: 2,
+      minCompatibleRevision: 2,
+      title: 'Saturn Rev 2',
+      description: 'Desc',
+      estimatedBytes: 1000,
+      sources: [{ title: 'NASA', publisher: 'NASA', url: 'https://science.nasa.gov/' }],
+      steps: [
+        { id: 'step-saturn-shadow', order: 1, kind: 'discovery' as const, title: 'Shadow', summary: 'S', targetId: 'nasa-apod:2013-11-13', date: '2013-11-13', required: true },
+      ],
+    };
+
+    const completed = await getExpeditionCompletedStepIds(8, 'saturn', strictManifest);
+    expect(completed.has('step-saturn-shadow')).toBe(false);
+
+    const allMap = await getAllCompletedStepIds(8, [strictManifest]);
+    expect(allMap.get('saturn')?.has('step-saturn-shadow') ?? false).toBe(false);
+
+    // Once updated to revision 2, it becomes compatible
+    await markExpeditionStepCompleted(8, 'saturn', 'step-saturn-shadow', 2);
+    const updated = await getExpeditionCompletedStepIds(8, 'saturn', strictManifest);
+    expect(updated.has('step-saturn-shadow')).toBe(true);
   });
 });

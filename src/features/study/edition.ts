@@ -276,11 +276,39 @@ const sectionAnchors: Record<string, string[]> = {
   satellites: ['purposes', 'constellation', 'prediction'],
 };
 export function sectionAnchor(id: string, index: number) {
-  return sectionAnchors[id.slice(8)]?.[index] ?? null;
+  const chapterSlug = id.startsWith('chapter:') ? id.slice(8) : id;
+  return sectionAnchors[chapterSlug]?.[index] ?? null;
 }
 export function sectionNumber(id: string, anchor: string | null, fallback = 0) {
-  const index = anchor ? sectionAnchors[id.slice(8)]?.indexOf(anchor) : undefined;
-  return index !== undefined && index >= 0 ? index : fallback;
+  const chapterSlug = id.startsWith('chapter:') ? id.slice(8) : id;
+  const anchors = sectionAnchors[chapterSlug];
+  if (anchor && anchors) {
+    const index = anchors.indexOf(anchor);
+    if (index >= 0) return index;
+    // Also resolve by section heading text if passed
+    const lesson = lessons.find(([lid]) => lid === chapterSlug);
+    if (lesson) {
+      const headingIndex = lesson[3].findIndex(section => {
+        const [heading] = section.split('\n');
+        return heading.toLowerCase().trim() === anchor.toLowerCase().trim();
+      });
+      if (headingIndex >= 0) return headingIndex;
+    }
+  }
+  return fallback;
+}
+
+export function isValidStudyTarget(targetId: string, anchor?: string | null): boolean {
+  if (!targetId) return false;
+  const chapterSlug = targetId.startsWith('chapter:') ? targetId.slice(8) : targetId;
+  const lesson = lessons.find(([lid]) => lid === chapterSlug);
+  if (!lesson) {
+    return objects.some(o => o.id === targetId);
+  }
+  if (anchor != null && anchor !== '') {
+    return sectionNumber(chapterSlug, anchor, -1) >= 0;
+  }
+  return true;
 }
 
 export const glossary: Record<string, [string, string][]> = {

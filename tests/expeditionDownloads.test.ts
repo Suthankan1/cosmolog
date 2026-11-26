@@ -7,7 +7,7 @@ import {
   resetExpeditionProgress,
 } from '../src/database/repositories/expeditionsRepository';
 import { downloadExpedition, removeExpeditionDownload } from '../src/features/expeditions/expeditionDownloads';
-import { getExpeditionById } from '../src/features/expeditions/manifest';
+import { getExpeditionById, type DiscoveryStep } from '../src/features/expeditions/manifest';
 import { fetchNasaApodItem } from '../src/services/api/nasaApodService';
 import type { DiscoveryItem } from '../src/database/models';
 
@@ -22,7 +22,7 @@ jest.mock('expo-file-system', () => ({
 }));
 
 const saturn = getExpeditionById('saturn')!;
-const discoverySteps = saturn.steps.filter(s => s.kind === 'discovery' && s.date);
+const discoverySteps = saturn.steps.filter((s): s is DiscoveryStep => s.kind === 'discovery');
 const first = discoverySteps[0];
 const second = discoverySteps[1];
 const third = discoverySteps[2];
