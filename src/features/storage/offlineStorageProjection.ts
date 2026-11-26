@@ -1,5 +1,5 @@
 import { getDatabase } from '../../database/db';
-import { getLocalImage, pruneImageFiles } from '../../services/storage/imageStorage';
+import { getDeviceTotalMediaBytes, getLocalImage, pruneImageFiles } from '../../services/storage/imageStorage';
 import {
   mapSavedMedia,
   reconcileSavedImages,
@@ -8,7 +8,7 @@ import {
 } from '../../database/repositories/mediaRepository';
 import { installedPacks } from '../study/packRepository';
 import { getAllExpeditions } from '../expeditions/manifest';
-import { waitForMediaWorker } from '../../store/slices/favouritesSlice';
+import { withExclusiveMediaLock } from '../../services/storage/mediaCoordinator';
 
 export interface StorageItemDetail {
   id: string;
@@ -22,12 +22,16 @@ export interface StorageItemDetail {
 }
 
 export interface OfflineStorageSummary {
-  // Finding 5: Honest, deduplicated and distinct telemetry labels
-  physicalMediaBytes: number;        // Physical on-disk media files in app storage (deduplicated)
-  installedStudyTextBytes: number;   // Installed Space Study curriculum text records in database
-  reclaimableMediaBytes: number;     // Physical media bytes of unowned cache eligible to prune
-  totalRetainedBytes: number;        // physicalMediaBytes + installedStudyTextBytes
-  totalUniqueFilesCount: number;     // Count of distinct physical media files on disk
+  // Accurate, deduplicated storage telemetry
+  deviceTotalMediaBytes: number;     // Total physical media on disk across all device files
+  accountMediaBytes: number;         // Physical on-disk media files owned by current account (deduplicated)
+  sharedMediaBytes: number;          // Physical media owned by current account and shared with others
+  physicalMediaBytes: number;        // Alias for accountMediaBytes (backward compatibility)
+  installedStudyContentBytes: number;// Installed Space Study curriculum content size in database records
+  installedStudyTextBytes: number;   // Alias for installedStudyContentBytes
+  reclaimableMediaBytes: number;     // Physical media bytes of unowned cache genuinely eligible to prune
+  totalRetainedBytes: number;        // accountMediaBytes + installedStudyContentBytes
+  totalUniqueFilesCount: number;     // Count of distinct physical media files owned by current account
 
   // Breakdown metrics
   favouritesBytes: number;
@@ -59,16 +63,22 @@ export interface ClearCachePreview {
 
 export async function getOfflineStorageSummary(accountId: number): Promise<OfflineStorageSummary> {
   const db = await getDatabase();
-  const seenFiles = new Set<string>();
-  let physicalMediaBytes = 0;
+  const seenAccountFiles = new Set<string>();
+  const seenSharedFiles = new Set<string>();
+  let accountMediaBytes = 0;
+  let sharedMediaBytes = 0;
 
-  const measureFile = (fileName: string | null): number => {
+  const measureAccountFile = (fileName: string | null, isShared: boolean): number => {
     if (!fileName) return 0;
     const file = getLocalImage(fileName);
     if (!file) return 0;
-    if (!seenFiles.has(fileName)) {
-      seenFiles.add(fileName);
-      physicalMediaBytes += file.bytes;
+    if (!seenAccountFiles.has(fileName)) {
+      seenAccountFiles.add(fileName);
+      accountMediaBytes += file.bytes;
+    }
+    if (isShared && !seenSharedFiles.has(fileName)) {
+      seenSharedFiles.add(fileName);
+      sharedMediaBytes += file.bytes;
     }
     return file.bytes;
   };
@@ -92,9 +102,9 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
 
   let favouritesBytes = 0;
   const favourites: StorageItemDetail[] = favRows.map(row => {
-    // Finding 3: Reuse canonical media validation and licensing logic
     const media = mapSavedMedia(row);
-    const bytes = measureFile(row.file_name);
+    const isShared = row.other_owners_count > 0;
+    const bytes = measureAccountFile(row.file_name, isShared);
     favouritesBytes += bytes;
 
     return {
@@ -104,7 +114,7 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       bytes,
       fileName: row.file_name,
       status: media.mediaStatus,
-      isShared: row.other_owners_count > 0,
+      isShared,
       ownershipReason: 'Field Shelf favourite',
     };
   });
@@ -130,9 +140,9 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
   const expeditionsList = getAllExpeditions();
   let expeditionsBytes = 0;
   const expeditions: StorageItemDetail[] = packRows.map(row => {
-    // Finding 3: Reuse canonical media validation and licensing logic
     const media = mapSavedMedia(row);
-    const bytes = measureFile(row.file_name);
+    const isShared = row.other_owners_count > 0;
+    const bytes = measureAccountFile(row.file_name, isShared);
     expeditionsBytes += bytes;
 
     const exp = expeditionsList.find(e => e.id === row.pack_id);
@@ -145,17 +155,17 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       bytes,
       fileName: row.file_name,
       status: media.mediaStatus,
-      isShared: row.other_owners_count > 0,
+      isShared,
       ownershipReason: `Expedition pack: ${packName}`,
     };
   });
 
   // 3. Space Study supplements (installed on device, shared across accounts)
-  // Finding 5: Kept distinct from physical disk media bytes
+  // Payload size represents content size in SQLite records, distinct from physical media
   const studyRows = await installedPacks();
-  let installedStudyTextBytes = 0;
+  let installedStudyContentBytes = 0;
   const study: StorageItemDetail[] = studyRows.map(p => {
-    installedStudyTextBytes += p.bytes;
+    installedStudyContentBytes += p.bytes;
     return {
       id: p.id,
       title: `Study Pack: ${p.id} (rev ${p.revision})`,
@@ -164,11 +174,12 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       fileName: null,
       status: 'ready',
       isShared: true,
-      ownershipReason: 'Installed Space Study supplement (shared on device)',
+      ownershipReason: 'Installed Space Study supplement content',
     };
   });
 
   // 4. Feed cache (items not favourited or in packs by ANY account)
+  // Ensure files referenced by ANY retained owner are excluded from reclaimable storage
   const cacheRows = await db.getAllAsync<SavedMediaRow & {
     local_id: string;
     title: string;
@@ -181,6 +192,18 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
      ORDER BY c.fetched_at DESC`,
   );
 
+  // Find genuinely unowned files (files not referenced by any retained owner)
+  const unownedFilesQuery = await db.getAllAsync<{ file_name: string }>(
+    `SELECT DISTINCT m.file_name FROM saved_media m
+     WHERE m.file_name IS NOT NULL
+       AND NOT EXISTS (
+         SELECT 1 FROM offline_item_owners o
+         JOIN saved_media sm ON sm.local_id = o.local_id
+         WHERE sm.file_name = m.file_name
+       )`,
+  );
+  const genuinelyUnownedFileNames = new Set(unownedFilesQuery.map(r => r.file_name));
+
   let reclaimableMediaBytes = 0;
   const seenReclaimableFiles = new Set<string>();
 
@@ -190,10 +213,13 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
     if (row.file_name) {
       const file = getLocalImage(row.file_name);
       if (file) {
-        bytes = file.bytes;
-        if (!seenReclaimableFiles.has(row.file_name)) {
-          seenReclaimableFiles.add(row.file_name);
-          reclaimableMediaBytes += file.bytes;
+        // Only attribute bytes and mark reclaimable if file is NOT referenced by any retained owner
+        if (genuinelyUnownedFileNames.has(row.file_name)) {
+          bytes = file.bytes;
+          if (!seenReclaimableFiles.has(row.file_name)) {
+            seenReclaimableFiles.add(row.file_name);
+            reclaimableMediaBytes += file.bytes;
+          }
         }
       }
     }
@@ -205,27 +231,35 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
       fileName: row.file_name,
       status: media.mediaStatus,
       isShared: false,
-      ownershipReason: 'Recent discovery cache (eligible to clear)',
+      ownershipReason: genuinelyUnownedFileNames.has(row.file_name ?? '')
+        ? 'Recent discovery cache (eligible to clear)'
+        : 'Recent discovery cache (file retained by active records)',
     };
   });
 
+  const deviceTotal = getDeviceTotalMediaBytes();
+
   return {
-    physicalMediaBytes,
-    installedStudyTextBytes,
+    deviceTotalMediaBytes: deviceTotal.totalBytes,
+    accountMediaBytes,
+    sharedMediaBytes,
+    physicalMediaBytes: accountMediaBytes,
+    installedStudyContentBytes,
+    installedStudyTextBytes: installedStudyContentBytes,
     reclaimableMediaBytes,
-    totalRetainedBytes: physicalMediaBytes + installedStudyTextBytes,
-    totalUniqueFilesCount: seenFiles.size,
+    totalRetainedBytes: accountMediaBytes + installedStudyContentBytes,
+    totalUniqueFilesCount: seenAccountFiles.size,
     favouritesBytes,
     favouritesCount: favourites.length,
     expeditionsBytes,
     expeditionsCount: expeditions.length,
-    studyBytes: installedStudyTextBytes,
+    studyBytes: installedStudyContentBytes,
     studyCount: study.length,
     cacheBytes: reclaimableMediaBytes,
     cacheCount: cache.length,
     reclaimableBytes: reclaimableMediaBytes,
-    reclaimableCount: cache.length,
-    totalPhysicalBytes: physicalMediaBytes,
+    reclaimableCount: seenReclaimableFiles.size,
+    totalPhysicalBytes: accountMediaBytes,
     items: {
       favourites,
       expeditions,
@@ -237,9 +271,6 @@ export async function getOfflineStorageSummary(accountId: number): Promise<Offli
 
 export async function previewClearCache(accountId: number): Promise<ClearCachePreview> {
   const db = await getDatabase();
-  const cacheCountRow = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) AS count FROM cached_items c WHERE NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = c.local_id)',
-  );
   const favCountRow = await db.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) AS count FROM favourites WHERE account_id = ?',
     [accountId],
@@ -249,24 +280,29 @@ export async function previewClearCache(accountId: number): Promise<ClearCachePr
     [accountId],
   );
 
-  const cacheRows = await db.getAllAsync<{ file_name: string | null }>(
-    `SELECT m.file_name FROM cached_items c
-     LEFT JOIN saved_media m ON m.local_id = c.local_id
-     WHERE NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = c.local_id)`,
+  // Files referenced by ANY retained owner across ANY account are strictly excluded
+  const unownedRows = await db.getAllAsync<{ file_name: string }>(
+    `SELECT DISTINCT m.file_name FROM saved_media m
+     WHERE m.file_name IS NOT NULL
+       AND NOT EXISTS (
+         SELECT 1 FROM offline_item_owners o
+         JOIN saved_media sm ON sm.local_id = o.local_id
+         WHERE sm.file_name = m.file_name
+       )`,
   );
 
   let reclaimableBytes = 0;
-  const seenFiles = new Set<string>();
-  for (const row of cacheRows) {
-    if (row.file_name && !seenFiles.has(row.file_name)) {
-      seenFiles.add(row.file_name);
-      const file = getLocalImage(row.file_name);
-      if (file) reclaimableBytes += file.bytes;
+  let reclaimableCount = 0;
+  for (const row of unownedRows) {
+    const file = getLocalImage(row.file_name);
+    if (file) {
+      reclaimableBytes += file.bytes;
+      reclaimableCount++;
     }
   }
 
   return {
-    reclaimableCount: cacheCountRow?.count ?? 0,
+    reclaimableCount,
     reclaimableBytes,
     protectedFavouritesCount: favCountRow?.count ?? 0,
     protectedPackItemsCount: packCountRow?.count ?? 0,
@@ -274,30 +310,16 @@ export async function previewClearCache(accountId: number): Promise<ClearCachePr
 }
 
 export async function clearEligibleCache(): Promise<{ clearedCount: number; freedBytes: number }> {
-  // Finding 4: Coordinate with media download worker to prevent concurrent deletion
-  await waitForMediaWorker();
+  // Coordinated exclusive media lock prevents concurrent downloads or pruning
+  return withExclusiveMediaLock(async () => {
+    // 1. Reconcile database records (deletes saved_media for unowned items, returns retained filenames)
+    const retainedFiles = await reconcileSavedImages();
+    // 2. Prune unowned physical files from filesystem and record actual deletion results
+    const pruneResult = pruneImageFiles(retainedFiles);
 
-  const db = await getDatabase();
-  const unownedMedia = await db.getAllAsync<{ file_name: string | null }>(
-    `SELECT file_name FROM saved_media WHERE NOT EXISTS (SELECT 1 FROM offline_item_owners WHERE local_id = saved_media.local_id)`,
-  );
-  let freedBytes = 0;
-  const seenFreed = new Set<string>();
-  for (const m of unownedMedia) {
-    if (m.file_name && !seenFreed.has(m.file_name)) {
-      seenFreed.add(m.file_name);
-      const file = getLocalImage(m.file_name);
-      if (file) freedBytes += file.bytes;
-    }
-  }
-
-  // Reconcile saved images database rows
-  const retainedFiles = await reconcileSavedImages();
-  // Prune unowned physical files from filesystem
-  pruneImageFiles(retainedFiles);
-
-  return {
-    clearedCount: unownedMedia.length,
-    freedBytes,
-  };
+    return {
+      clearedCount: pruneResult.deletedCount,
+      freedBytes: pruneResult.deletedBytes,
+    };
+  });
 }

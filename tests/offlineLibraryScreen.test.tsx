@@ -37,8 +37,12 @@ beforeEach(() => {
   );
 
   jest.mocked(getOfflineStorageSummary).mockResolvedValue({
+    deviceTotalMediaBytes: 3_500_000,
+    accountMediaBytes: 3_000_000,
+    sharedMediaBytes: 1_000_000,
     totalPhysicalBytes: 3_500_000,
     physicalMediaBytes: 3_000_000,
+    installedStudyContentBytes: 500_000,
     installedStudyTextBytes: 500_000,
     reclaimableMediaBytes: 200_000,
     totalRetainedBytes: 3_500_000,
@@ -130,7 +134,7 @@ describe('Offline Library Screen (F02)', () => {
     });
 
     expect(screen.getByText('Unique files')).toBeTruthy();
-    expect(screen.getByText('Study text')).toBeTruthy();
+    expect(screen.getByText('Study content')).toBeTruthy();
     expect(screen.getByText('Eligible to clear')).toBeTruthy();
     expect(screen.getByText('Field Shelf favourites')).toBeTruthy();
     expect(screen.getByText('Expedition packs')).toBeTruthy();

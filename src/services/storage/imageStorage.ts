@@ -46,12 +46,46 @@ export function getLocalImage(name: string | null): { uri: string; bytes: number
   }
 }
 
-export function pruneImageFiles(keep: Set<string>) {
+export interface PruneResult {
+  deletedCount: number;
+  deletedBytes: number;
+  deletedFiles: string[];
+}
+
+export function pruneImageFiles(keep: Set<string>): PruneResult {
   const dir = imageDirectory();
-  if (!dir.exists) return;
+  if (!dir.exists) return { deletedCount: 0, deletedBytes: 0, deletedFiles: [] };
+  let deletedCount = 0;
+  let deletedBytes = 0;
+  const deletedFiles: string[] = [];
   for (const entry of dir.list()) {
-    if (entry instanceof File && imageFile(entry.name) && !keep.has(entry.name)) entry.delete();
+    if (entry instanceof File && imageFile(entry.name) && !keep.has(entry.name)) {
+      const bytes = entry.size;
+      try {
+        entry.delete();
+        deletedCount++;
+        deletedBytes += Math.max(0, bytes);
+        deletedFiles.push(entry.name);
+      } catch {
+        // Ignored if file deletion failed
+      }
+    }
   }
+  return { deletedCount, deletedBytes, deletedFiles };
+}
+
+export function getDeviceTotalMediaBytes(): { totalBytes: number; fileCount: number } {
+  const dir = imageDirectory();
+  if (!dir.exists) return { totalBytes: 0, fileCount: 0 };
+  let totalBytes = 0;
+  let fileCount = 0;
+  for (const entry of dir.list()) {
+    if (entry instanceof File && imageFile(entry.name)) {
+      totalBytes += Math.max(0, entry.size);
+      fileCount++;
+    }
+  }
+  return { totalBytes, fileCount };
 }
 
 export function deleteImageFile(name: string) {

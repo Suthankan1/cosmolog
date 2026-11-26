@@ -129,7 +129,12 @@ export default function OfflineLibraryScreen() {
               const res = await clearEligibleCache();
               await reload();
               void dispatch(refreshImagesThunk());
-              Alert.alert('Cache cleaned', `Reclaimed ${formatBytes(res.freedBytes)} of device storage.`);
+              Alert.alert(
+                'Cache cleaned',
+                res.freedBytes > 0
+                  ? `Reclaimed ${formatBytes(res.freedBytes)} of device storage across ${res.clearedCount} unowned files.`
+                  : 'Unowned discovery records cleaned. All media files are protected by active records.',
+              );
             } catch {
               Alert.alert('Error', 'Could not clean cache. Try again.');
             } finally {
@@ -193,7 +198,7 @@ export default function OfflineLibraryScreen() {
               </View>
               <View style={styles.metricItem}>
                 <Text style={styles.metricNumber}>{formatBytes(summary.installedStudyTextBytes)}</Text>
-                <Text style={styles.metricLabel}>Study text</Text>
+                <Text style={styles.metricLabel}>Study content</Text>
               </View>
               <View style={styles.metricItem}>
                 <Text style={styles.metricNumber}>{formatBytes(summary.reclaimableMediaBytes)}</Text>
@@ -324,7 +329,7 @@ export default function OfflineLibraryScreen() {
             <View style={styles.categoryCard}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Space Study supplements, ${summary.studyCount} packs, ${formatBytes(summary.studyBytes)}`}
+                accessibilityLabel={`Space Study supplements, ${summary.studyCount} packs, ${formatBytes(summary.studyBytes)} content size`}
                 style={styles.categoryBar}
                 onPress={() => toggleSection('study')}
               >
@@ -334,7 +339,7 @@ export default function OfflineLibraryScreen() {
                 </View>
                 <View style={styles.categoryMetaRow}>
                   <Text style={styles.categoryBytes}>
-                    {summary.studyCount} packs · {formatBytes(summary.studyBytes)}
+                    {summary.studyCount} packs · {formatBytes(summary.studyBytes)} content size
                   </Text>
                   <Icon
                     name={expandedSection === 'study' ? 'chevron-up' : 'chevron-down'}
@@ -353,7 +358,7 @@ export default function OfflineLibraryScreen() {
                       <View key={item.id} style={styles.itemRow}>
                         <View style={styles.itemInfo}>
                           <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
-                          <Text style={styles.itemMeta}>{item.ownershipReason}</Text>
+                          <Text style={styles.itemMeta}>{item.ownershipReason} · {formatBytes(item.bytes)} content size</Text>
                         </View>
                         <StatusPill status={item.status} isShared={item.isShared} />
                       </View>

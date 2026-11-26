@@ -20,6 +20,23 @@ jest.mock('../src/services/storage/imageStorage', () => ({
   },
   pruneImageFiles: (keep: Set<string>) => {
     prunedCalls.push(keep);
+    let deletedBytes = 0;
+    let deletedCount = 0;
+    const deletedFiles: string[] = [];
+    for (const [key, bytes] of Array.from(mockImages.entries())) {
+      if (!keep.has(key)) {
+        deletedBytes += bytes;
+        deletedCount++;
+        deletedFiles.push(key);
+        mockImages.delete(key);
+      }
+    }
+    return { deletedCount, deletedBytes, deletedFiles };
+  },
+  getDeviceTotalMediaBytes: () => {
+    let total = 0;
+    for (const b of mockImages.values()) total += b;
+    return { totalBytes: total, fileCount: mockImages.size };
   },
 }));
 
@@ -29,10 +46,11 @@ jest.mock('../src/features/study/packRepository', () => ({
   ],
 }));
 
-const mockWaitForMediaWorker = jest.fn().mockResolvedValue(undefined);
-jest.mock('../src/store/slices/favouritesSlice', () => ({
-  waitForMediaWorker: () => mockWaitForMediaWorker(),
-  isMediaWorkerBusy: () => false,
+const mockWithExclusiveMediaLock = jest.fn(async <T>(action: () => Promise<T>): Promise<T> => action());
+jest.mock('../src/services/storage/mediaCoordinator', () => ({
+  withExclusiveMediaLock: <T>(action: () => Promise<T>) => mockWithExclusiveMediaLock(action),
+  isMediaOperationInProgress: () => false,
+  waitForMediaOperations: jest.fn().mockResolvedValue(undefined),
 }));
 
 let mockDatabasePath: string;
@@ -222,10 +240,56 @@ describe('Offline Storage Projection (F02)', () => {
     expect(summaryAfter.items.favourites.some(f => f.id === 'nasa-apod:item1')).toBe(true);
   });
 
-  it('coordinates cache cleanup with media worker to prevent race conditions (Finding 4)', async () => {
-    mockWaitForMediaWorker.mockClear();
+  it('coordinates cache cleanup under exclusive media lock to prevent race conditions (Finding 4)', async () => {
+    mockWithExclusiveMediaLock.mockClear();
     await clearEligibleCache();
-    expect(mockWaitForMediaWorker).toHaveBeenCalledTimes(1);
+    expect(mockWithExclusiveMediaLock).toHaveBeenCalledTimes(1);
+  });
+
+  it('excludes unowned cache files from reclaimable storage if referenced by another active owner', async () => {
+    mockImages.set('shared-cache.jpg', 600_000);
+    const conn = new mockDatabaseSync(mockDatabasePath, { enableForeignKeyConstraints: false });
+    const now = new Date().toISOString();
+
+    // Account 1 has unowned cache item with file shared-cache.jpg
+    conn.prepare(
+      `INSERT OR REPLACE INTO cached_items (local_id, source, external_id, title, summary, body, media_type, fetched_at, updated_at)
+       VALUES ('nasa-apod:unowned-shared', 'nasa-apod', 'unowned-shared', 'Unowned Item', 'Summary', 'Body', 'image', ?, ?)`
+    ).run(now, now);
+    conn.prepare(
+      `INSERT OR REPLACE INTO saved_media (local_id, status, file_name, bytes)
+       VALUES ('nasa-apod:unowned-shared', 'ready', 'shared-cache.jpg', 600000)`
+    ).run();
+
+    // Account 2 has favourite pointing to another cached item with the SAME physical file
+    conn.prepare(
+      `INSERT OR REPLACE INTO cached_items (local_id, source, external_id, title, summary, body, media_type, fetched_at, updated_at)
+       VALUES ('nasa-apod:account2-fav', 'nasa-apod', 'account2-fav', 'Account 2 Fav', 'Summary', 'Body', 'image', ?, ?)`
+    ).run(now, now);
+    conn.prepare(
+      `INSERT OR REPLACE INTO saved_media (local_id, status, file_name, bytes)
+       VALUES ('nasa-apod:account2-fav', 'ready', 'shared-cache.jpg', 600000)`
+    ).run();
+    conn.prepare(
+      `INSERT OR REPLACE INTO favourites (account_id, local_id, added_at) VALUES (2, 'nasa-apod:account2-fav', ?)`
+    ).run(now);
+    conn.close();
+
+    // For Account 1, shared-cache.jpg is NOT reclaimable because Account 2 retains it
+    const summary = await getOfflineStorageSummary(1);
+    const cacheItem = summary.items.cache.find(c => c.id === 'nasa-apod:unowned-shared');
+    expect(cacheItem).toBeDefined();
+    expect(cacheItem?.bytes).toBe(0); // Not reclaimable
+
+    const preview = await previewClearCache(1);
+    expect(preview.reclaimableBytes).toBe(0);
+
+    prunedCalls.length = 0;
+    await clearEligibleCache();
+    expect(prunedCalls.length).toBeGreaterThan(0);
+    const lastRetainedSet = prunedCalls[prunedCalls.length - 1];
+    expect(lastRetainedSet.has('shared-cache.jpg')).toBe(true);
+    expect(mockImages.has('shared-cache.jpg')).toBe(true);
   });
 
   it('honestly distinguishes physical media, study text, and reclaimable bytes (Finding 5)', async () => {
