@@ -396,3 +396,13 @@ Implemented speech-to-text recognition across discovery search and observation n
 - Total automated tests expanded to 36 test suites / 128 tests (all passing).
 - Clean ESLint 9 and strict TypeScript checks pass with 0 errors.
 - Prebuilt native Android project and assembled native Debug APK via Gradle (`android/app/build/outputs/apk/debug/app-debug.apk`, 238MB).
+- Verified on live Android Pixel 9 emulator:
+  - Packaged self-contained JavaScript bundle directly into native Android assets (`assets/index.android.bundle`, 3.4 MB).
+  - Clean airplane-mode / offline launch to cached Discover feed with truthfully reported sync timestamps.
+  - Tapped microphone icon on Discover SearchBar: Android OS system audio permission dialog triggered and granted ("Allow COSMOLOG to record audio?").
+  - Real-time microphone listening state verified with native Android 12+ green privacy indicator in system status bar.
+  - Graceful error notice when speech recognition network service is unreachable while offline.
+  - Navigated to article Details, saved plate to SQLite favourites, opened Field Note composer modal.
+  - Tapped "Dictate observation" pill: toggles to terracotta "Stop dictating" with `mic-off` icon, shows active "Listening..." badge, and switches placeholder to "Speak observation notes clearly...".
+  - Tapped "Stop dictating": gracefully stops listening, releases audio stream, and restores idle button state.
+  - Captured verification evidence: `24-voice-search-bar.png`, `25-voice-search-permission.png`, `26-voice-dictation-idle.png`, `27-voice-dictation-active.png`.

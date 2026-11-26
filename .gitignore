@@ -15,6 +15,7 @@ android/.idea/
 android/*.iml
 android/app/*.iml
 android/local.properties
+android/app/src/main/assets/index.android.bundle
 ios/Pods/
 .DS_Store
 
