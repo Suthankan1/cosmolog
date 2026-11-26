@@ -12,7 +12,7 @@ import {
   type StudyRow,
 } from '../../src/features/study/repository';
 import { FieldNote } from '../../src/features/journal/FieldNote';
-import { studyEntries, glossary } from '../../src/features/study/edition';
+import { studyEntries, glossary, sectionNumber } from '../../src/features/study/edition';
 import { studyStyles as s } from '../../src/features/study/layout';
 
 export default function StudyReader() {
@@ -39,7 +39,11 @@ function Reader({ id, section }: { id: string; section?: string }) {
           if (!active) return;
           setNote(savedNote);
           setMarked(mark);
-          setPage(Math.min(row?.body.split('\n\n').length ?? 1, Math.max(1, (Number(section) || 0) + 1)) - 1);
+          const effectiveId = row?.id ?? id;
+          const targetSection = sectionNumber(effectiveId, section ?? null, Number(section) || 0);
+          const blockCount = row?.body.split('\n\n').length ?? 1;
+          const safePage = Math.max(0, Math.min(blockCount - 1, targetSection));
+          setPage(safePage);
           setEntry(row);
           setMessage(row ? '' : 'This entry is unavailable.');
         })
@@ -51,17 +55,17 @@ function Reader({ id, section }: { id: string; section?: string }) {
     };
   }, [account, id, section, attempt]);
   useEffect(() => {
-    if (account && entry?.chapter && entry.id === id)
-      void checkpoint(account, id, page).catch(() => setMessage('Reading position could not be saved.'));
+    if (account && entry?.chapter && (entry.id === id || entry.id === 'chapter:' + id))
+      void checkpoint(account, entry.id, page).catch(() => setMessage('Reading position could not be saved.'));
   }, [account, entry, id, page]);
   const blocks = entry?.body.split('\n\n') ?? [];
   const [heading, ...paragraphs] = (blocks[page] ?? '').split('\n');
   const open = (next: string) => router.push({ pathname: '/study/[id]', params: { id: next } });
   async function toggle() {
-    if (!account || busy) return;
+    if (!account || busy || !entry) return;
     setBusy(true);
     try {
-      await bookmarkStudy(account, id, !marked, page);
+      await bookmarkStudy(account, entry.id, !marked, page);
       setMarked(!marked);
       setNote(null);
     } catch {

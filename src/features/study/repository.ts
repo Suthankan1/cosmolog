@@ -88,10 +88,15 @@ export async function listStudy(
 export async function readStudy(id: string, account: number) {
   await prepareGuide();
   const db = await getDatabase();
-  const entry = await db.getFirstAsync<StudyRow>('SELECT * FROM study_entries WHERE id=?', [id]);
+  const candidateIds = id.startsWith('chapter:') ? [id, id.slice(8)] : [id, 'chapter:' + id];
+  const entry = await db.getFirstAsync<StudyRow>(
+    'SELECT * FROM study_entries WHERE id=? OR id=?',
+    candidateIds,
+  );
+  const matchedId = entry?.id ?? id;
   const marked = await db.getFirstAsync<{ note: string | null }>(
     'SELECT note FROM study_bookmarks WHERE account=? AND entry_id=?',
-    [account, id],
+    [account, matchedId],
   );
   return { entry, marked: !!marked, note: marked?.note ?? null };
 }

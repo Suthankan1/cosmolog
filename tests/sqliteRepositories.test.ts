@@ -325,6 +325,8 @@ it('installs the full guide, resolves aliases and separates account reading stat
   await checkpoint(5,'chapter:worlds',2);
   expect((await resumeStudy(5))?.section).toBe(2);
   expect(await resumeStudy(6)).toBeFalsy();
+  expect((await readStudy('worlds',5)).entry?.id).toBe('chapter:worlds');
+  expect((await readStudy('chapter:worlds',5)).entry?.id).toBe('chapter:worlds');
 });
 
 it('changes pack revisions atomically and retains bookmarked articles on removal',async()=>{
