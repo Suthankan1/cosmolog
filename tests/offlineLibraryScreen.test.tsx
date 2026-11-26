@@ -38,6 +38,10 @@ beforeEach(() => {
 
   jest.mocked(getOfflineStorageSummary).mockResolvedValue({
     totalPhysicalBytes: 3_500_000,
+    physicalMediaBytes: 3_000_000,
+    installedStudyTextBytes: 500_000,
+    reclaimableMediaBytes: 200_000,
+    totalRetainedBytes: 3_500_000,
     totalUniqueFilesCount: 4,
     favouritesBytes: 2_000_000,
     favouritesCount: 2,
@@ -121,16 +125,40 @@ describe('Offline Library Screen (F02)', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('TOTAL ON-DEVICE STORAGE')).toBeTruthy();
-      expect(screen.getByText('3.3 MB')).toBeTruthy();
+      expect(screen.getByText('PHYSICAL MEDIA ON DISK')).toBeTruthy();
+      expect(screen.getByText('2.9 MB')).toBeTruthy();
     });
 
     expect(screen.getByText('Unique files')).toBeTruthy();
+    expect(screen.getByText('Study text')).toBeTruthy();
     expect(screen.getByText('Eligible to clear')).toBeTruthy();
     expect(screen.getByText('Field Shelf favourites')).toBeTruthy();
     expect(screen.getByText('Expedition packs')).toBeTruthy();
     expect(screen.getByText('Space Study supplements')).toBeTruthy();
     expect(screen.getByText('Discovery feed cache')).toBeTruthy();
+  });
+
+  it('disables clean cache button while media is actively downloading (Finding 4)', async () => {
+    jest.mocked(useAppSelector).mockImplementation(selector =>
+      selector({
+        auth: { user: { id: 7, username: 'emilys' } },
+        favourites: { isDownloading: true },
+        feed: {
+          connection: 'online',
+          metadata: { 'nasa-apod': { lastSyncedAt: '2026-11-26T14:00:00Z' } },
+          legacySyncedAt: null,
+        },
+      } as never),
+    );
+
+    await act(async () => {
+      render(<OfflineLibraryScreen />);
+    });
+
+    await waitFor(() => {
+      const cleanBtn = screen.getByLabelText('Clean unowned discovery cache');
+      expect(cleanBtn.props.accessibilityState?.disabled).toBe(true);
+    });
   });
 
   it('displays favourite items, status pills, and shared badges', async () => {

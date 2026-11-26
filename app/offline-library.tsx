@@ -174,13 +174,13 @@ export default function OfflineLibraryScreen() {
         />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          {/* Masthead Telemetry Panel */}
+          {/* Masthead Telemetry Panel (Finding 5) */}
           <View style={styles.telemetryCard}>
             <View style={styles.telemetryHeader}>
               <View>
-                <Text style={styles.telemetryCaption}>TOTAL ON-DEVICE STORAGE</Text>
+                <Text style={styles.telemetryCaption}>PHYSICAL MEDIA ON DISK</Text>
                 <Text accessibilityRole="header" style={styles.telemetryValue}>
-                  {formatBytes(summary.totalPhysicalBytes)}
+                  {formatBytes(summary.physicalMediaBytes)}
                 </Text>
               </View>
               <Icon name="hard-drive" size={28} color={colors.forest} />
@@ -192,12 +192,12 @@ export default function OfflineLibraryScreen() {
                 <Text style={styles.metricLabel}>Unique files</Text>
               </View>
               <View style={styles.metricItem}>
-                <Text style={styles.metricNumber}>{formatBytes(summary.reclaimableBytes)}</Text>
-                <Text style={styles.metricLabel}>Eligible to clear</Text>
+                <Text style={styles.metricNumber}>{formatBytes(summary.installedStudyTextBytes)}</Text>
+                <Text style={styles.metricLabel}>Study text</Text>
               </View>
               <View style={styles.metricItem}>
-                <Text style={styles.metricNumber}>{summary.favouritesCount}</Text>
-                <Text style={styles.metricLabel}>Favourites</Text>
+                <Text style={styles.metricNumber}>{formatBytes(summary.reclaimableMediaBytes)}</Text>
+                <Text style={styles.metricLabel}>Eligible to clear</Text>
               </View>
             </View>
           </View>
@@ -208,7 +208,7 @@ export default function OfflineLibraryScreen() {
               title={isCleaning ? 'Cleaning...' : 'Clean unowned cache'}
               icon="trash-2"
               variant="outline"
-              disabled={isCleaning || !preview || preview.reclaimableCount === 0}
+              disabled={isCleaning || !preview || preview.reclaimableCount === 0 || isDownloading}
               loading={isCleaning}
               accessibilityLabel="Clean unowned discovery cache"
               onPress={handleCleanCache}

@@ -29,6 +29,12 @@ jest.mock('../src/features/study/packRepository', () => ({
   ],
 }));
 
+const mockWaitForMediaWorker = jest.fn().mockResolvedValue(undefined);
+jest.mock('../src/store/slices/favouritesSlice', () => ({
+  waitForMediaWorker: () => mockWaitForMediaWorker(),
+  isMediaWorkerBusy: () => false,
+}));
+
 let mockDatabasePath: string;
 const mockOpenConnections: mockDatabaseSync[] = [];
 jest.mock('expo-sqlite', () => ({
@@ -119,9 +125,11 @@ describe('Offline Storage Projection (F02)', () => {
 
     const summary = await getOfflineStorageSummary(1);
 
-    // item1 is present in both favourites and pack, but shared-plate.jpg is counted once in totalPhysicalBytes
-    // totalPhysicalBytes = 2,000,000 (shared-plate.jpg) + 1,000,000 (unique-plate.jpg) + 50,000 (study pack) = 3,050,000
-    expect(summary.totalPhysicalBytes).toBe(3_050_000);
+    // item1 is present in both favourites and pack, but shared-plate.jpg is counted once in physicalMediaBytes
+    // physicalMediaBytes = 2,000,000 (shared-plate.jpg) + 1,000,000 (unique-plate.jpg) = 3,000,000
+    // totalRetainedBytes = 3,000,000 (media) + 50,000 (study pack) = 3,050,000
+    expect(summary.physicalMediaBytes).toBe(3_000_000);
+    expect(summary.totalRetainedBytes).toBe(3_050_000);
     expect(summary.totalUniqueFilesCount).toBe(2);
 
     // Both categories list their respective item
@@ -212,5 +220,47 @@ describe('Offline Storage Projection (F02)', () => {
     const summaryAfter = await getOfflineStorageSummary(1);
     expect(summaryAfter.favouritesCount).toBeGreaterThan(0);
     expect(summaryAfter.items.favourites.some(f => f.id === 'nasa-apod:item1')).toBe(true);
+  });
+
+  it('coordinates cache cleanup with media worker to prevent race conditions (Finding 4)', async () => {
+    mockWaitForMediaWorker.mockClear();
+    await clearEligibleCache();
+    expect(mockWaitForMediaWorker).toHaveBeenCalledTimes(1);
+  });
+
+  it('honestly distinguishes physical media, study text, and reclaimable bytes (Finding 5)', async () => {
+    mockImages.set('shared-plate.jpg', 2_000_000);
+    mockImages.set('unique-plate.jpg', 1_000_000);
+
+    const summary = await getOfflineStorageSummary(1);
+    expect(summary.physicalMediaBytes).toBe(3_000_000); // Only on-disk binary images
+    expect(summary.installedStudyTextBytes).toBe(50_000); // Only SQLite study pack curriculum
+    expect(summary.totalRetainedBytes).toBe(3_050_000); // Sum of physical and study text
+    expect(summary.reclaimableMediaBytes).toBe(0); // All unowned files already cleaned
+  });
+
+  it('reuses canonical mapSavedMedia policy validation for media status (Finding 3)', async () => {
+    const conn = new mockDatabaseSync(mockDatabasePath, { enableForeignKeyConstraints: false });
+    const now = new Date().toISOString();
+
+    // Insert an item with mismatched/disallowed license
+    conn.prepare(
+      `INSERT OR REPLACE INTO cached_items (local_id, source, external_id, title, summary, body, media_type, fetched_at, updated_at, image_license_url)
+       VALUES ('nasa-apod:restricted', 'nasa-apod', 'restricted', 'Restricted License Plate', 'Summary', 'Body', 'image', ?, ?, 'https://prohibited-license.org')`
+    ).run(now, now);
+    conn.prepare(
+      `INSERT OR REPLACE INTO saved_media (local_id, status, file_name, bytes, license_url)
+       VALUES ('nasa-apod:restricted', 'failed', 'restricted.jpg', 400000, 'https://prohibited-license.org')`
+    ).run();
+    conn.prepare(
+      `INSERT OR REPLACE INTO favourites (account_id, local_id, added_at) VALUES (8, 'nasa-apod:restricted', ?)`
+    ).run(now);
+    conn.close();
+
+    const summary = await getOfflineStorageSummary(8);
+    const item = summary.items.favourites.find(f => f.id === 'nasa-apod:restricted');
+    expect(item).toBeDefined();
+    // Due to canonical policy validation, prohibited license is safely degraded to 'text-only'
+    expect(item?.status).toBe('text-only');
   });
 });

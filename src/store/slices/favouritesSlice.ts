@@ -52,6 +52,20 @@ export const importFavouritesThunk = createAsyncThunk('favourites/import', async
 let mediaWork: Promise<void> | undefined;
 let mediaQueued = false;
 
+export function isMediaWorkerBusy(): boolean {
+  return Boolean(mediaWork);
+}
+
+export async function waitForMediaWorker(): Promise<void> {
+  if (mediaWork) {
+    try {
+      await mediaWork;
+    } catch {
+      // Ignore background worker failure in awaiter
+    }
+  }
+}
+
 export const refreshImagesThunk = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
   mediaQueued = true;
   if (mediaWork) return mediaWork;
