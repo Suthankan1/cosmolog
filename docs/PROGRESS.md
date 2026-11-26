@@ -579,3 +579,50 @@ Completed:
      - `46-cold-restart-preserved-progress.png`: Cold restart in airplane mode confirming progress survived process death.
      - `48-reset-progress-dialog.png`: Separate explicit confirmation alert for resetting learning checklist.
      - `49-progress-reset-clean.png`: Learning progress cleanly reset to 0 of 4 steps after confirmation.
+
+
+## 2026-11-26 — Issue #10: Expedition Manifest Boundary Validation, Source Targets & Revision-Aware Readiness Complete
+
+Resolved all review findings in GitHub Issue #10 (`[P1][v1.2.0] Validate expedition manifests, source targets and revision-aware readiness`):
+
+1. **Manifest Boundary Validation & Discriminated Steps:**
+   - Implemented `z.discriminatedUnion('kind', ...)` for `discovery`, `study`, and `prompt` steps in `src/features/expeditions/manifest.ts`.
+   - Built strict calendar date validator `isValidCalendarDate` enforcing:
+     - Real month/day calendar rules (taking leap years into account).
+     - APOD start boundary (1995-06-16) through year 2100.
+     - Strict rejection of impossible dates (`2023-02-29`, `2024-04-31`, `2024-13-01`, etc.).
+   - Enforced canonical discovery target ID: `targetId === 'nasa-apod:' + step.date`.
+   - Verified study targets and section anchor existence via `isValidStudyTarget`.
+   - Required non-empty `promptInstruction` for observational field prompts.
+   - Enforced unique step IDs, unique step orders, unique discovery target IDs, and bounded estimates ($\le 500\text{ MB}$).
+
+2. **Upstream Source & Study Metadata Audit:**
+   - Audited Saturn and Apollo expeditions against authoritative NASA APOD archives and Space Study curriculum data.
+   - Updated section anchor slugs to match the stable IDs defined in `src/features/study/edition.ts`:
+     - Saturn step 3: `worlds` -> `rings` (resolved to Section 2: "Saturn and its rings").
+     - Apollo step 3: `sun-earth-moon` -> `phases` (resolved to Section 2: "Phases and tides").
+
+3. **Study Navigation & Anchor Resolution:**
+   - Updated `sectionNumber` in `src/features/study/edition.ts` to resolve both anchor slugs and section heading titles.
+   - Updated `readStudy` in `src/features/study/repository.ts` to resolve both bare chapter IDs (`worlds`) and prefixed IDs (`chapter:worlds`).
+   - Updated `app/reading-packs.tsx` to pass validated chapter ID and section anchor to `/study/[id]` route parameters.
+   - Updated `app/study/[id].tsx` to resolve anchor slug via `sectionNumber` and bound page navigation safely.
+
+4. **Honest Readiness Telemetry & Isolation:**
+   - Implemented `computeExpeditionReadiness` in `src/features/expeditions/manifest.ts`.
+   - Evaluates discovery text, media images, and study guides independently.
+   - Prevents unrelated, old, or extra rows in `reading_pack_items` from falsely inflating readiness counts.
+   - Optional observational prompts do not block download readiness.
+   - Updated `app/reading-packs.tsx` dual status row to truthfully present learning progress vs offline readiness.
+
+5. **Expeditions Repository Reconciliation:**
+   - Added `minCompatibleRevision` support in `getExpeditionCompletedStepIds` and `getAllCompletedStepIds`.
+   - Reconciled manifest steps against database rows, filtering out orphaned steps from removed or changed steps while preserving compatible historical learning progress.
+   - Handled remaining bytes storage preflight and guarded callbacks against aborted signals.
+
+6. **Automated Verification:**
+   - `npm run lint`: 0 errors, 0 warnings.
+   - `npm run typecheck`: 0 errors.
+   - `npm test -- --runInBand`: 45 test suites, 188 tests (100% passing).
+   - Expanded `tests/expeditionManifest.test.ts` to test invalid dates, mismatched targets, study anchors, bounded bytes, duplicate steps, and readiness calculations.
+   - Expanded `tests/expeditionsRepository.test.ts` to test revision compatibility and orphaned step pruning.
