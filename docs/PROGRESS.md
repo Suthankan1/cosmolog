@@ -647,3 +647,19 @@ Completed release gate and upgrade verification for COSMOLOG v1.2.0 (Offline Exp
      - Updated `AI_USAGE.md` with technical corrections.
      - Updated task checkboxes in `tasks/releases/v1.2.0-offline-explorer.md`.
      - 45 test suites, 188 automated tests passing (100%).
+
+
+## 2026-11-26 — Issue #12: Assignment Rubric Audit, Traceability & Packaging Readiness Complete
+
+Completed comprehensive audit of IN3210 Assignment 2 requirements against current codebase:
+
+1. **Requirements Traceability & Audit:**
+   - Mapped all 10 evaluation categories (Auth, Navigation, API Integration, State Management, Twist, UI/UX, Quality, Git/Decisions, Demo Script, Bonus) to exact production source files and passing test suites in `docs/ASSIGNMENT_REQUIREMENTS.md`.
+   - Verified that all 13 core implementation acceptance checklist items are 100% satisfied.
+   - Confirmed single selected bonus (+5): Reanimated bookmark spring micro-interaction in `src/components/common/FavouriteButton.tsx` with reduced-motion accessibility.
+
+2. **Quality Gates & Verification:**
+   - `npm run lint`: 0 errors, 0 warnings.
+   - `npm run typecheck`: 0 errors.
+   - `npm test -- --runInBand`: 45 test suites, 188 tests passing (100%).
+   - All criteria verified against native Android build on Pixel 9 emulator.
