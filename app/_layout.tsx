@@ -60,6 +60,8 @@ function RootNavigator() {
             <Stack.Screen name="study/downloads" />
             <Stack.Screen name="study/[id]" />
             <Stack.Screen name="sky-viewer" />
+            <Stack.Screen name="explore/index" />
+            <Stack.Screen name="explore/lighttrace" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />

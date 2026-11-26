@@ -663,3 +663,30 @@ Completed comprehensive audit of IN3210 Assignment 2 requirements against curren
    - `npm run typecheck`: 0 errors.
    - `npm test -- --runInBand`: 45 test suites, 188 tests passing (100%).
    - All criteria verified against native Android build on Pixel 9 emulator.
+
+## 2026-11-26 — Issue #13: [P2][v1.3.0][F03] Implement LightTrace Offline Light-Travel Explorer Complete
+
+Completed implementation and verification of F03 LightTrace offline cosmic light-travel explorer:
+
+1. **Authoritative Metrological Dataset (`src/features/labs/data/lighttrace.ts`):**
+   - Curated versioned dataset (revision 1) for Moon (384,400 km), Sun (1 AU), Proxima Centauri (4.2465 ly), and Andromeda Galaxy (2.5 million ly).
+   - Referenced authoritative metrological sources: BIPM SI base unit definition (S01), IAU constants (S02), NASA JPL Basics of Space Flight (S03), and NASA APOD (S06).
+   - Included distance definition, reference frame, precision, human-scale contextual comparisons, and cross-feature links to Space Study and Sky Viewer.
+
+2. **Pure Astronomical Math Engine (`src/features/labs/lightMath.ts`):**
+   - Exact vacuum speed of light ($c = 299,792,458\text{ m/s}$) following BIPM standard.
+   - Exact IAU definitions: AU ($149,597,870,700\text{ m}$), Julian light-year ($9,460,730,472,580,800\text{ m}$), and parsec.
+   - Pure helpers: `calculateLightTravelSeconds`, `formatLightTravelDuration`, `formatDistanceKm`, and `distanceToLogScale`.
+   - Input validation rejecting non-finite, negative, or zero inputs.
+
+3. **Explore Hub & LightTrace Interactive Screen:**
+   - Built Explore Hub (`app/explore/index.tsx`) showcasing scientific laboratory cards and metrological standards note.
+   - Built LightTrace Screen (`app/explore/lighttrace.tsx`) with target selector tabs, hero metric display ($t = d/c$), logarithmic distance ruler, measurement details table, scientific assumptions disclosure (flat local vacuum vs high-redshift cosmic expansion), actionable source links, and deep links to Space Study and Sky Viewer.
+   - Fully compliant with COSMOLOG magazine design system (Ivory `#F8F4EA`, Forest `#184235`, Terracotta `#C1654A`, Brass `#C79B4D`, Sage Light `#E3E9DC`) and accessibility standards ($\ge 48\text{ dp}$ touch targets).
+
+4. **Automated Verification:**
+   - `tests/lightMath.test.ts`: 10 pure math unit tests passing (100%).
+   - `tests/lightTraceScreen.test.tsx`: 10 component tests passing (100%).
+   - Full test suite: 47 test suites, 208 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
