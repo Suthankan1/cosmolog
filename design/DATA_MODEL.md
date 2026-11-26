@@ -21,3 +21,7 @@ The reader and writer use separate SQLite connections. The writer enables foreig
 ## Space Study
 
 Archive migrations 10–12 add study entries, aliases, pack installation metadata, account-owned bookmarks, notes and reading checkpoints. A namespaced ID identifies each public profile or chapter. Stable section anchors allow a saved section to survive chapter reordering. Pack activation and eviction use the archive writer transaction. GeoNames city and alias rows live in an independently versioned bundled database. The archive stores only the chosen manual city. Device fixes remain in memory.
+
+## Current migration checkpoint and expansion
+
+At main 971df1033ac3349edbfa95d8debc93700e893646, src/database/schema.ts and db.ts support migrations through 14, including collections, reading history and packs, satellite orbit cache, Study and archive search. The earlier migration history above describes the initial stages, not the current maximum version. Inspect code for exact existing constraints. [Proposed expansion data contracts](EXPANSION_DATA_CONTRACTS.md) describe additive entities and retention; don't apply them as SQL or renumber existing migrations.

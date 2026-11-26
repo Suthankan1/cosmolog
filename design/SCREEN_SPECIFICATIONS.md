@@ -54,3 +54,7 @@ Discover, Favourites and Profile use the floating three-tab capsule. The router 
 Discover keeps its outlined masthead, search and edition selector above the cover. All sources leads with the newest plate when available, then shows the remaining interleaved stories. Each single-source edition leads with its newest record. Empty editions and unavailable media have explicit states. The 264-point dock expands at larger type sizes.
 
 Details opens with source, date, headline, byline and save action before the image. The Shelf puts search and saved entries before archive tools. Profile groups identity, local storage, refresh and sign-out. The Field Guide uses ruled chapter headings, catalogue labels and persistent section positions. Reading packs and edition downloads use ruled panels. Sky Viewer leads with the chart and manual controls.
+
+## Expansion (proposed)
+
+See [EXPANSION_UX.md](EXPANSION_UX.md) for the new screens and entry points. Keep the magazine-native three-tab dock until navigation testing justifies a change. Proposed Explore/Fieldwork hubs are protected stack routes initially. All new states need accessible text alternatives, honest offline/media/sensor behavior and relevant source/rights. Night Observation Mode is an opt-in alternate theme, not a replacement for default magazine design. These new screen specs are planned; no new Figma frames were created in this documentation PR.

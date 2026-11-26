@@ -169,3 +169,7 @@ The archive migration preserves existing discoveries, favourites and orbital dat
 | ![Bundled Space Study guide](docs/screenshots/15-space-study.png) | ![Restored Saturn section](docs/screenshots/16-study-offline-section.png) | ![Offline sky for Kandy](docs/screenshots/17-study-kandy-offline.png) | ![Native iOS Saturn chapter](docs/screenshots/18-ios-field-guide.png) |
 
 The first-edition city index occupies 11,960,320 bytes uncompressed and 5,279,873 bytes inside the Android APK. A Pixel 9 emulator timing harness ran 60 local searches against the installed SQLite edition using Hermes, including layout of the first result page. The 95th percentile was **22.8 ms**. Physical-device timing can differ. Before a content release, run `npm test -- --runInBand tests/studyEdition.test.ts tests/studyDownloads.test.ts` to validate the book and pack manifests.
+
+## Planned cumulative expansion
+
+The next releases extend the existing archive, Space Study, Sky Viewer and voice features into an offline-first field journal and exploration platform. See the [product roadmap](PRODUCT_ROADMAP.md), [feature catalogue](docs/FEATURE_CATALOG.md), [expansion architecture](design/EXPANSION_ARCHITECTURE.md), [source registry](docs/expansion/SOURCE_REGISTRY.md), [release tasks](tasks/releases/README.md) and [implementation prompt](MASTER_IMPLEMENTATION_PROMPT.md). All twelve expansions are planned; this documentation does not imply they are shipped. The assignment remains a separately gated stable milestone.

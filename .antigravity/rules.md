@@ -1,2 +1,4 @@
 # Antigravity project rules
 Read `AGENTS.md`, `PROJECT_CONTEXT.md`, `docs/ASSIGNMENT_REQUIREMENTS.md` and the relevant task before editing. Work in small auditable slices. Preserve secure token storage and offline-first invariants. Do not assume a successful API request is equivalent to durable local persistence. Test offline cold start and app restart. Keep the editorial design system. Record actual progress and do not claim unrun checks.
+
+For cumulative release work, read root `MASTER_IMPLEMENTATION_PROMPT.md`, `PRODUCT_ROADMAP.md`, `docs/FEATURE_CATALOG.md`, `docs/RELEASE_STRATEGY.md`, `docs/expansion/SOURCE_REGISTRY.md` and the applicable `tasks/releases/` task. Preserve the actual v1.1.1 baseline and magazine design; use existing thunks and SQLite rather than duplicating features. Begin with the baseline gate and one small tested slice. Do not mark planned features or release tags as complete until verified.
