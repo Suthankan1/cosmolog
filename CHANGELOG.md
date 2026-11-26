@@ -9,6 +9,10 @@ This file records the existing published release baseline and planned work separ
   - Opaque IDs, UTC observed time, IANA timezone preservation, qualitative conditions, celestial target association, and non-destructive foreign keys (`REFERENCES cached_items(local_id) ON DELETE SET NULL`).
   - Protected Fieldwork Hub (`/fieldwork`), Observation Creator (`/fieldwork/create`) with optional Sky Viewer prefill and voice-to-text dictation without boot prompts, and Detail/Editor (`/fieldwork/[id]`) with confirmed delete.
   - Durable SQLite repository (`src/database/repositories/observationsRepository.ts`) with input boundary validation, strict account isolation, and serialized write transaction queue.
+  - Optional eyepiece photo attachments and observation site coordinates (`schema migration 18` adding `latitude`, `longitude`, `location_name`, `image_file_name`, `image_bytes`).
+  - App-private observation photo storage (`src/services/storage/observationStorage.ts` in `cosmolog_observations/`), isolated from unowned API cache pruning, with <12 MB file bounds and automatic file cleanup on observation deletion.
+  - Consent-based runtime GPS coordinate capture via `expo-location` and photo selection via `expo-image-picker` triggered only by explicit user button press; zero permission prompts on boot and zero external cloud uploads.
+  - Geographical coordinate boundary validation ($-90^\circ$ to $+90^\circ$ latitude, $-180^\circ$ to $+180^\circ$ longitude) with ~11m precision rounding and optional site names.
 
 
 ## v1.3.0 — Beyond Time and Scale (2026-11-26)

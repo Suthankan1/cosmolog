@@ -11,7 +11,19 @@ import {
   updateObservation,
   deleteObservation,
   validateObservationInput,
+  validateCoordinates,
 } from '../src/database/repositories/observationsRepository';
+import { deleteObservationPhotoFile } from '../src/services/storage/observationStorage';
+
+jest.mock('../src/services/storage/observationStorage', () => ({
+  deleteObservationPhotoFile: jest.fn(),
+  getObservationPhotoUri: jest.fn(name => (name ? `file:///mock/cosmolog_observations/${name}` : null)),
+  stageObservationPhoto: jest.fn(async () => ({
+    fileName: 'obs_mock_123.jpg',
+    bytes: 1024,
+    uri: 'file:///mock/cosmolog_observations/obs_mock_123.jpg',
+  })),
+}));
 
 let mockDatabasePath: string;
 const mockOpenConnections: mockDatabaseSync[] = [];
@@ -70,6 +82,15 @@ describe('Observations Repository & Migration 17 (F05)', () => {
     expect(() => validateObservationInput(10, 'Moon', 'B'.repeat(5001))).toThrow('notes exceed');
     expect(() => validateObservationInput(10, 'Moon', 'Notes', 'invalid-date')).toThrow('valid ISO date string');
     expect(() => validateObservationInput(10, 'Moon', 'Notes', '2026-11-26T20:00:00.000Z')).not.toThrow();
+  });
+
+  it('validates geographical coordinates bounds (Issue #16)', () => {
+    expect(() => validateCoordinates(-91, 0)).toThrow('Latitude must be a valid number between -90 and +90');
+    expect(() => validateCoordinates(91, 0)).toThrow('Latitude must be a valid number between -90 and +90');
+    expect(() => validateCoordinates(0, -181)).toThrow('Longitude must be a valid number between -180 and +180');
+    expect(() => validateCoordinates(0, 181)).toThrow('Longitude must be a valid number between -180 and +180');
+    expect(() => validateCoordinates(6.9271, 79.8612)).not.toThrow();
+    expect(() => validateCoordinates(null, null)).not.toThrow();
   });
 
   it('creates an observation for account 10 and retrieves it', async () => {
@@ -210,5 +231,50 @@ describe('Observations Repository & Migration 17 (F05)', () => {
     expect(survived).toBeDefined();
     expect(survived?.title).toBe('Observation with Plate Link');
     expect(survived?.linkedDiscoveryId).toBeNull();
+  });
+
+  it('creates, retrieves, and updates observation with photo and coordinates (Issue #16)', async () => {
+    const obs = await createObservation(10, {
+      title: 'Jupiter Great Red Spot Transit',
+      notes: 'GRS crossing central meridian, sharp contrast.',
+      latitude: 6.9271,
+      longitude: 79.8612,
+      locationName: 'Colombo Observational Site',
+      imageFileName: 'obs_jupiter_grs.jpg',
+      imageBytes: 412000,
+    });
+
+    expect(obs.latitude).toBeCloseTo(6.9271);
+    expect(obs.longitude).toBeCloseTo(79.8612);
+    expect(obs.locationName).toBe('Colombo Observational Site');
+    expect(obs.imageFileName).toBe('obs_jupiter_grs.jpg');
+    expect(obs.imageBytes).toBe(412000);
+
+    const retrieved = await getObservationById(10, obs.id);
+    expect(retrieved?.latitude).toBeCloseTo(6.9271);
+    expect(retrieved?.longitude).toBeCloseTo(79.8612);
+    expect(retrieved?.locationName).toBe('Colombo Observational Site');
+    expect(retrieved?.imageFileName).toBe('obs_jupiter_grs.jpg');
+    expect(retrieved?.imageBytes).toBe(412000);
+
+    // Update coordinates and photo
+    const updated = await updateObservation(10, obs.id, {
+      latitude: 6.9300,
+      longitude: 79.8650,
+      locationName: 'Updated Site Location',
+      imageFileName: 'obs_jupiter_grs_final.png',
+      imageBytes: 520000,
+    });
+
+    expect(updated?.latitude).toBeCloseTo(6.9300);
+    expect(updated?.longitude).toBeCloseTo(79.8650);
+    expect(updated?.locationName).toBe('Updated Site Location');
+    expect(updated?.imageFileName).toBe('obs_jupiter_grs_final.png');
+    expect(updated?.imageBytes).toBe(520000);
+
+    // Delete observation and verify deleteObservationPhotoFile was called
+    const deleted = await deleteObservation(10, obs.id);
+    expect(deleted).toBe(true);
+    expect(deleteObservationPhotoFile).toHaveBeenCalledWith('obs_jupiter_grs_final.png');
   });
 });

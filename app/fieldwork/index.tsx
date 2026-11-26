@@ -70,7 +70,15 @@ export default function FieldworkHubScreen() {
               {(item.targetName || item.targetId || 'GENERAL SKY').toUpperCase()}
             </Text>
           </View>
-          <Text style={styles.dateMeta}>{formattedDate}</Text>
+          <View style={styles.headerRightRow}>
+            {item.imageFileName ? (
+              <Icon name="camera" size={13} color={colors.terracotta} style={styles.badgeIcon} />
+            ) : null}
+            {item.latitude != null ? (
+              <Icon name="map-pin" size={13} color={colors.brass} style={styles.badgeIcon} />
+            ) : null}
+            <Text style={styles.dateMeta}>{formattedDate}</Text>
+          </View>
         </View>
 
         <Text accessibilityRole="header" style={styles.cardTitle}>{item.title}</Text>
@@ -213,6 +221,13 @@ const styles = StyleSheet.create({
   dateMeta: {
     ...typography.meta,
     color: colors.muted,
+  },
+  headerRightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badgeIcon: {
+    marginRight: 6,
   },
   cardTitle: {
     ...typography.h2,

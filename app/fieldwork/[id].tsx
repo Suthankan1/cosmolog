@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,6 +11,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button } from '../../src/components/common/Button';
 import { Header } from '../../src/components/common/Header';
@@ -22,8 +25,18 @@ import {
   type ObservationRecord,
 } from '../../src/database/repositories/observationsRepository';
 import { useVoiceToText } from '../../src/hooks/useVoiceToText';
+import {
+  getObservationPhotoUri,
+  stageObservationPhoto,
+} from '../../src/services/storage/observationStorage';
 import { useAppSelector } from '../../src/store';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function ObservationDetailScreen() {
   const router = useRouter();
@@ -43,6 +56,18 @@ export default function ObservationDetailScreen() {
   const [editTargetName, setEditTargetName] = useState('');
   const [editConditions, setEditConditions] = useState('');
   const [editNotes, setEditNotes] = useState('');
+
+  // Edit coordinates
+  const [editLatitudeStr, setEditLatitudeStr] = useState('');
+  const [editLongitudeStr, setEditLongitudeStr] = useState('');
+  const [editLocationName, setEditLocationName] = useState('');
+  const [locating, setLocating] = useState(false);
+
+  // Edit photo
+  const [editImageFileName, setEditImageFileName] = useState<string | null>(null);
+  const [editImageBytes, setEditImageBytes] = useState<number>(0);
+  const [editImageUri, setEditImageUri] = useState<string | null>(null);
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +82,12 @@ export default function ObservationDetailScreen() {
           setEditTargetName(record.targetName ?? '');
           setEditConditions(record.conditions ?? '');
           setEditNotes(record.notes);
+          setEditLatitudeStr(record.latitude != null ? String(record.latitude) : '');
+          setEditLongitudeStr(record.longitude != null ? String(record.longitude) : '');
+          setEditLocationName(record.locationName ?? '');
+          setEditImageFileName(record.imageFileName);
+          setEditImageBytes(record.imageBytes);
+          setEditImageUri(getObservationPhotoUri(record.imageFileName));
         }
         setLoading(false);
       }).catch(() => {
@@ -106,6 +137,62 @@ export default function ObservationDetailScreen() {
     }
   };
 
+  const handlePickImage = async () => {
+    setError(null);
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Media library access is needed to attach observation photos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        const staged = await stageObservationPhoto(asset.uri);
+        setEditImageFileName(staged.fileName);
+        setEditImageBytes(staged.bytes);
+        setEditImageUri(staged.uri);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not attach image.');
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setEditImageFileName(null);
+    setEditImageBytes(0);
+    setEditImageUri(null);
+  };
+
+  const handleGetLocation = async () => {
+    setError(null);
+    setLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Location permission', 'Foreground location permission is needed to record observing site coordinates.');
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setEditLatitudeStr(loc.coords.latitude.toFixed(4));
+      setEditLongitudeStr(loc.coords.longitude.toFixed(4));
+      if (!editLocationName.trim()) {
+        setEditLocationName('Current Observing Site');
+      }
+    } catch {
+      Alert.alert('Location unavailable', 'Could not obtain GPS coordinates.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const handleUpdate = async () => {
     if (!user?.id || !id) return;
 
@@ -118,6 +205,24 @@ export default function ObservationDetailScreen() {
       return;
     }
 
+    let lat: number | null = null;
+    if (editLatitudeStr.trim()) {
+      lat = parseFloat(editLatitudeStr);
+      if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+        setError('Latitude must be between -90 and +90.');
+        return;
+      }
+    }
+
+    let lon: number | null = null;
+    if (editLongitudeStr.trim()) {
+      lon = parseFloat(editLongitudeStr);
+      if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+        setError('Longitude must be between -180 and +180.');
+        return;
+      }
+    }
+
     if (isListening) stopListening();
 
     setSaving(true);
@@ -128,6 +233,11 @@ export default function ObservationDetailScreen() {
         targetName: editTargetName.trim() || null,
         conditions: editConditions.trim() || null,
         notes: editNotes.trim(),
+        latitude: lat,
+        longitude: lon,
+        locationName: editLocationName.trim() || null,
+        imageFileName: editImageFileName,
+        imageBytes: editImageBytes,
       });
 
       if (updated) {
@@ -205,6 +315,8 @@ export default function ObservationDetailScreen() {
     minute: '2-digit',
   });
 
+  const photoUri = getObservationPhotoUri(observation.imageFileName);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -239,12 +351,39 @@ export default function ObservationDetailScreen() {
 
             <Text accessibilityRole="header" style={styles.detailTitle}>{observation.title}</Text>
 
+            {/* Conditions Box */}
             {observation.conditions ? (
               <View style={styles.conditionsBox}>
                 <Icon name="cloud" size={14} color={colors.forest} />
                 <Text style={styles.conditionsContent}>
                   Sky Conditions: {observation.conditions}
                 </Text>
+              </View>
+            ) : null}
+
+            {/* GPS Site Coordinates Box */}
+            {typeof observation.latitude === 'number' && typeof observation.longitude === 'number' ? (
+              <View style={styles.locationBox}>
+                <Icon name="map-pin" size={14} color={colors.forest} />
+                <View style={styles.locationTextCol}>
+                  <Text style={styles.locationCoords}>
+                    {observation.latitude.toFixed(4)}°, {observation.longitude.toFixed(4)}°
+                  </Text>
+                  {observation.locationName ? (
+                    <Text style={styles.locationNameText}>{observation.locationName}</Text>
+                  ) : null}
+                </View>
+              </View>
+            ) : null}
+
+            {/* Attached Eyepiece Photo */}
+            {photoUri ? (
+              <View style={styles.photoContainer}>
+                <Image source={{ uri: photoUri }} style={styles.photoFull} resizeMode="cover" />
+                <View style={styles.photoCaptionBar}>
+                  <Text style={styles.photoCaptionName} numberOfLines={1}>{observation.imageFileName}</Text>
+                  <Text style={styles.photoCaptionSize}>{formatFileSize(observation.imageBytes)}</Text>
+                </View>
               </View>
             ) : null}
 
@@ -334,6 +473,84 @@ export default function ObservationDetailScreen() {
               />
             </View>
 
+            {/* Coordinates in edit mode */}
+            <View style={styles.inputGroup}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.label}>Observing Coordinates (Optional)</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Capture current GPS coordinates"
+                  style={styles.actionPill}
+                  disabled={locating}
+                  onPress={() => void handleGetLocation()}
+                >
+                  <Icon name="map-pin" size={12} color={colors.forest} />
+                  <Text style={styles.actionPillText}>{locating ? 'Locating...' : 'Use GPS'}</Text>
+                </Pressable>
+              </View>
+
+              <View style={styles.coordRow}>
+                <TextInput
+                  accessibilityLabel="Latitude input"
+                  placeholder="Lat (-90 to 90)"
+                  placeholderTextColor={colors.muted}
+                  value={editLatitudeStr}
+                  onChangeText={setEditLatitudeStr}
+                  keyboardType="numeric"
+                  style={[styles.textInput, styles.coordInput]}
+                />
+                <TextInput
+                  accessibilityLabel="Longitude input"
+                  placeholder="Lon (-180 to 180)"
+                  placeholderTextColor={colors.muted}
+                  value={editLongitudeStr}
+                  onChangeText={setEditLongitudeStr}
+                  keyboardType="numeric"
+                  style={[styles.textInput, styles.coordInput]}
+                />
+              </View>
+              <TextInput
+                accessibilityLabel="Location name input"
+                placeholder="Site name (e.g. Mount Wilson)"
+                placeholderTextColor={colors.muted}
+                value={editLocationName}
+                onChangeText={setEditLocationName}
+                maxLength={100}
+                style={[styles.textInput, { marginTop: spacing[1] }]}
+              />
+            </View>
+
+            {/* Photo in edit mode */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Eyepiece Photo Attachment</Text>
+              {editImageUri ? (
+                <View style={styles.photoPreviewCard}>
+                  <Image source={{ uri: editImageUri }} style={styles.photoThumbnail} resizeMode="cover" />
+                  <View style={styles.photoInfoCol}>
+                    <Text style={styles.photoName} numberOfLines={1}>{editImageFileName}</Text>
+                    <Text style={styles.photoSize}>{formatFileSize(editImageBytes)}</Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Remove attached eyepiece photo"
+                      style={styles.removePhotoBtn}
+                      onPress={handleRemoveImage}
+                    >
+                      <Icon name="trash-2" size={13} color={colors.danger} />
+                      <Text style={styles.removePhotoText}>Remove photo</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <Button
+                  title="Attach photo from library"
+                  icon="camera"
+                  variant="outline"
+                  accessibilityLabel="Attach telescope or eyepiece photo from device photo library"
+                  onPress={() => void handlePickImage()}
+                />
+              )}
+            </View>
+
             <View style={styles.inputGroup}>
               <View style={styles.notesHeaderRow}>
                 <Text style={styles.label}>Fieldwork Notes *</Text>
@@ -384,6 +601,12 @@ export default function ObservationDetailScreen() {
                   setEditTargetName(observation.targetName ?? '');
                   setEditConditions(observation.conditions ?? '');
                   setEditNotes(observation.notes);
+                  setEditLatitudeStr(observation.latitude !== null ? String(observation.latitude) : '');
+                  setEditLongitudeStr(observation.longitude !== null ? String(observation.longitude) : '');
+                  setEditLocationName(observation.locationName ?? '');
+                  setEditImageFileName(observation.imageFileName);
+                  setEditImageBytes(observation.imageBytes);
+                  setEditImageUri(getObservationPhotoUri(observation.imageFileName));
                 }}
               />
             </View>
@@ -471,6 +694,53 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.forest,
   },
+  locationBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.ivory,
+    padding: spacing[2],
+    borderRadius: radii.sm,
+  },
+  locationTextCol: {
+    flex: 1,
+  },
+  locationCoords: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.forest,
+  },
+  locationNameText: {
+    ...typography.meta,
+    color: colors.muted,
+  },
+  photoContainer: {
+    borderRadius: radii.sm,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.ivory,
+  },
+  photoFull: {
+    width: '100%',
+    height: 220,
+    backgroundColor: colors.ivory,
+  },
+  photoCaptionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: spacing[2],
+    backgroundColor: colors.surface,
+  },
+  photoCaptionName: {
+    ...typography.meta,
+    color: colors.ink,
+    flex: 1,
+  },
+  photoCaptionSize: {
+    ...typography.meta,
+    color: colors.muted,
+  },
   notesBody: {
     ...typography.body,
     color: colors.ink,
@@ -520,6 +790,71 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     ...typography.body,
     color: colors.ink,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing[1],
+  },
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing[2],
+    paddingVertical: 4,
+    borderRadius: radii.sm,
+    backgroundColor: colors.sageLight,
+  },
+  actionPillText: {
+    ...typography.label,
+    fontSize: 11,
+    color: colors.forest,
+  },
+  coordRow: {
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  coordInput: {
+    flex: 1,
+  },
+  photoPreviewCard: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    padding: spacing[3],
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  photoThumbnail: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.sm,
+    backgroundColor: colors.ivory,
+  },
+  photoInfoCol: {
+    flex: 1,
+    gap: 2,
+  },
+  photoName: {
+    ...typography.label,
+    color: colors.forest,
+  },
+  photoSize: {
+    ...typography.meta,
+    color: colors.muted,
+  },
+  removePhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  removePhotoText: {
+    ...typography.meta,
+    color: colors.danger,
   },
   notesHeaderRow: {
     flexDirection: 'row',

@@ -780,6 +780,33 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-26 — Issue #16: [P2][v1.4.0][F05] Optional Observation Photos and Consent-Based Coordinates Complete
+
+Completed implementation and verification of F05 Observation Photos & Coordinates:
+
+1. **Schema Migration 18 (`MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL`):**
+   - Added columns `latitude`, `longitude`, `location_name`, `image_file_name`, `image_bytes` to `observations` table.
+   - User version incremented to 18; supported version ceiling raised to 18 in `src/database/db.ts`.
+
+2. **App-Private Observation Photo Storage (`src/services/storage/observationStorage.ts`):**
+   - Dedicated `cosmolog_observations/` directory in app documents, completely isolated from unowned API cache pruning.
+   - Staging helper (`stageObservationPhoto`) validating file existence and size limit (< 12 MB).
+   - File retrieval (`getObservationPhotoUri`) and permanent deletion helper (`deleteObservationPhotoFile`) executed automatically when an observation is deleted.
+
+3. **Consent-Based Location & Photo UI:**
+   - Runtime permission requests only upon explicit user button press ("Use GPS", "Attach photo from library"); zero boot prompts.
+   - Coordinates rounded to 4 decimal places (~11m precision) with coordinate bounds checking ($-90^\circ$ to $+90^\circ$ lat, $-180^\circ$ to $+180^\circ$ lon).
+   - Photo thumbnail preview, file name, formatted byte size, and remove button in Create and Detail/Edit screens.
+   - Zero external cloud uploads; 100% offline-first durable local storage.
+
+4. **Automated Verification:**
+   - Added coordinate validation tests and photo persistence/cleanup tests in `tests/observationsRepository.test.ts`.
+   - Added migration 18 fresh install and upgrade safety tests in `tests/migrationSafety.test.ts`.
+   - Added photo attachment/removal and GPS capture component tests in `tests/fieldworkScreens.test.tsx`.
+   - Full test suite: 51 test suites, 264 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-26 — Issue #25: [release][v1.3.0] Beyond Time and Scale Verification and Release Candidate Complete
 
 Completed full release gate verification for COSMOLOG v1.3.0 (Beyond Time and Scale):
