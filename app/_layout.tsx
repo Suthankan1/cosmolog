@@ -63,6 +63,9 @@ function RootNavigator() {
             <Stack.Screen name="explore/index" />
             <Stack.Screen name="explore/lighttrace" />
             <Stack.Screen name="explore/scale" />
+            <Stack.Screen name="fieldwork/index" />
+            <Stack.Screen name="fieldwork/create" />
+            <Stack.Screen name="fieldwork/[id]" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />

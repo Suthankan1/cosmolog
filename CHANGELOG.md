@@ -2,6 +2,15 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
+## Unreleased — v1.4.0 (Field Observer)
+
+- **F05 Independent Observation Journal (Advanced Field Notes):**
+  - Durable account-isolated observation journal (`observations` table, schema migration 17) distinct from article and study annotations.
+  - Opaque IDs, UTC observed time, IANA timezone preservation, qualitative conditions, celestial target association, and non-destructive foreign keys (`REFERENCES cached_items(local_id) ON DELETE SET NULL`).
+  - Protected Fieldwork Hub (`/fieldwork`), Observation Creator (`/fieldwork/create`) with optional Sky Viewer prefill and voice-to-text dictation without boot prompts, and Detail/Editor (`/fieldwork/[id]`) with confirmed delete.
+  - Durable SQLite repository (`src/database/repositories/observationsRepository.ts`) with input boundary validation, strict account isolation, and serialized write transaction queue.
+
+
 ## v1.3.0 — Beyond Time and Scale (2026-11-26)
 
 - **F03 LightTrace (Offline Cosmic Light-Travel Explorer):**

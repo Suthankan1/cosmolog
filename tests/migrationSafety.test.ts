@@ -20,6 +20,7 @@ import {
   MIGRATE_TO_ARCHIVE_SEARCH_SQL,
   MIGRATE_TO_EXPEDITIONS_SQL,
   MIGRATE_TO_EXPEDITION_REVISIONS_SQL,
+  MIGRATE_TO_OBSERVATIONS_SQL,
 } from '../src/database/schema';
 
 // Helper to run all migrations from version up to 16 on a raw SQLite connection
@@ -50,6 +51,15 @@ async function runMigrationsTo16(db: mockDatabaseSync) {
     } else {
       db.exec('PRAGMA user_version = 16;');
     }
+  }
+}
+
+// Helper to run all migrations from version up to 17 on a raw SQLite connection
+async function runMigrationsTo17(db: mockDatabaseSync) {
+  await runMigrationsTo16(db);
+  const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
+  if (row.user_version < 17) {
+    db.exec(MIGRATE_TO_OBSERVATIONS_SQL);
   }
 }
 
@@ -249,4 +259,56 @@ describe('Database Migration 16 Safety (Issue 1)', () => {
 
     db.close();
   });
+
+  describe('Database Migration 17 Safety (Observations Table)', () => {
+    it('applies Migration 17 on fresh install and sets user_version to 17', async () => {
+      const dbPath = join(tmpDir, 'fresh-17.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo17(db);
+
+      const versionRow = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow.user_version).toBe(17);
+
+      const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='observations'").all();
+      expect(tables.length).toBe(1);
+
+      const cols = db.prepare('PRAGMA table_info(observations)').all() as { name: string }[];
+      const colNames = cols.map(c => c.name);
+      expect(colNames).toContain('id');
+      expect(colNames).toContain('account_id');
+      expect(colNames).toContain('title');
+      expect(colNames).toContain('notes');
+      expect(colNames).toContain('observed_at');
+      expect(colNames).toContain('timezone');
+      expect(colNames).toContain('target_id');
+      expect(colNames).toContain('conditions');
+
+      db.close();
+    });
+
+    it('upgrades from version 16 to 17 preserving existing expedition progress and bookmarks', async () => {
+      const dbPath = join(tmpDir, 'upgrade-16-to-17.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo17(db); // will be version 17
+
+      // Manually insert prior version data
+      db.prepare(`
+        INSERT INTO expedition_progress (account_id, expedition_id, step_id, completed_at, revision)
+        VALUES (10, 'apollo', 'step-apollo-11', '2026-11-26', 1)
+      `).run();
+
+      const versionRow = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow.user_version).toBe(17);
+
+      const rows = db.prepare('SELECT * FROM expedition_progress WHERE account_id = 10').all();
+      expect(rows.length).toBe(1);
+
+      db.close();
+    });
+  });
 });
+

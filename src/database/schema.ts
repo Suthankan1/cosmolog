@@ -237,3 +237,27 @@ export const MIGRATE_TO_EXPEDITION_REVISIONS_SQL = `
   ALTER TABLE expedition_progress ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;
   PRAGMA user_version = 16;
 `;
+
+export const MIGRATE_TO_OBSERVATIONS_SQL = `
+  CREATE TABLE observations (
+    id TEXT PRIMARY KEY,
+    account_id INTEGER NOT NULL CHECK (account_id > 0),
+    title TEXT NOT NULL,
+    notes TEXT NOT NULL,
+    observed_at TEXT NOT NULL,
+    timezone TEXT NOT NULL,
+    target_id TEXT,
+    target_name TEXT,
+    conditions TEXT,
+    linked_discovery_id TEXT,
+    linked_study_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (linked_discovery_id) REFERENCES cached_items(local_id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX idx_observations_account_observed ON observations(account_id, observed_at DESC);
+  CREATE INDEX idx_observations_account_target ON observations(account_id, target_id);
+  PRAGMA user_version = 17;
+`;
+

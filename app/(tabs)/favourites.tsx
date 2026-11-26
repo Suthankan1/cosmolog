@@ -103,6 +103,7 @@ export default function FavouritesScreen() {
         <Button title="Saved study entries" icon="book-open" variant="destination" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
         <Button title="Collections" icon="folder" variant="destination" onPress={() => router.push('/collections')} />
         <Button title="Reading history" icon="clock" variant="destination" onPress={() => router.push('/reading-history')} />
+        <Button title="Fieldwork Journal" icon="edit-3" variant="destination" onPress={() => router.push('/fieldwork' as never)} />
       </DestinationGroup>
         )}
         ListEmptyComponent={empty}

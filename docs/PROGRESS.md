@@ -691,6 +691,35 @@ Completed implementation and verification of F03 LightTrace offline cosmic light
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-26 — Issue #15: [P2][v1.4.0][F05] Implement Account-Scoped Independent Observation Journal Complete
+
+Completed implementation and verification of F05 Independent Observation Journal:
+
+1. **Schema Migration 17 (`MIGRATE_TO_OBSERVATIONS_SQL`):**
+   - Added `observations` table with account isolation (`account_id CHECK (account_id > 0)`), stable opaque ID (`obs_*`), UTC observed time, IANA timezone preservation, qualitative seeing/sky conditions, optional celestial target (`target_id`, `target_name`), and optional cross-links (`linked_discovery_id`, `linked_study_id`).
+   - Foreign key constraint: `FOREIGN KEY (linked_discovery_id) REFERENCES cached_items(local_id) ON DELETE SET NULL` ensures observations survive any cached plate pruning or unowned cache clearing.
+   - Indexes: `idx_observations_account_observed` and `idx_observations_account_target`.
+
+2. **Observations Repository (`src/database/repositories/observationsRepository.ts`):**
+   - Implemented `getObservations`, `getObservationById`, `createObservation`, `updateObservation`, and `deleteObservation`.
+   - Thread-safe write execution queue with transaction rollback via `writeDatabase`.
+   - Comprehensive input validation: title bounded to 200 chars, notes bounded to 5,000 chars, valid ISO timestamp.
+   - Strict two-account isolation preventing cross-account access, editing, or deletion.
+
+3. **Fieldwork Hub & Observation Screens:**
+   - Fieldwork Hub (`app/fieldwork/index.tsx`): Observation logbook listing user's observations ordered newest first, with target badge, date, conditions, notes preview, and empty state.
+   - Observation Creator (`app/fieldwork/create.tsx`): Keyboard-safe editor with optional pre-fill route params from Sky Viewer or Space Study, and voice dictation via `useVoiceToText` without microphone prompt on boot.
+   - Observation Detail (`app/fieldwork/[id].tsx`): View mode with record provenance and deep links to linked plates or study chapters, inline edit mode, and confirmed delete with Alert dialog.
+   - Accessible from Discover and The Field Shelf via "Fieldwork Journal" buttons.
+
+4. **Automated Verification:**
+   - `tests/observationsRepository.test.ts`: 7 repository tests passing (100%).
+   - `tests/fieldworkScreens.test.tsx`: 10 screen tests passing (100%).
+   - `tests/migrationSafety.test.ts`: verified migration 17 fresh install and upgrade from v16.
+   - Full test suite: 51 test suites, 258 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-26 — Issue #14: [P2][v1.3.0][F04] Implement Cosmic Scale Laboratory with Sourced Comparisons Complete
 
 Completed implementation and verification of F04 Cosmic Scale Laboratory:
@@ -719,6 +748,35 @@ Completed implementation and verification of F04 Cosmic Scale Laboratory:
    - `tests/scaleMath.test.ts`: 16 pure math unit tests passing (100%).
    - `tests/scaleScreen.test.tsx`: 15 component tests passing (100%).
    - Full test suite: 49 test suites, 239 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
+## 2026-11-26 — Issue #15: [P2][v1.4.0][F05] Implement Account-Scoped Independent Observation Journal Complete
+
+Completed implementation and verification of F05 Independent Observation Journal:
+
+1. **Schema Migration 17 (`MIGRATE_TO_OBSERVATIONS_SQL`):**
+   - Added `observations` table with account isolation (`account_id CHECK (account_id > 0)`), stable opaque ID (`obs_*`), UTC observed time, IANA timezone preservation, qualitative seeing/sky conditions, optional celestial target (`target_id`, `target_name`), and optional cross-links (`linked_discovery_id`, `linked_study_id`).
+   - Foreign key constraint: `FOREIGN KEY (linked_discovery_id) REFERENCES cached_items(local_id) ON DELETE SET NULL` ensures observations survive any cached plate pruning or unowned cache clearing.
+   - Indexes: `idx_observations_account_observed` and `idx_observations_account_target`.
+
+2. **Observations Repository (`src/database/repositories/observationsRepository.ts`):**
+   - Implemented `getObservations`, `getObservationById`, `createObservation`, `updateObservation`, and `deleteObservation`.
+   - Thread-safe write execution queue with transaction rollback via `writeDatabase`.
+   - Comprehensive input validation: title bounded to 200 chars, notes bounded to 5,000 chars, valid ISO timestamp.
+   - Strict two-account isolation preventing cross-account access, editing, or deletion.
+
+3. **Fieldwork Hub & Observation Screens:**
+   - Fieldwork Hub (`app/fieldwork/index.tsx`): Observation logbook listing user's observations ordered newest first, with target badge, date, conditions, notes preview, and empty state.
+   - Observation Creator (`app/fieldwork/create.tsx`): Keyboard-safe editor with optional pre-fill route params from Sky Viewer or Space Study, and voice dictation via `useVoiceToText` without microphone prompt on boot.
+   - Observation Detail (`app/fieldwork/[id].tsx`): View mode with record provenance and deep links to linked plates or study chapters, inline edit mode, and confirmed delete with Alert dialog.
+   - Accessible from Discover and The Field Shelf via "Fieldwork Journal" buttons.
+
+4. **Automated Verification:**
+   - `tests/observationsRepository.test.ts`: 7 repository tests passing (100%).
+   - `tests/fieldworkScreens.test.tsx`: 10 screen tests passing (100%).
+   - `tests/migrationSafety.test.ts`: verified migration 17 fresh install and upgrade from v16.
+   - Full test suite: 51 test suites, 258 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
