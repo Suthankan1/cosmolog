@@ -62,6 +62,7 @@ function RootNavigator() {
             <Stack.Screen name="sky-viewer" />
             <Stack.Screen name="explore/index" />
             <Stack.Screen name="explore/lighttrace" />
+            <Stack.Screen name="explore/scale" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />

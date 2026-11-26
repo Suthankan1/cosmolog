@@ -67,6 +67,40 @@ export default function ExploreHubScreen() {
           </View>
         </Pressable>
 
+        {/* F04: Cosmic Scale Lab Card */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open Cosmic Scale Laboratory: Celestial diameter and distance comparisons"
+          accessibilityHint="Navigates to the Cosmic Scale interactive laboratory"
+          style={({ pressed }) => [styles.labCard, pressed && styles.cardPressed]}
+          onPress={() => router.push('/explore/scale' as never)}
+        >
+          <View style={styles.labCardHeader}>
+            <View style={styles.tagBadge}>
+              <Icon name="disc" size={14} color={colors.terracotta} />
+              <Text style={styles.tagText}>PLANETARY SCALE · F04</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.forest} />
+          </View>
+
+          <Text accessibilityRole="header" style={styles.labTitle}>Cosmic Scale Lab</Text>
+          <Text style={styles.labSubtitle}>Planetary Diameters & Travel Simulator</Text>
+          <Text style={styles.labCopy}>
+            Compare celestial diameters against Earth, explore heliocentric vs geocentric distances, and calculate straight-line travel times at sub-light velocities.
+          </Text>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.metricPill}>
+              <Icon name="compass" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>NASA Planetary Fact Sheets</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Icon name="check-circle" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>100% Offline</Text>
+            </View>
+          </View>
+        </Pressable>
+
         {/* Laboratory Scientific Standards Note */}
         <View style={styles.standardsBox}>
           <View style={styles.standardsHeader}>

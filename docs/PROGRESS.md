@@ -690,3 +690,34 @@ Completed implementation and verification of F03 LightTrace offline cosmic light
    - Full test suite: 47 test suites, 208 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-26 — Issue #14: [P2][v1.3.0][F04] Implement Cosmic Scale Laboratory with Sourced Comparisons Complete
+
+Completed implementation and verification of F04 Cosmic Scale Laboratory:
+
+1. **Authoritative Planetary & Celestial Scale Dataset (`src/features/labs/data/scale.ts`):**
+   - Curated dataset covering Sun, Mercury, Venus, Earth, Moon, Mars, Jupiter, and Saturn.
+   - Consistent physical convention: volumetric mean diameter in kilometres from NASA Planetary Fact Sheets (S05) and BIPM definition of the metre (S01).
+   - Separated heliocentric semi-major axis (in AU and km) from geocentric mean distance, closest approach, and maximum conjunction distance.
+   - Integrated cross-feature links to Space Study chapters (`/study/[id]`), Expeditions (`/reading-packs`), and Sky Viewer (`/sky-viewer`).
+   - Defined realistic sub-light velocity presets: Commercial Jet (900 km/h), Voyager 1 (61,200 km/h), Parker Solar Probe perihelion (692,000 km/h), and sub-relativistic 0.1c (107,925,285 km/h).
+
+2. **Pure Scale & Travel Time Math Engine (`src/features/labs/scaleMath.ts`):**
+   - Exact BIPM derived speed of light in km/h ($1,079,252,848.8\text{ km/h}$).
+   - `calculateDiameterRatio`: dimensionless ratio against selectable reference body.
+   - `calculateHypotheticalTravelTime`: constant-speed straight-line duration ($t = d/v$). Rejects speeds $\ge c$ and non-positive inputs. Discloses Keplerian orbital mechanics limitations.
+   - Duration and distance formatting helpers.
+
+3. **Cosmic Scale Interactive Screen (`app/explore/scale.tsx`):**
+   - Three dedicated operating modes: Diameter Comparison, Distance Comparison, and Travel Time Simulator.
+   - Proportional schematic bar visualizers with accessible numeric tables.
+   - Custom speed entry with real-time validation against the speed of light.
+   - Actionable external source links and deep links to related Space Study and Expedition entries.
+   - Updated Explore Hub (`app/explore/index.tsx`) and root navigation layout (`app/_layout.tsx`).
+
+4. **Automated Verification:**
+   - `tests/scaleMath.test.ts`: 16 pure math unit tests passing (100%).
+   - `tests/scaleScreen.test.tsx`: 15 component tests passing (100%).
+   - Full test suite: 49 test suites, 239 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
