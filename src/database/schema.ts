@@ -220,3 +220,15 @@ export const MIGRATE_TO_ARCHIVE_SEARCH_SQL = `
   CREATE INDEX idx_search_members_item ON search_members(local_id);
   PRAGMA user_version = 14;
 `;
+
+export const MIGRATE_TO_EXPEDITIONS_SQL = `
+  CREATE TABLE expedition_progress (
+    account_id INTEGER NOT NULL CHECK (account_id > 0),
+    expedition_id TEXT NOT NULL,
+    step_id TEXT NOT NULL,
+    completed_at TEXT NOT NULL,
+    PRIMARY KEY (account_id, expedition_id, step_id)
+  );
+  CREATE INDEX idx_expedition_progress_account ON expedition_progress(account_id, expedition_id);
+  PRAGMA user_version = 15;
+`;
