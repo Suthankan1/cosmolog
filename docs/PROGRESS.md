@@ -459,3 +459,70 @@ Implemented speech-to-text recognition across discovery search and observation n
   - `tests/expeditionsScreen.test.tsx` (screen rendering, ordered steps, observation toggle, offline banner).
 - Total automated tests: 40 test suites, 148 tests (all passing cleanly).
 - Added ADR-018 in `docs/DECISIONS.md`.
+
+## 2026-11-26 — Engineering Hardening Pass on v1.2.0 (Offline Explorer)
+
+Completed strict engineering hardening pass on branch `fix/offline-explorer-release-hardening` resolving all 10 review findings across F01 (Expedition Packs) and F02 (Offline Library Manager):
+
+1. **Decoupled Download Availability from Learning Completion (Finding 1):**
+   - In `src/features/expeditions/expeditionDownloads.ts`, removed automatic `markExpeditionStepCompleted` call from the download loop.
+   - Downloading an expedition saves plates to `reading_pack_items` for offline readiness without falsely modifying learning progress in `expedition_progress`.
+   - Verified on Android emulator: downloading Saturn expedition left learning progress at `1 of 4 required steps completed` while download counter reported `3 of 3 plates saved · 1 of 1 images ready`.
+
+2. **Required vs Optional Expedition Steps (Finding 2):**
+   - Updated `getExpeditionProgressSummary` in `src/database/repositories/expeditionsRepository.ts` to compute `isCompleted` strictly by required steps (`completedRequiredCount >= totalRequiredCount`).
+   - Added `REQUIRED` and `OPTIONAL` semantic badges to step cards in `app/reading-packs.tsx`.
+   - Optional observational fieldwork prompts no longer block expedition completion.
+
+3. **Canonical Media Policy & Saved-Media Validation (Finding 3):**
+   - Refactored `src/features/storage/offlineStorageProjection.ts` to import and call `mapSavedMedia(row)` from `src/database/repositories/mediaRepository.ts`.
+   - Preserves exact license matching (`row.license_url === row.image_license_url`) and prevents duplicate or weakened license checks; prohibited licenses safely degrade to `text-only`.
+
+4. **Coordinated Cache Cleanup with Media Worker (Finding 4):**
+   - Exported `waitForMediaWorker()` and `isMediaWorkerBusy()` from `src/store/slices/favouritesSlice.ts`.
+   - Inside `clearEligibleCache()`, added `await waitForMediaWorker()` before querying unowned files or calling `reconcileSavedImages()` and `pruneImageFiles()`.
+   - Disabled the "Clean unowned cache" action in `app/offline-library.tsx` while active downloads are in progress.
+
+5. **Accurate, Deduplicated, and Honestly Labelled Storage Telemetry (Finding 5):**
+   - Structured `OfflineStorageSummary` with distinct fields:
+     - `physicalMediaBytes`: verified deduplicated image binary files on disk in `cosmolog_images`.
+     - `installedStudyTextBytes`: SQLite curriculum text records in `study_packs`.
+     - `reclaimableMediaBytes`: unowned cache binary files eligible for pruning.
+     - `totalRetainedBytes`: combined retained storage footprint (`physicalMediaBytes + installedStudyTextBytes`).
+   - Masthead telemetry panel in `app/offline-library.tsx` clearly displays "PHYSICAL MEDIA ON DISK" with sub-metrics for "Unique files", "Study text", and "Eligible to clear".
+
+6. **Persisted Revisions & Manifest Reconciliation (Finding 6):**
+   - Added `revision INTEGER NOT NULL DEFAULT 1` to `expedition_progress` table definition in `MIGRATE_TO_EXPEDITIONS_SQL` (schema version 15).
+   - Updated `markExpeditionStepCompleted` to record revision and `getExpeditionCompletedStepIds` to filter out orphaned step IDs when given an `ExpeditionManifest`.
+
+7. **Explicit Download Cancellation & Safe Resumption (Finding 7):**
+   - Added an explicit "Cancel download" button (`work.current?.abort()`) in `app/reading-packs.tsx` when an expedition is downloading.
+   - Cleanly stops downloads without orphan partial records and allows deterministic resumption.
+
+8. **Actionable & Accessible Source Links (Finding 8):**
+   - Transformed expedition source attributions in `app/reading-packs.tsx` into accessible `Pressable` links using `Linking.openURL`.
+   - Styled with $\ge 48\text{ dp}$ minimum touch targets, external link icons, and accessibility hints.
+
+9. **Multi-Account Isolation, File Retention & Offline Cold Restart (Finding 9):**
+   - Verified that when Account A deletes an expedition pack, shared binary image files on disk remain intact for Account B.
+   - Verified that signing out or unmounting cleanly triggers `work.current?.abort()`.
+   - Verified schema migration safety through version 15 via `PRAGMA user_version`.
+   - Verified cold offline launch in airplane mode (`adb shell svc wifi disable && adb shell svc data disable`) after force stop: cached discoveries, installed expeditions, and offline checklists remain fully functional.
+
+10. **Automated Regression Test Suite (Finding 10):**
+    - Created `tests/hardeningRegression.test.ts` covering multi-account shared file retention, progress isolation, and migration version verification.
+    - Updated `tests/expeditionDownloads.test.ts`, `tests/expeditionsRepository.test.ts`, `tests/offlineStorageProjection.test.ts`, `tests/expeditionsScreen.test.tsx`, and `tests/offlineLibraryScreen.test.tsx`.
+    - Total tests: 43 test suites, 168 tests (100% passing).
+    - `npm run lint` and `npm run typecheck` passed with 0 errors.
+
+- Native Android Verification Evidence:
+  - Built self-contained debug APK with embedded bundle (`npx expo export:embed` + `./gradlew assembleDebug`).
+  - Tested on Pixel 9 emulator (Android 15 / API 35) in airplane mode, force-stop, cold restart, and reconnection.
+  - Genuine screenshots captured in `docs/screenshots/`:
+    - `28-expeditions-checklist.png`: Guided expedition checklist with REQUIRED and OPTIONAL badges and attribution links.
+    - `29-expeditions-checked.png`: Learning completion toggled without falsely marking download status as downloaded.
+    - `29-expedition-installed.png`: Offline download counter updated (3 plates saved) while preserving separate learning progress.
+    - `30-offline-library-telemetry.png`: Masthead telemetry showing physical media on disk and separated study text curriculum.
+    - `31-clean-cache-alert.png`: Cache cleanup preview dialog confirming protected favourites and pack downloads.
+    - `32-offline-cold-restart.png`: Cold restart in airplane mode after force-stop with offline banner and cached archive.
+    - `33-expeditions-offline.png`: Fully readable and functional expedition checklist in airplane mode.
