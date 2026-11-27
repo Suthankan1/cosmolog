@@ -23,6 +23,7 @@ import {
   MIGRATE_TO_OBSERVATIONS_SQL,
   MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL,
   MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL,
+  MIGRATE_TO_READER_PREFERENCES_SQL,
 } from '../src/database/schema';
 
 // Helper to run all migrations from version up to 16 on a raw SQLite connection
@@ -80,6 +81,15 @@ async function runMigrationsTo19(db: mockDatabaseSync) {
   const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
   if (row.user_version < 19) {
     db.exec(MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL);
+  }
+}
+
+// Helper to run all migrations from version up to 20 on a raw SQLite connection
+async function runMigrationsTo20(db: mockDatabaseSync) {
+  await runMigrationsTo19(db);
+  const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
+  if (row.user_version < 20) {
+    db.exec(MIGRATE_TO_READER_PREFERENCES_SQL);
   }
 }
 
@@ -441,6 +451,75 @@ describe('Database Migration 16 Safety (Issue 1)', () => {
       expect(preserved.latitude).toBeCloseTo(6.9271);
       expect(preserved.image_file_name).toBe('sample.jpg');
       expect(preserved.instrument_snapshot).toBeNull();
+
+      db.close();
+    });
+  });
+
+  describe('Database Migration 20 Safety (F12 Reader Preferences)', () => {
+    it('handles fresh installation from user_version 0 to 20', async () => {
+      const dbPath = join(tmpDir, 'fresh-20.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo20(db);
+
+      const versionRow = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow.user_version).toBe(20);
+
+      const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='reader_preferences'").all() as { name: string }[];
+      expect(tables.length).toBe(1);
+
+      const cols = db.prepare('PRAGMA table_info(reader_preferences)').all() as { name: string; type: string }[];
+      const colNames = cols.map(c => c.name);
+      expect(colNames).toContain('account_id');
+      expect(colNames).toContain('theme');
+      expect(colNames).toContain('speech_rate');
+      expect(colNames).toContain('voice_id');
+      expect(colNames).toContain('updated_at');
+
+      db.close();
+    });
+
+    it('upgrades from version 19 to 20 preserving existing data', async () => {
+      const dbPath = join(tmpDir, 'upgrade-19-to-20.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo19(db);
+
+      db.prepare(`
+        INSERT INTO observations (
+          id, account_id, title, notes, observed_at, timezone, target_id, target_name, conditions,
+          latitude, longitude, location_name, image_file_name, image_bytes, instrument_snapshot, created_at, updated_at
+        ) VALUES (
+          'obs_v19_test', 42, 'V19 Observation', 'Observing under dark sky', '2026-11-27T01:00:00Z', 'UTC', 'star:Betelgeuse', 'Betelgeuse', 'Superb',
+          6.9, 79.8, 'Field Site', NULL, 0, '{"azimuth":120,"altitude":45}', '2026-11-27T01:00:00Z', '2026-11-27T01:00:00Z'
+        )
+      `).run();
+
+      const versionRow19 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow19.user_version).toBe(19);
+
+      // Upgrade to 20
+      await runMigrationsTo20(db);
+
+      const versionRow20 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow20.user_version).toBe(20);
+
+      const preserved = db.prepare("SELECT * FROM observations WHERE id = 'obs_v19_test'").get() as any;
+      expect(preserved).toBeDefined();
+      expect(preserved.instrument_snapshot).toBe('{"azimuth":120,"altitude":45}');
+
+      // Test inserting preferences
+      db.prepare(`
+        INSERT INTO reader_preferences (account_id, theme, speech_rate, voice_id, updated_at)
+        VALUES (42, 'night', 1.25, NULL, '2026-11-27T01:05:00Z')
+      `).run();
+
+      const pref = db.prepare('SELECT * FROM reader_preferences WHERE account_id = 42').get() as any;
+      expect(pref.theme).toBe('night');
+      expect(pref.speech_rate).toBeCloseTo(1.25);
 
       db.close();
     });

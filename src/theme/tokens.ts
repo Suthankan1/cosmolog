@@ -4,7 +4,32 @@
  * Font-family values are planned asset aliases; load the selected open-license
  * fonts during project scaffolding and verify the aliases on Android/iOS.
  */
-export const colors = {
+
+export type ThemeMode = 'editorial' | 'night';
+
+export interface ThemeColors {
+  ivory: string;
+  surface: string;
+  forest: string;
+  forestDark: string;
+  terracotta: string;
+  sage: string;
+  sageLight: string;
+  brass: string;
+  ink: string;
+  muted: string;
+  border: string;
+  white: string;
+  danger: string;
+  background: string;
+  cardBg: string;
+  cardPressed: string;
+  textPrimary: string;
+  textSecondary: string;
+  statusBar: 'dark' | 'light';
+}
+
+export const editorialColors: ThemeColors = {
   ivory: '#F8F4EA',
   surface: '#FFFCF6',
   forest: '#184235',
@@ -18,7 +43,41 @@ export const colors = {
   border: '#E4DBCF',
   white: '#FFFFFF',
   danger: '#9B473A',
-} as const;
+  background: '#F8F4EA',
+  cardBg: '#FFFCF6',
+  cardPressed: '#E3E9DC',
+  textPrimary: '#184235',
+  textSecondary: '#62645D',
+  statusBar: 'dark',
+};
+
+export const nightColors: ThemeColors = {
+  ivory: '#0D0B0B',          // dark charcoal/obsidian
+  surface: '#1A1414',        // dark muted surface
+  forest: '#E64A38',         // high-contrast red for primary headings & active icons
+  forestDark: '#B32D20',     // deeper red
+  terracotta: '#FF7B6B',     // luminous soft terracotta
+  sage: '#8C3830',           // deep wine red
+  sageLight: '#2E1C1A',      // dark wine chip background
+  brass: '#E6A15C',          // amber brass
+  ink: '#F2D6D3',            // soft high-contrast light red-cream text
+  muted: '#A8807C',          // muted rose-gray
+  border: '#3D2624',         // deep red border
+  white: '#1A1414',          // dark surface instead of blinding white
+  danger: '#FF6B6B',         // bright warning red
+  background: '#0D0B0B',
+  cardBg: '#1A1414',
+  cardPressed: '#2E1C1A',
+  textPrimary: '#E64A38',
+  textSecondary: '#A8807C',
+  statusBar: 'light',
+};
+
+export function getThemeColors(mode: ThemeMode = 'editorial'): ThemeColors {
+  return mode === 'night' ? nightColors : editorialColors;
+}
+
+export const colors = editorialColors;
 
 export const spacing = {
   1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48,

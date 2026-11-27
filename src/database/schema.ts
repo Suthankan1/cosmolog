@@ -275,4 +275,16 @@ export const MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL = `
   PRAGMA user_version = 19;
 `;
 
+export const MIGRATE_TO_READER_PREFERENCES_SQL = `
+  CREATE TABLE reader_preferences (
+    account_id INTEGER PRIMARY KEY CHECK (account_id > 0),
+    theme TEXT NOT NULL DEFAULT 'editorial' CHECK (theme IN ('editorial', 'night')),
+    speech_rate REAL NOT NULL DEFAULT 1.0,
+    voice_id TEXT,
+    updated_at TEXT NOT NULL
+  );
+  PRAGMA user_version = 20;
+`;
+
+
 

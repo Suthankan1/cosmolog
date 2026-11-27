@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { store, useAppDispatch, useAppSelector } from '../src/store';
 import { restoreSessionThunk } from '../src/store/slices/authSlice';
-import { colors } from '../src/theme/tokens';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { useArchiveLifecycle } from '../src/store/archiveLifecycle';
 import { BrandReveal } from '../src/components/common/BrandReveal';
 
@@ -30,6 +30,7 @@ function RootNavigator() {
   });
   const dispatch = useAppDispatch();
   const { user, isAuthenticated, isInitialSessionLoading } = useAppSelector((state) => state.auth);
+  const { isNight, colors: themeColors } = useTheme();
   const [isBrandRevealed, setIsBrandRevealed] = useState(false);
   const finishReveal = useCallback(() => setIsBrandRevealed(true), []);
 
@@ -44,10 +45,10 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style={isAuthenticated && isBrandRevealed ? 'dark' : 'light'} />
+      <StatusBar style={isNight ? 'light' : (isAuthenticated && isBrandRevealed ? 'dark' : 'light')} />
       {(fontsLoaded || fontError) && !isInitialSessionLoading && (
         <View testID="launch-destination" onLayout={() => setDestinationReady(true)} pointerEvents={isBrandRevealed ? 'auto' : 'none'} style={{ flex: 1 }} accessibilityElementsHidden={!isBrandRevealed} importantForAccessibility={isBrandRevealed ? 'auto' : 'no-hide-descendants'}>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ivory } }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themeColors.ivory } }}>
           <Stack.Screen name="index" />
           <Stack.Protected guard={isAuthenticated}>
             <Stack.Screen name="(tabs)" />
@@ -70,6 +71,8 @@ function RootNavigator() {
             <Stack.Screen name="fieldwork/create" />
             <Stack.Screen name="fieldwork/instrument" />
             <Stack.Screen name="fieldwork/[id]" />
+            <Stack.Screen name="timeline/index" />
+            <Stack.Screen name="events/meteors" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
@@ -86,7 +89,9 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <RootNavigator />
+      <ThemeProvider>
+        <RootNavigator />
+      </ThemeProvider>
     </Provider>
   );
 }
