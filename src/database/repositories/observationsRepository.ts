@@ -8,6 +8,20 @@
 import { getDatabase, writeDatabase } from '../db';
 import { deleteObservationPhotoFile } from '../../services/storage/observationStorage';
 
+export interface InstrumentSnapshot {
+  capturedAt: string;
+  azimuth: number;
+  altitude: number;
+  cardinal: string;
+  reference: 'true' | 'magnetic' | 'unknown';
+  quality: 'calibrated' | 'uncalibrated' | 'interference' | 'stale' | 'manual';
+  source: 'sensor' | 'manual';
+  declination?: number | null;
+  fieldStrength?: number | null;
+  targetId?: string | null;
+  targetName?: string | null;
+}
+
 export interface ObservationRecord {
   id: string;
   accountId: number;
@@ -33,6 +47,8 @@ export interface ObservationRecord {
   imageFileName: string | null;
   /** Size of attached photograph in bytes */
   imageBytes: number;
+  /** Optional celestial field instrument heading & inclination snapshot */
+  instrumentSnapshot: InstrumentSnapshot | null;
   /** Optional foreign link to cached discovery plate */
   linkedDiscoveryId: string | null;
   /** Optional foreign link to Space Study chapter */
@@ -54,6 +70,7 @@ export interface CreateObservationInput {
   locationName?: string | null;
   imageFileName?: string | null;
   imageBytes?: number;
+  instrumentSnapshot?: InstrumentSnapshot | null;
   linkedDiscoveryId?: string | null;
   linkedStudyId?: string | null;
 }
@@ -71,6 +88,7 @@ export interface UpdateObservationInput {
   locationName?: string | null;
   imageFileName?: string | null;
   imageBytes?: number;
+  instrumentSnapshot?: InstrumentSnapshot | null;
   linkedDiscoveryId?: string | null;
   linkedStudyId?: string | null;
 }
@@ -90,6 +108,7 @@ interface ObservationRow {
   location_name: string | null;
   image_file_name: string | null;
   image_bytes: number;
+  instrument_snapshot: string | null;
   linked_discovery_id: string | null;
   linked_study_id: string | null;
   created_at: string;
@@ -97,6 +116,15 @@ interface ObservationRow {
 }
 
 function mapRowToObservation(row: ObservationRow): ObservationRecord {
+  let instrumentSnapshot: InstrumentSnapshot | null = null;
+  if (row.instrument_snapshot) {
+    try {
+      instrumentSnapshot = JSON.parse(row.instrument_snapshot);
+    } catch {
+      instrumentSnapshot = null;
+    }
+  }
+
   return {
     id: row.id,
     accountId: row.account_id,
@@ -112,11 +140,34 @@ function mapRowToObservation(row: ObservationRow): ObservationRecord {
     locationName: row.location_name,
     imageFileName: row.image_file_name,
     imageBytes: Number(row.image_bytes ?? 0),
+    instrumentSnapshot,
     linkedDiscoveryId: row.linked_discovery_id,
     linkedStudyId: row.linked_study_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export function validateInstrumentSnapshot(snapshot: InstrumentSnapshot | null | undefined): void {
+  if (!snapshot) return;
+  if (!snapshot.capturedAt || isNaN(Date.parse(snapshot.capturedAt))) {
+    throw new Error('Instrument snapshot capturedAt must be a valid ISO date string');
+  }
+  if (!Number.isFinite(snapshot.azimuth) || snapshot.azimuth < 0 || snapshot.azimuth > 360) {
+    throw new Error('Instrument snapshot azimuth must be between 0 and 360 degrees');
+  }
+  if (!Number.isFinite(snapshot.altitude) || snapshot.altitude < -90 || snapshot.altitude > 90) {
+    throw new Error('Instrument snapshot altitude must be between -90 and +90 degrees');
+  }
+  if (!['true', 'magnetic', 'unknown'].includes(snapshot.reference)) {
+    throw new Error('Instrument snapshot reference must be true, magnetic, or unknown');
+  }
+  if (!['calibrated', 'uncalibrated', 'interference', 'stale', 'manual'].includes(snapshot.quality)) {
+    throw new Error('Instrument snapshot quality is invalid');
+  }
+  if (!['sensor', 'manual'].includes(snapshot.source)) {
+    throw new Error('Instrument snapshot source must be sensor or manual');
+  }
 }
 
 function generateObservationId(): string {
@@ -233,6 +284,7 @@ export async function createObservation(
     input.latitude,
     input.longitude,
   );
+  validateInstrumentSnapshot(input.instrumentSnapshot);
 
   const id = generateObservationId();
   const timezone =
@@ -253,6 +305,7 @@ export async function createObservation(
     locationName: input.locationName?.trim() || null,
     imageFileName: input.imageFileName?.trim() || null,
     imageBytes: Number(input.imageBytes ?? 0),
+    instrumentSnapshot: input.instrumentSnapshot ?? null,
     linkedDiscoveryId: input.linkedDiscoveryId?.trim() || null,
     linkedStudyId: input.linkedStudyId?.trim() || null,
     createdAt: now,
@@ -264,9 +317,9 @@ export async function createObservation(
       `INSERT INTO observations (
         id, account_id, title, notes, observed_at, timezone,
         target_id, target_name, conditions, latitude, longitude,
-        location_name, image_file_name, image_bytes,
+        location_name, image_file_name, image_bytes, instrument_snapshot,
         linked_discovery_id, linked_study_id, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         record.id,
         record.accountId,
@@ -282,6 +335,7 @@ export async function createObservation(
         record.locationName,
         record.imageFileName,
         record.imageBytes,
+        record.instrumentSnapshot ? JSON.stringify(record.instrumentSnapshot) : null,
         record.linkedDiscoveryId,
         record.linkedStudyId,
         record.createdAt,
@@ -314,6 +368,9 @@ export async function updateObservation(
   const updatedLon = input.longitude !== undefined ? input.longitude : existing.longitude;
 
   validateObservationInput(accountId, updatedTitle, updatedNotes, updatedObservedAt, updatedLat, updatedLon);
+  if (input.instrumentSnapshot !== undefined) {
+    validateInstrumentSnapshot(input.instrumentSnapshot);
+  }
 
   // If photo attachment is being replaced or removed, clean up old file
   if (input.imageFileName !== undefined && existing.imageFileName && existing.imageFileName !== input.imageFileName) {
@@ -335,6 +392,7 @@ export async function updateObservation(
     locationName: input.locationName !== undefined ? (input.locationName?.trim() || null) : existing.locationName,
     imageFileName: input.imageFileName !== undefined ? (input.imageFileName?.trim() || null) : existing.imageFileName,
     imageBytes: input.imageBytes !== undefined ? Number(input.imageBytes) : existing.imageBytes,
+    instrumentSnapshot: input.instrumentSnapshot !== undefined ? input.instrumentSnapshot : existing.instrumentSnapshot,
     linkedDiscoveryId: input.linkedDiscoveryId !== undefined ? (input.linkedDiscoveryId?.trim() || null) : existing.linkedDiscoveryId,
     linkedStudyId: input.linkedStudyId !== undefined ? (input.linkedStudyId?.trim() || null) : existing.linkedStudyId,
     updatedAt: now,
@@ -355,6 +413,7 @@ export async function updateObservation(
         location_name = ?,
         image_file_name = ?,
         image_bytes = ?,
+        instrument_snapshot = ?,
         linked_discovery_id = ?,
         linked_study_id = ?,
         updated_at = ?
@@ -372,6 +431,7 @@ export async function updateObservation(
         updated.locationName,
         updated.imageFileName,
         updated.imageBytes,
+        updated.instrumentSnapshot ? JSON.stringify(updated.instrumentSnapshot) : null,
         updated.linkedDiscoveryId,
         updated.linkedStudyId,
         updated.updatedAt,

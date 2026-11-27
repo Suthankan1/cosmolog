@@ -20,6 +20,7 @@ import { Icon } from '../../src/components/common/Icon';
 import { OfflineBanner } from '../../src/components/common/OfflineBanner';
 import {
   createObservation,
+  type InstrumentSnapshot,
 } from '../../src/database/repositories/observationsRepository';
 import { useVoiceToText } from '../../src/hooks/useVoiceToText';
 import { stageObservationPhoto } from '../../src/services/storage/observationStorage';
@@ -39,6 +40,8 @@ export default function CreateObservationScreen() {
     targetName?: string;
     linkedDiscoveryId?: string;
     linkedStudyId?: string;
+    prefilledNotes?: string;
+    snapshotJson?: string;
   }>();
 
   const { user } = useAppSelector(state => state.auth);
@@ -50,7 +53,19 @@ export default function CreateObservationScreen() {
   const [targetName, setTargetName] = useState(params.targetName ?? '');
   const [targetId] = useState(params.targetId ?? '');
   const [conditions, setConditions] = useState('');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(params.prefilledNotes ?? '');
+
+  // Optional celestial instrument snapshot
+  const [instrumentSnapshot, setInstrumentSnapshot] = useState<InstrumentSnapshot | null>(() => {
+    if (params.snapshotJson) {
+      try {
+        return JSON.parse(params.snapshotJson) as InstrumentSnapshot;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
 
   // Optional coordinates
   const [latitudeStr, setLatitudeStr] = useState('');
@@ -211,6 +226,7 @@ export default function CreateObservationScreen() {
         locationName: locationName.trim() || undefined,
         imageFileName: imageFileName || undefined,
         imageBytes: imageBytes || undefined,
+        instrumentSnapshot: instrumentSnapshot || undefined,
         linkedDiscoveryId: params.linkedDiscoveryId,
         linkedStudyId: params.linkedStudyId,
       });
@@ -368,6 +384,55 @@ export default function CreateObservationScreen() {
           )}
         </View>
 
+        {/* Celestial Field Instrument Sighting Snapshot */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Celestial Instrument Sighting (Optional)</Text>
+
+          {instrumentSnapshot ? (
+            <View style={styles.snapshotCard}>
+              <View style={styles.snapshotHeader}>
+                <Icon name="compass" size={15} color={colors.forest} />
+                <Text style={styles.snapshotTitle}>
+                  Bearing: {instrumentSnapshot.azimuth}° {instrumentSnapshot.cardinal} · {instrumentSnapshot.altitude >= 0 ? '+' : ''}{instrumentSnapshot.altitude}° Alt
+                </Text>
+              </View>
+              <Text style={styles.snapshotMeta}>
+                Reference: {instrumentSnapshot.reference.toUpperCase()} NORTH · Quality: {instrumentSnapshot.quality.toUpperCase()}
+              </Text>
+              {instrumentSnapshot.declination !== null && instrumentSnapshot.declination !== undefined && (
+                <Text style={styles.snapshotMeta}>
+                  Magnetic Declination: {instrumentSnapshot.declination >= 0 ? '+' : ''}{instrumentSnapshot.declination}°
+                </Text>
+              )}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Remove attached instrument snapshot"
+                style={styles.removeSnapshotBtn}
+                onPress={() => setInstrumentSnapshot(null)}
+              >
+                <Icon name="trash-2" size={13} color={colors.danger} />
+                <Text style={styles.removePhotoText}>Remove snapshot</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Button
+              title="Open field instrument"
+              icon="compass"
+              variant="outline"
+              accessibilityLabel="Open celestial field instrument to measure bearing and elevation"
+              onPress={() =>
+                router.push({
+                  pathname: '/fieldwork/instrument',
+                  params: {
+                    targetId: targetId || undefined,
+                    targetName: targetName || undefined,
+                  },
+                } as never)
+              }
+            />
+          )}
+        </View>
+
         {/* Notes Input + Voice Dictation Header */}
         <View style={styles.inputGroup}>
           <View style={styles.notesHeaderRow}>
@@ -512,6 +577,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
+  },
+  snapshotCard: {
+    padding: spacing[3],
+    backgroundColor: colors.sageLight,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  snapshotHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  snapshotTitle: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.forest,
+  },
+  snapshotMeta: {
+    ...typography.meta,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  removeSnapshotBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: spacing[2],
+    minHeight: layout.minimumTouchTarget,
   },
   photoThumbnail: {
     width: 64,

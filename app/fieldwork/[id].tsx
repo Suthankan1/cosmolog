@@ -387,6 +387,37 @@ export default function ObservationDetailScreen() {
               </View>
             ) : null}
 
+            {/* Celestial Field Instrument Sighting Snapshot */}
+            {observation.instrumentSnapshot ? (
+              <View style={styles.instrumentSnapshotCard}>
+                <View style={styles.instrumentHeaderRow}>
+                  <Icon name="compass" size={16} color={colors.forest} />
+                  <Text style={styles.instrumentHeaderTitle}>Celestial Field Sighting (F06)</Text>
+                </View>
+                <View style={styles.instrumentReadingRow}>
+                  <Text style={styles.instrumentHeadingText}>
+                    {observation.instrumentSnapshot.azimuth.toFixed(1)}° {observation.instrumentSnapshot.cardinal}
+                  </Text>
+                  <Text style={styles.instrumentAltitudeText}>
+                    {observation.instrumentSnapshot.altitude >= 0 ? '+' : ''}{observation.instrumentSnapshot.altitude.toFixed(1)}° Alt
+                  </Text>
+                </View>
+                <View style={styles.instrumentMetaRow}>
+                  <Text style={styles.instrumentMetaText}>
+                    Reference: {observation.instrumentSnapshot.reference === 'true' ? 'True North' : observation.instrumentSnapshot.reference === 'magnetic' ? 'Magnetic North' : 'Manual'}
+                  </Text>
+                  <Text style={styles.instrumentMetaText}>
+                    Quality: {observation.instrumentSnapshot.quality.toUpperCase()} ({observation.instrumentSnapshot.source})
+                  </Text>
+                </View>
+                {observation.instrumentSnapshot.declination !== null && observation.instrumentSnapshot.declination !== undefined ? (
+                  <Text style={styles.instrumentDeclinationText}>
+                    Magnetic Declination: {observation.instrumentSnapshot.declination >= 0 ? '+' : ''}{observation.instrumentSnapshot.declination.toFixed(1)}°
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+
             <Text style={styles.notesBody}>{observation.notes}</Text>
 
             <View style={styles.provenanceBox}>
@@ -738,6 +769,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   photoCaptionSize: {
+    ...typography.meta,
+    color: colors.muted,
+  },
+  instrumentSnapshotCard: {
+    backgroundColor: colors.sageLight,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing[3],
+    gap: 4,
+  },
+  instrumentHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  instrumentHeaderTitle: {
+    ...typography.label,
+    color: colors.forest,
+  },
+  instrumentReadingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  instrumentHeadingText: {
+    ...typography.h2,
+    fontSize: 20,
+    color: colors.forest,
+    fontWeight: '700',
+  },
+  instrumentAltitudeText: {
+    ...typography.h2,
+    fontSize: 16,
+    color: colors.brass,
+  },
+  instrumentMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  instrumentMetaText: {
+    ...typography.meta,
+    color: colors.ink,
+  },
+  instrumentDeclinationText: {
     ...typography.meta,
     color: colors.muted,
   },

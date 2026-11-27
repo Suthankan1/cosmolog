@@ -12,6 +12,8 @@ import {
   deleteObservation,
   validateObservationInput,
   validateCoordinates,
+  validateInstrumentSnapshot,
+  type InstrumentSnapshot,
 } from '../src/database/repositories/observationsRepository';
 import { deleteObservationPhotoFile } from '../src/services/storage/observationStorage';
 
@@ -276,5 +278,103 @@ describe('Observations Repository & Migration 17 (F05)', () => {
     const deleted = await deleteObservation(10, obs.id);
     expect(deleted).toBe(true);
     expect(deleteObservationPhotoFile).toHaveBeenCalledWith('obs_jupiter_grs_final.png');
+  });
+
+  it('validates and persists celestial instrument snapshot (Issue #17 / F06)', async () => {
+    // Validation tests
+    expect(() =>
+      validateInstrumentSnapshot({
+        capturedAt: 'invalid-date',
+        azimuth: 120,
+        altitude: 45,
+        cardinal: 'ESE',
+        reference: 'true',
+        quality: 'calibrated',
+        source: 'sensor',
+      }),
+    ).toThrow('valid ISO date string');
+
+    expect(() =>
+      validateInstrumentSnapshot({
+        capturedAt: '2026-11-27T08:00:00Z',
+        azimuth: 361,
+        altitude: 45,
+        cardinal: 'N',
+        reference: 'true',
+        quality: 'calibrated',
+        source: 'sensor',
+      }),
+    ).toThrow('azimuth must be between 0 and 360');
+
+    expect(() =>
+      validateInstrumentSnapshot({
+        capturedAt: '2026-11-27T08:00:00Z',
+        azimuth: 120,
+        altitude: -95,
+        cardinal: 'ESE',
+        reference: 'true',
+        quality: 'calibrated',
+        source: 'sensor',
+      }),
+    ).toThrow('altitude must be between -90 and +90');
+
+    expect(() =>
+      validateInstrumentSnapshot({
+        capturedAt: '2026-11-27T08:00:00Z',
+        azimuth: 120,
+        altitude: 45,
+        cardinal: 'ESE',
+        reference: 'invalid' as any,
+        quality: 'calibrated',
+        source: 'sensor',
+      }),
+    ).toThrow('reference must be true, magnetic, or unknown');
+
+    const sampleSnapshot: InstrumentSnapshot = {
+      capturedAt: '2026-11-27T08:15:00.000Z',
+      azimuth: 142.5,
+      altitude: 38.2,
+      cardinal: 'SE',
+      reference: 'true',
+      quality: 'calibrated',
+      source: 'sensor',
+      declination: 3.5,
+      fieldStrength: 42.1,
+      targetId: 'body:Saturn',
+      targetName: 'Saturn',
+    };
+
+    // Create observation with instrument snapshot
+    const obs = await createObservation(10, {
+      title: 'Saturn Field Instrument Sighting',
+      notes: 'Captured calibrated pointing coordinates toward Saturn.',
+      instrumentSnapshot: sampleSnapshot,
+    });
+
+    expect(obs.instrumentSnapshot).toEqual(sampleSnapshot);
+
+    // Retrieve and verify
+    const retrieved = await getObservationById(10, obs.id);
+    expect(retrieved?.instrumentSnapshot).toEqual(sampleSnapshot);
+
+    // Update with manual adjustment
+    const manualSnapshot: InstrumentSnapshot = {
+      capturedAt: '2026-11-27T08:20:00.000Z',
+      azimuth: 145.0,
+      altitude: 40.0,
+      cardinal: 'SE',
+      reference: 'unknown',
+      quality: 'manual',
+      source: 'manual',
+    };
+
+    const updated = await updateObservation(10, obs.id, {
+      instrumentSnapshot: manualSnapshot,
+    });
+
+    expect(updated?.instrumentSnapshot).toEqual(manualSnapshot);
+
+    const reRetrieved = await getObservationById(10, obs.id);
+    expect(reRetrieved?.instrumentSnapshot).toEqual(manualSnapshot);
   });
 });

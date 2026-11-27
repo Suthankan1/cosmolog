@@ -71,6 +71,9 @@ export default function FieldworkHubScreen() {
             </Text>
           </View>
           <View style={styles.headerRightRow}>
+            {item.instrumentSnapshot ? (
+              <Icon name="compass" size={13} color={colors.forest} style={styles.badgeIcon} />
+            ) : null}
             {item.imageFileName ? (
               <Icon name="camera" size={13} color={colors.terracotta} style={styles.badgeIcon} />
             ) : null}
@@ -129,6 +132,13 @@ export default function FieldworkHubScreen() {
                 accessibilityLabel="Create a new astronomical observation record"
                 onPress={() => router.push('/fieldwork/create' as never)}
               />
+              <Button
+                title="Field instrument"
+                icon="compass"
+                variant="outline"
+                accessibilityLabel="Open celestial field instrument"
+                onPress={() => router.push('/fieldwork/instrument' as never)}
+              />
             </View>
           </View>
         }
@@ -185,6 +195,8 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
+    gap: spacing[2],
+    flexWrap: 'wrap',
     marginBottom: spacing[2],
   },
   observationCard: {

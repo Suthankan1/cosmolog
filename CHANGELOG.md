@@ -13,6 +13,14 @@ This file records the existing published release baseline and planned work separ
   - App-private observation photo storage (`src/services/storage/observationStorage.ts` in `cosmolog_observations/`), isolated from unowned API cache pruning, with <12 MB file bounds and automatic file cleanup on observation deletion.
   - Consent-based runtime GPS coordinate capture via `expo-location` and photo selection via `expo-image-picker` triggered only by explicit user button press; zero permission prompts on boot and zero external cloud uploads.
   - Geographical coordinate boundary validation ($-90^\circ$ to $+90^\circ$ latitude, $-180^\circ$ to $+180^\circ$ longitude) with ~11m precision rounding and optional site names.
+- **F06 Celestial Field Instrument (Night Sky Guide & Observation Capture):**
+  - Shared foreground-only sensor pointing pipeline (`src/features/sky/pointing.ts`, `src/features/sky/useSkyPointing.ts`) deriving azimuth, altitude, 16-point cardinal directions, magnetic vs true north reference frames, and magnetic interference bounds ($15\text{--}100\,\mu\text{T}$).
+  - Dedicated Celestial Field Instrument screen (`/fieldwork/instrument`) featuring a forest dial (`#184235`), ivory numbers (`#F8F4EA`), brass compass rose bezel (`#C79B4D`), live inclination gauge, and accessible numeric scientific telemetry.
+  - Interactive manual sighting mode with azimuth ($-15^\circ$, $-5^\circ$, $+5^\circ$, $+15^\circ$) and elevation ($-10^\circ$, $+10^\circ$) steppers and direct numeric entry for fixed telescope mounts or uncalibrated sensors.
+  - Target tracking mode calculating real-time relative bearing and elevation offsets for celestial catalog bodies.
+  - Prominent solar observing safety warning alerting users to never view or point optical instruments at the Sun without certified ISO 12312-2 filtration.
+  - Explicit immutable snapshot capture (`InstrumentSnapshot`) persisted via schema migration 19 (`instrument_snapshot` column in `observations` table), strictly separating active device sensor readings from manual alignment without fabricated precision.
+  - Deep linking from Sky Viewer detail sheet (`/sky-viewer`) directly into the Celestial Field Instrument.
 
 
 ## v1.3.0 — Beyond Time and Scale (2026-11-26)

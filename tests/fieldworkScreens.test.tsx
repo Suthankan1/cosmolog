@@ -83,6 +83,16 @@ const sampleObservation: ObservationRecord = {
   locationName: 'Colombo Dark Sky Site',
   imageFileName: 'sample_saturn.jpg',
   imageBytes: 245000,
+  instrumentSnapshot: {
+    capturedAt: '2026-11-26T19:32:00.000Z',
+    azimuth: 142.4,
+    altitude: 38.5,
+    cardinal: 'SE',
+    reference: 'true',
+    quality: 'calibrated',
+    source: 'sensor',
+    declination: 3.2,
+  },
   linkedDiscoveryId: 'nasa-apod:2026-11-26',
   linkedStudyId: 'chapter:worlds',
   createdAt: '2026-11-26T19:35:00.000Z',
@@ -146,6 +156,15 @@ describe('Fieldwork Hub Screen (FieldworkHubScreen)', () => {
     fireEvent.press(newBtn);
 
     expect(mockPush).toHaveBeenCalledWith('/fieldwork/create');
+  });
+
+  it('navigates to field instrument screen on button press (Issue #17 / F06)', async () => {
+    await render(<FieldworkHubScreen />);
+
+    const instrumentBtn = screen.getByLabelText('Open celestial field instrument');
+    fireEvent.press(instrumentBtn);
+
+    expect(mockPush).toHaveBeenCalledWith('/fieldwork/instrument');
   });
 
   it('navigates to detail screen when observation card is pressed', async () => {
@@ -249,6 +268,50 @@ describe('Create Observation Screen (CreateObservationScreen)', () => {
       expect(screen.getByDisplayValue('Current Observing Site')).toBeTruthy();
     });
   });
+
+  it('renders prefilled instrument snapshot card and allows removal (F06)', async () => {
+    mockParams = {
+      snapshotJson: JSON.stringify({
+        capturedAt: '2026-11-27T08:00:00Z',
+        azimuth: 142.4,
+        altitude: 38.5,
+        cardinal: 'SE',
+        reference: 'true',
+        quality: 'calibrated',
+        source: 'sensor',
+      }),
+    };
+
+    await render(<CreateObservationScreen />);
+
+    expect(screen.getByText(/Bearing: 142.4° SE · \+38.5° Alt/)).toBeTruthy();
+    expect(screen.getByText(/Reference: TRUE NORTH · Quality: CALIBRATED/)).toBeTruthy();
+
+    const removeBtn = screen.getByLabelText('Remove attached instrument snapshot');
+    await act(async () => {
+      fireEvent.press(removeBtn);
+    });
+
+    expect(screen.queryByText(/Bearing: 142.4° SE/)).toBeNull();
+    expect(screen.getByText('Open field instrument')).toBeTruthy();
+  });
+
+  it('navigates to field instrument from create screen (F06)', async () => {
+    mockParams = { targetId: 'body:Jupiter', targetName: 'Jupiter' };
+
+    await render(<CreateObservationScreen />);
+
+    const openInstrumentBtn = screen.getByLabelText('Open celestial field instrument to measure bearing and elevation');
+    fireEvent.press(openInstrumentBtn);
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/fieldwork/instrument',
+      params: {
+        targetId: 'body:Jupiter',
+        targetName: 'Jupiter',
+      },
+    });
+  });
 });
 
 describe('Observation Detail & Edit Screen (ObservationDetailScreen)', () => {
@@ -266,6 +329,8 @@ describe('Observation Detail & Edit Screen (ObservationDetailScreen)', () => {
       expect(screen.getByText(/6.9271°, 79.8612°/)).toBeTruthy();
       expect(screen.getByText('Colombo Dark Sky Site')).toBeTruthy();
       expect(screen.getByText('sample_saturn.jpg')).toBeTruthy();
+      expect(screen.getByText('Celestial Field Sighting (F06)')).toBeTruthy();
+      expect(screen.getByText('142.4° SE')).toBeTruthy();
       expect(screen.getByText('View linked Discovery plate')).toBeTruthy();
       expect(screen.getByText('View linked Space Study guide')).toBeTruthy();
     });

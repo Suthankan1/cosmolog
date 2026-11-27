@@ -22,6 +22,7 @@ import {
   MIGRATE_TO_EXPEDITION_REVISIONS_SQL,
   MIGRATE_TO_OBSERVATIONS_SQL,
   MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL,
+  MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL,
 } from '../src/database/schema';
 
 // Helper to run all migrations from version up to 16 on a raw SQLite connection
@@ -70,6 +71,15 @@ async function runMigrationsTo18(db: mockDatabaseSync) {
   const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
   if (row.user_version < 18) {
     db.exec(MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL);
+  }
+}
+
+// Helper to run all migrations from version up to 19 on a raw SQLite connection
+async function runMigrationsTo19(db: mockDatabaseSync) {
+  await runMigrationsTo18(db);
+  const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
+  if (row.user_version < 19) {
+    db.exec(MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL);
   }
 }
 
@@ -376,6 +386,61 @@ describe('Database Migration 16 Safety (Issue 1)', () => {
       expect(preserved.longitude).toBeNull();
       expect(preserved.image_file_name).toBeNull();
       expect(preserved.image_bytes).toBe(0);
+
+      db.close();
+    });
+  });
+
+  describe('Database Migration 19 Safety (Celestial Field Instrument Snapshot)', () => {
+    it('applies Migration 19 on fresh install and sets user_version to 19', async () => {
+      const dbPath = join(tmpDir, 'fresh-19.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo19(db);
+
+      const versionRow = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow.user_version).toBe(19);
+
+      const cols = db.prepare('PRAGMA table_info(observations)').all() as { name: string }[];
+      const colNames = cols.map(c => c.name);
+      expect(colNames).toContain('instrument_snapshot');
+
+      db.close();
+    });
+
+    it('upgrades from version 18 to 19 preserving existing observations and attachments', async () => {
+      const dbPath = join(tmpDir, 'upgrade-18-to-19.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo18(db);
+
+      db.prepare(`
+        INSERT INTO observations (
+          id, account_id, title, notes, observed_at, timezone, target_id, target_name, conditions,
+          latitude, longitude, location_name, image_file_name, image_bytes, created_at, updated_at
+        ) VALUES (
+          'obs_v18_test', 10, 'V18 Observation with Photo', 'Observed Jupiter with camera.', '2026-11-26T20:00:00Z', 'UTC', 'body:Jupiter', 'Jupiter', 'Clear',
+          6.9271, 79.8612, 'Observatory Site', 'sample.jpg', 1024, '2026-11-26T20:00:00Z', '2026-11-26T20:00:00Z'
+        )
+      `).run();
+
+      const versionRow18 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow18.user_version).toBe(18);
+
+      // Upgrade to 19
+      await runMigrationsTo19(db);
+
+      const versionRow19 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow19.user_version).toBe(19);
+
+      const preserved = db.prepare("SELECT * FROM observations WHERE id = 'obs_v18_test'").get() as any;
+      expect(preserved).toBeDefined();
+      expect(preserved.title).toBe('V18 Observation with Photo');
+      expect(preserved.latitude).toBeCloseTo(6.9271);
+      expect(preserved.image_file_name).toBe('sample.jpg');
+      expect(preserved.instrument_snapshot).toBeNull();
 
       db.close();
     });
