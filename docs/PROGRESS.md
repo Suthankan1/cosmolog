@@ -780,6 +780,27 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-26 — Issue #26: [release][v1.4.0] Field Observer Verification and Release Candidate Complete
+
+Completed full release gate verification for COSMOLOG v1.4.0 (Field Observer):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Verified F05 Independent Observation Journal: decoupled from article notes, durable SQLite persistence (`observations` table), account-isolated.
+   - [x] Verified F05 Observation Photos & Coordinates: app-private storage (`cosmolog_observations/`) excluded from cache pruning, file size bounds (< 12 MB), coordinate bounds checking ($-90^\circ$ to $+90^\circ$ lat, $-180^\circ$ to $+180^\circ$ lon), consent-based permissions with zero boot prompts.
+   - [x] Verified F06 Celestial Field Instrument: horizontal bearing and elevation angles, 16-point cardinal rose, True vs Magnetic North defensible disclosure, magnetic anomaly detection, foreground-only sensor listener lifecycle, manual stepping controls, and prominent ISO 12312-2 solar observing safety warning.
+   - [x] Verified instrument snapshot attachments to field observations with explicit source separation (`sensor` vs `manual`).
+   - [x] Verified deep linking from Sky Viewer detail sheet (`/sky-viewer`) directly to Field Instrument (`/fieldwork/instrument`).
+   - [x] Verified offline cold start, airplane-mode persistence, and responsive magazine styling across all fieldwork surfaces.
+   - [x] Prior regression gates: all existing SQLite migration 16-19 safety tests, media coordinator exclusive locks, storage telemetry, and expedition downloads pass 100%.
+   - [x] Verified version and build configuration consistency:
+     - `package.json`: `1.4.0`
+     - `app.json`: `1.4.0` (versionCode: 6, buildNumber: "6")
+     - `android/app/build.gradle`: `versionName "1.4.0"`, `versionCode 6`
+   - [x] Automated test suite:
+     - 52 test suites, 283 automated tests passing (100%).
+     - ESLint 9: 0 errors, 0 warnings.
+     - TypeScript: 0 errors.
+
 ## 2026-11-26 — Issue #17: [P2][v1.4.0][F06] Extend Sky Viewer into Celestial Field Instrument and Observation Capture Complete
 
 Completed implementation and verification of F06 Celestial Field Instrument:

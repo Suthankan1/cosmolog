@@ -2,7 +2,7 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
-## Unreleased — v1.4.0 (Field Observer)
+## v1.4.0 — Field Observer (2026-11-26)
 
 - **F05 Independent Observation Journal (Advanced Field Notes):**
   - Durable account-isolated observation journal (`observations` table, schema migration 17) distinct from article and study annotations.
