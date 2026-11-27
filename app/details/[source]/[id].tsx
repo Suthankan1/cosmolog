@@ -9,6 +9,7 @@ import { colors, layout, radii, spacing, typography } from '../../../src/theme/t
 import { formatEditorialDate } from '../../../src/utils/text';
 import { Header } from '../../../src/components/common/Header';
 import { Button } from '../../../src/components/common/Button';
+import { ReadAloudBar } from '../../../src/components/common/ReadAloudBar';
 import { EmptyState } from '../../../src/components/common/EmptyState';
 import { OfflineBanner } from '../../../src/components/common/OfflineBanner';
 import { DiscoveryImage } from '../../../src/components/discovery/DiscoveryImage';
@@ -134,6 +135,11 @@ export default function DetailsScreen() {
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             {item.source === 'nasa-apod' ? 'About this observation' : item.source === 'nasa-media' ? 'Archive description' : 'Publisher summary'}
           </Text>
+          <ReadAloudBar
+            title={item.title}
+            textToRead={paragraphs.join('\n\n') || item.summary || item.title}
+            contentScopeLabel={item.source === 'nasa-apod' ? 'APOD observation text' : 'Publisher summary'}
+          />
           <View onLayout={measureBody} style={styles.paragraphs}>
             {paragraphs.length ? paragraphs.map((paragraph, index) =>
               <Text key={index} onLayout={event => measureParagraph(index, event)} style={styles.body}>{paragraph}</Text>
