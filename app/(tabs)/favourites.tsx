@@ -99,6 +99,7 @@ export default function FavouritesScreen() {
         ListHeaderComponent={header}
         ListFooterComponent={(
       <DestinationGroup title="Shelf tools" icon="folder">
+        <Button title="Personal Sky Timeline" icon="calendar" variant="destination" onPress={() => router.push('/timeline' as never)} />
         <Button title="Offline library & storage" icon="hard-drive" variant="destination" onPress={() => router.push('/offline-library' as never)} />
         <Button title="Saved study entries" icon="book-open" variant="destination" onPress={() => router.push({ pathname: '/study', params: { saved: '1' } })} />
         <Button title="Collections" icon="folder" variant="destination" onPress={() => router.push('/collections')} />
