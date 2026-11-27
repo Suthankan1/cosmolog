@@ -1012,3 +1012,35 @@ Completed implementation and verification of F09 Personal Sky Timeline:
    - Full test suite: 59 test suites, 335 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-27 — Issue #22: [P2][v1.6.0][F10] Sourced Annual Meteor Calendar Complete
+
+Completed implementation and verification of F10 Sourced Annual Meteor Calendar:
+
+1. **Curated & Verified Annual Dataset (`src/features/events/data/meteors-2026.json`):**
+   - Verified 7 major annual showers (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids) cross-checked between IMO (S10) and AMS (S11).
+   - Strict adherence to source date precision: exact UTC peaks preserved where known; date-only precision (e.g. Orionids) explicitly retained without fabricating fake hours.
+   - Idealized Zenithal Hourly Rates (ZHR), atmospheric entry velocity (km/s), parent bodies, and radiant coordinates.
+   - Pinned edition year 2026 with reviewedAt timestamp and explicit expiry tracking (`validUntil: '2026-12-31'`).
+
+2. **Timezone & Expiry Engine (`src/features/events/meteorFormatter.ts`):**
+   - Exact UTC peak conversion to selected IANA timezone (including half-hour offsets e.g. `Asia/Colombo` +05:30).
+   - Automatic expiry detection warning users against reusing previous year peak hours without annual review.
+   - Prominent ZHR caveat disclosing that rates are idealized theoretical maximums under pristine skies, not guaranteed local visibility or weather forecasts.
+
+3. **Meteor Calendar Interface (`app/events/meteors.tsx`):**
+   - Editorial cards with status indicators (`PEAK ACTIVE NOW`, `ACTIVE SHOWER`, `UPCOMING`, `PAST`).
+   - Quick-action buttons: "Log observation" pre-populating the observation journal with the shower's celestial target ID (`meteor:<id>`), and "Locate radiant" linking directly into Sky Viewer (`/sky-viewer`).
+   - Sourced provenance footer citing S10/S11 and copyright/fact boundaries.
+   - Entry points linked from Explore Hub (`app/explore/index.tsx`) and Fieldwork Hub (`app/fieldwork/index.tsx`).
+
+4. **Observation Linking & Timeline Projection (1.6.6):**
+   - Demonstrated linking field observations to meteor shower celestial targets (`meteor:geminids-2026`), seamlessly visible and categorized in the Personal Sky Timeline (`/timeline`).
+
+5. **Automated Verification:**
+   - `tests/meteorFormatter.test.ts`: 7 tests verifying timezone conversion, half-hour offsets, date-only preservation, status derivation, and expiry checks.
+   - `tests/meteorRepository.test.ts`: 5 tests verifying manifest contracts, uniqueness, chronological ordering, filtering, and lookup.
+   - `tests/meteorCalendarScreen.test.tsx`: 4 component tests verifying rendering, status badges, observation logging navigation, and Sky Viewer deep-linking.
+   - Full test suite: 62 test suites, 356 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.

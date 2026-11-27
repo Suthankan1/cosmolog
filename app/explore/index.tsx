@@ -169,6 +169,40 @@ export default function ExploreHubScreen() {
           </View>
         </Pressable>
 
+        {/* F10: Annual Meteor Calendar Card */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open Annual Meteor Calendar: Sourced shower dates and active windows"
+          accessibilityHint="Navigates to the Annual Meteor Calendar"
+          style={({ pressed }) => [styles.labCard, pressed && styles.cardPressed]}
+          onPress={() => router.push('/events/meteors' as never)}
+        >
+          <View style={styles.labCardHeader}>
+            <View style={styles.tagBadge}>
+              <Icon name="zap" size={14} color={colors.terracotta} />
+              <Text style={styles.tagText}>ANNUAL CALENDAR · F10</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.forest} />
+          </View>
+
+          <Text accessibilityRole="header" style={styles.labTitle}>Meteor Showers</Text>
+          <Text style={styles.labSubtitle}>Annual Astronomical Calendar & Radiant Locator</Text>
+          <Text style={styles.labCopy}>
+            Explore major annual meteor showers, active orbital streams, parent comets, and verified peak timing sourced directly from the IMO and AMS.
+          </Text>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.metricPill}>
+              <Icon name="calendar" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>IMO & AMS Verified</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Icon name="check-circle" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>100% Offline</Text>
+            </View>
+          </View>
+        </Pressable>
+
         {/* Laboratory Scientific Standards Note */}
         <View style={styles.standardsBox}>
           <View style={styles.standardsHeader}>
