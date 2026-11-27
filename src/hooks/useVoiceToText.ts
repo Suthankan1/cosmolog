@@ -9,6 +9,7 @@ import {
   requestSpeechPermissions,
   supportsOfflineRecognition,
 } from '../services/voice/speechService';
+import { narrationController } from '../services/voice/narrationService';
 
 export interface UseVoiceToTextOptions {
   onTranscriptChange: (text: string, isFinal: boolean) => void;
@@ -92,6 +93,9 @@ export function useVoiceToText({
 
   const startListening = useCallback(async () => {
     try {
+      // Coordinate with Read Aloud: stop any ongoing narration before starting microphone listening
+      await narrationController.stop();
+
       setError(null);
       const hasPermission = await requestSpeechPermissions();
       if (!hasPermission) {

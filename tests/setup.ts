@@ -103,3 +103,30 @@ jest.mock('expo-speech-recognition', () => {
   };
 });
 
+// Mock expo-speech for Node / Jest test environments
+jest.mock('expo-speech', () => {
+  let isSpeaking = false;
+  return {
+    speak: jest.fn((text: string, options?: any) => {
+      isSpeaking = true;
+      if (options?.onDone) {
+        setTimeout(() => {
+          if (isSpeaking) {
+            options.onDone();
+          }
+        }, 10);
+      }
+    }),
+    stop: jest.fn(async () => {
+      isSpeaking = false;
+    }),
+    pause: jest.fn(async () => {}),
+    resume: jest.fn(async () => {}),
+    isSpeakingAsync: jest.fn(async () => isSpeaking),
+    getAvailableVoicesAsync: jest.fn(async () => [
+      { identifier: 'en-us-x-sfg#female_1-local', name: 'Samantha', language: 'en-US', quality: 'Enhanced' },
+    ]),
+  };
+});
+
+

@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Header } from '../../../src/components/common/Header';
 import { Button } from '../../../src/components/common/Button';
 import { Icon } from '../../../src/components/common/Icon';
+import { ReadAloudBar } from '../../../src/components/common/ReadAloudBar';
 import { OfflineBanner } from '../../../src/components/common/OfflineBanner';
 import { useAppSelector } from '../../../src/store';
 import { colors, radii, spacing, typography } from '../../../src/theme/tokens';
@@ -130,6 +131,13 @@ export default function EvidenceDossierScreen() {
                 Peer reviewed & verified: {dossier.reviewedAt}
               </Text>
             </View>
+
+            {/* F11: Read Aloud Narration Bar */}
+            <ReadAloudBar
+              title={dossier.headline}
+              textToRead={`${dossier.headline}. Observation: ${dossier.observation}. Method: ${dossier.method}. Inference: ${dossier.inference}. Uncertainty: ${dossier.uncertainty}`}
+              contentScopeLabel="Dossier four-block evidence summary"
+            />
 
             {/* Ruled Block 1: Observation */}
             <View style={styles.blockCard} testID="dossier-block-observation">

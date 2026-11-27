@@ -1061,3 +1061,29 @@ Completed release gate verification for COSMOLOG v1.6.0 (Your Cosmic Journey):
      - `package.json`: `1.6.0`
      - `app.json`: `1.6.0` (versionCode: 8, buildNumber: "8")
      - `android/app/build.gradle`: `versionName "1.6.0"`, `versionCode 8`
+
+## 2026-11-27 — Issue #23: [P2][v1.7.0][F11] Accessible Read Aloud Speech Synthesis Complete
+
+Completed implementation and verification of F11 Accessible Read Aloud:
+
+1. **Native Speech Synthesis Integration (`expo-speech` ~58.0.4):**
+   - Installed SDK 58 compatible `expo-speech` module. Zero microphone permissions requested for speech synthesis (output only).
+   - Single coordinated narration controller (`src/services/voice/narrationService.ts`).
+   - Sentence-bounded text chunker (`chunkTextForNarration`) breaking long articles cleanly without word-boundary fragmentation or buffer exhaustion.
+   - Rate selection (0.8x, 1.0x, 1.25x, 1.5x) clamped safely between 0.5x and 2.0x.
+   - Stale callback cancellation: session tokens incremented on every start/stop ensure discarded callbacks from superseded sessions never trigger state transitions.
+   - Two-way mutual exclusion with speech recognition (`useVoiceToText.ts`): speech synthesis automatically stops before voice recognition begins, and voice recognition is paused when narration starts.
+   - Automatic stop on screen unmount, route change, or logout.
+
+2. **Accessible Reader Interface (`src/components/common/ReadAloudBar.tsx`):**
+   - Touch targets $\ge 48\text{ dp}$ with explicit accessibility roles and hints.
+   - Real-time sentence chunk progress ("Reading section 1 of 3").
+   - Platform audio guidance disclosure covering iOS physical silent switch behavior, content scope boundaries (reading available publisher summary only, with visible text fallback), and offline voice dependencies.
+   - Integrated directly into Discovery Details reader (`app/details/[source]/[id].tsx`) and Evidence Dossier reader (`app/study/dossier/[id].tsx`).
+
+3. **Automated Verification:**
+   - `tests/narrationService.test.ts`: 6 tests verifying chunking bounds, lifecycle transitions, rate clamping, stale callback cancellation, voice recognition coordination, and system voices retrieval.
+   - `tests/readAloudBar.test.tsx`: 4 component tests verifying rendering, audio guidance toggle, rate cycling, and native speech invocation.
+   - Full test suite: 64 test suites, 368 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
