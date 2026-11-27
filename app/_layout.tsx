@@ -65,6 +65,7 @@ function RootNavigator() {
             <Stack.Screen name="explore/scale" />
             <Stack.Screen name="fieldwork/index" />
             <Stack.Screen name="fieldwork/create" />
+            <Stack.Screen name="fieldwork/instrument" />
             <Stack.Screen name="fieldwork/[id]" />
           </Stack.Protected>
           <Stack.Protected guard={!isAuthenticated}>

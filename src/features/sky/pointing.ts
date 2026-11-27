@@ -13,6 +13,40 @@ export function magneticDeclination(trueHeading: number, magneticHeading: number
   return wrapDegrees(trueHeading - magneticHeading + 180) - 180;
 }
 
+export type InstrumentReference = 'true' | 'magnetic' | 'unknown';
+export type InstrumentQuality = 'calibrated' | 'uncalibrated' | 'interference' | 'stale' | 'manual';
+export type InstrumentStatus = 'ready' | 'calibrating' | 'unavailable' | 'manual';
+
+export interface InstrumentReading {
+  status: InstrumentStatus;
+  azimuth: number;
+  altitude: number;
+  cardinal: string;
+  reference: InstrumentReference;
+  quality: InstrumentQuality;
+  timestamp: number;
+  declination: number | null;
+  fieldStrength: number | null;
+  view: ViewDirection | null;
+}
+
+export function cardinalDirection(azimuth: number): string {
+  const cardinals = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(wrapDegrees(azimuth) / 22.5) % 16;
+  return cardinals[index];
+}
+
+export function anglesFromView(view: ViewDirection): { azimuth: number; altitude: number } {
+  const f = view.forward;
+  const altitude = Math.asin(Math.max(-1, Math.min(1, f.z))) * (180 / Math.PI);
+  const cosAlt = Math.cos(altitude * radians);
+  let azimuth = 0;
+  if (Math.abs(cosAlt) > 1e-4) {
+    azimuth = wrapDegrees(Math.atan2(f.x, f.y) * (180 / Math.PI));
+  }
+  return { azimuth, altitude };
+}
+
 export function viewFromSensors(gravity: Vector3, field: Vector3, declination: number): ViewDirection | null {
   const worldUp = unit({ x: -gravity.x, y: -gravity.y, z: -gravity.z }, 4);
   const fieldStrength = Math.hypot(field.x, field.y, field.z);
@@ -38,5 +72,66 @@ export function viewFromSensors(gravity: Vector3, field: Vector3, declination: n
     right: toTrueNorth(magneticEast.x, magneticNorth.x, worldUp.x),
     up: toTrueNorth(magneticEast.y, magneticNorth.y, worldUp.y),
     forward: toTrueNorth(-magneticEast.z, -magneticNorth.z, -worldUp.z),
+  };
+}
+
+export function deriveInstrumentReading(
+  gravity: Vector3 | undefined,
+  field: Vector3 | undefined,
+  declination: number | null,
+  now: number,
+  lastMotion: number,
+  lastField: number,
+): {
+  status: 'ready';
+  azimuth: number;
+  altitude: number;
+  cardinal: string;
+  reference: InstrumentReference;
+  quality: InstrumentQuality;
+  timestamp: number;
+  declination: number | null;
+  fieldStrength: number;
+  view: ViewDirection;
+} | {
+  status: 'calibrating' | 'unavailable';
+  reason?: 'missing' | 'stale' | 'interference';
+  fieldStrength?: number;
+} {
+  if (!gravity || !field) {
+    return { status: 'calibrating', reason: 'missing' };
+  }
+
+  const fieldStrength = Math.hypot(field.x, field.y, field.z);
+  if (!Number.isFinite(fieldStrength) || fieldStrength < 15 || fieldStrength > 100) {
+    return { status: 'calibrating', reason: 'interference', fieldStrength };
+  }
+
+  const isStale = now - lastMotion >= 1500 || now - lastField >= 1500;
+  if (isStale) {
+    return { status: 'calibrating', reason: 'stale', fieldStrength };
+  }
+
+  const effectiveDeclination = declination ?? 0;
+  const view = viewFromSensors(gravity, field, effectiveDeclination);
+  if (!view) {
+    return { status: 'calibrating', reason: 'interference', fieldStrength };
+  }
+
+  const { azimuth, altitude } = anglesFromView(view);
+  const reference: InstrumentReference = declination !== null ? 'true' : 'magnetic';
+  const quality: InstrumentQuality = declination !== null ? 'calibrated' : 'uncalibrated';
+
+  return {
+    status: 'ready',
+    azimuth,
+    altitude,
+    cardinal: cardinalDirection(azimuth),
+    reference,
+    quality,
+    timestamp: Math.max(lastMotion, lastField),
+    declination,
+    fieldStrength,
+    view,
   };
 }

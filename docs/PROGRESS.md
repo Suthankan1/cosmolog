@@ -780,6 +780,38 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-26 — Issue #17: [P2][v1.4.0][F06] Extend Sky Viewer into Celestial Field Instrument and Observation Capture Complete
+
+Completed implementation and verification of F06 Celestial Field Instrument:
+
+1. **Shared Direction & Pointing Pipeline (`src/features/sky/pointing.ts`, `src/features/sky/useSkyPointing.ts`):**
+   - Extracted shared direction model deriving horizontal bearing ($0^\circ\text{--}360^\circ$), elevation angle ($-90^\circ\text{--}+90^\circ$), 16-point cardinal labels (`N`, `NNE`, `NE`, etc.), and true vs magnetic reference frames.
+   - True heading reference requires defensible declination; falls back transparently to magnetic north without mislabeling.
+   - Detects abnormal magnetic interference ($< 15\,\mu\text{T}$ or $> 100\,\mu\text{T}$) and rejects stale sensor readings ($> 1500\text{ ms}$).
+   - Shared foreground hook (`useSkyPointing`) guarantees zero duplicate sensor subscriptions or background battery drain; unmount/blur safely unsubscribes.
+
+2. **Celestial Field Instrument Surface (`app/fieldwork/instrument.tsx`):**
+   - Interactive editorial instrument featuring a forest dial (`#184235`), ivory numbers (`#F8F4EA`), brass bezel (`#C79B4D`), and live inclination reading.
+   - Accessible scientific telemetry table: Azimuth, Elevation, Reference Coordinate Frame, Sensor Quality, Field Strength, and Sample Timestamp.
+   - Manual controls mode with stepper adjustment buttons ($-15^\circ$, $-5^\circ$, $+5^\circ$, $+15^\circ$ azimuth; $-10^\circ$, $+10^\circ$ elevation) and numeric inputs with $\ge 48\text{ dp}$ touch targets.
+   - Celestial target guidance calculating real-time relative bearing and elevation offsets.
+   - Prominent, high-contrast solar observing safety warning alerting users to never look at or point viewfinders at the Sun without certified ISO 12312-2 filtration.
+   - Deep linking from Sky Viewer detail sheet (`/sky-viewer`) via "Sight in Field Instrument" action.
+
+3. **Schema Migration 19 & Observation Persistence:**
+   - Schema migration 19 (`MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL`) adding `instrument_snapshot TEXT` to `observations` table.
+   - `InstrumentSnapshot` data model with strict boundary validation (`validateInstrumentSnapshot`) enforcing valid ISO timestamps, bounded angles, and explicit source separation (`source: 'sensor' | 'manual'`) preventing fabricated precision.
+   - Fieldwork Hub, Observation Creator, and Detail Screen display attached sightings and allow seamless snapshot recording.
+
+4. **Automated Verification:**
+   - `tests/skyPointing.test.ts`: 10 pure mathematical direction and sensor derivation tests passing (100%).
+   - `tests/fieldInstrumentScreen.test.tsx`: 6 component and user interaction tests passing (100%).
+   - `tests/migrationSafety.test.ts`: verified migration 19 fresh install and upgrade from v18 (11 tests passing).
+   - `tests/observationsRepository.test.ts`: 10 repository persistence and snapshot validation tests passing (100%).
+   - Full test suite: 52 test suites, 283 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-26 — Issue #16: [P2][v1.4.0][F05] Optional Observation Photos and Consent-Based Coordinates Complete
 
 Completed implementation and verification of F05 Observation Photos & Coordinates:

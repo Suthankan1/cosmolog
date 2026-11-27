@@ -1,12 +1,28 @@
 import { watchHeadingAsync, type LocationSubscription } from 'expo-location';
 import { DeviceMotion, Magnetometer } from 'expo-sensors';
 import { useEffect, useState } from 'react';
-import { magneticDeclination, viewFromSensors } from './pointing';
+import {
+  deriveInstrumentReading,
+  magneticDeclination,
+  type InstrumentQuality,
+  type InstrumentReference,
+} from './pointing';
 import type { Vector3, ViewDirection } from './projection';
 
-type PointingState =
-  | { status: 'calibrating' | 'unavailable' }
-  | { status: 'ready'; view: ViewDirection };
+export type PointingState =
+  | { status: 'calibrating' | 'unavailable'; reason?: string }
+  | {
+      status: 'ready';
+      view: ViewDirection;
+      azimuth: number;
+      altitude: number;
+      cardinal: string;
+      reference: InstrumentReference;
+      quality: InstrumentQuality;
+      timestamp: number;
+      declination: number | null;
+      fieldStrength: number | null;
+    };
 
 function smooth(previous: Vector3 | undefined, next: Vector3): Vector3 {
   if (!previous) return next;
@@ -34,17 +50,21 @@ export function useSkyPointing(enabled: boolean, reducedMotion: boolean): Pointi
     let lastField = 0;
     let lastRender = 0;
     const interval = reducedMotion ? 150 : 50;
-    const mark = (status: 'calibrating' | 'unavailable') => setState(current => current.status === status ? current : { status });
+    const mark = (status: 'calibrating' | 'unavailable', reason?: string) =>
+      setState(current => (current.status === status && current.reason === reason ? current : { status, reason }));
     const startedAt = Date.now();
 
     const update = () => {
       const now = Date.now();
       if (stopped || now - lastRender < interval) return;
       lastRender = now;
-      const sensorsFresh = now - lastMotion < 1500 && now - lastField < 1500;
-      const view = sensorsFresh && gravity && field && declination !== null ? viewFromSensors(gravity, field, declination) : null;
-      if (view) setState({ status: 'ready', view });
-      else mark(!sensorsFresh && now - startedAt > 3000 ? 'unavailable' : 'calibrating');
+      const reading = deriveInstrumentReading(gravity, field, declination, now, lastMotion, lastField);
+      if (reading.status === 'ready') {
+        setState(reading);
+      } else {
+        const sensorsFresh = now - lastMotion < 1500 && now - lastField < 1500;
+        mark(!sensorsFresh && now - startedAt > 3000 ? 'unavailable' : 'calibrating', reading.reason);
+      }
     };
 
     const start = async () => {
@@ -52,7 +72,7 @@ export function useSkyPointing(enabled: boolean, reducedMotion: boolean): Pointi
       const [motionAvailable, fieldAvailable] = await Promise.all([DeviceMotion.isAvailableAsync(), Magnetometer.isAvailableAsync()]);
       if (stopped) return;
       if (!motionAvailable || !fieldAvailable) {
-        mark('unavailable');
+        mark('unavailable', 'hardware_missing');
         return;
       }
       DeviceMotion.setUpdateInterval(interval);
@@ -71,11 +91,21 @@ export function useSkyPointing(enabled: boolean, reducedMotion: boolean): Pointi
         update();
       }));
       timer = setInterval(update, 500);
-      headingWatch = await watchHeadingAsync(({ trueHeading, magHeading, accuracy }) => {
-        declination = magneticDeclination(trueHeading, magHeading, accuracy);
-        update();
-      }, () => { declination = null; });
-      if (stopped) headingWatch.remove();
+      try {
+        headingWatch = await watchHeadingAsync(
+          ({ trueHeading, magHeading, accuracy }) => {
+            declination = magneticDeclination(trueHeading, magHeading, accuracy);
+            update();
+          },
+          () => {
+            declination = null;
+          },
+        );
+        if (stopped) headingWatch.remove();
+      } catch {
+        // Location or compass heading permission absent; continue with magnetic reference
+        declination = null;
+      }
     };
 
     const dispose = () => {
@@ -87,7 +117,7 @@ export function useSkyPointing(enabled: boolean, reducedMotion: boolean): Pointi
     };
     void start().catch(() => {
       if (!stopped) {
-        mark('unavailable');
+        mark('unavailable', 'start_failed');
         dispose();
       }
     });

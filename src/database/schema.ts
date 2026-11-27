@@ -270,4 +270,9 @@ export const MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL = `
   PRAGMA user_version = 18;
 `;
 
+export const MIGRATE_TO_INSTRUMENT_SNAPSHOT_SQL = `
+  ALTER TABLE observations ADD COLUMN instrument_snapshot TEXT;
+  PRAGMA user_version = 19;
+`;
+
 

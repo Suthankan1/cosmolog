@@ -110,7 +110,25 @@ export default function SkyViewerScreen() {
           );
         }}
       />
-      {selected && <SkyDetailSheet key={selected.id} id={selected.id} position={selected} offline={offline} onStudy={()=>{setSelected(undefined);router.push({pathname:'/study/[id]',params:{id:selected.id}});}} onClose={() => setSelected(undefined)} />}
+      {selected && (
+        <SkyDetailSheet
+          key={selected.id}
+          id={selected.id}
+          position={selected}
+          offline={offline}
+          onStudy={() => {
+            const currentId = selected.id;
+            setSelected(undefined);
+            router.push({ pathname: '/study/[id]', params: { id: currentId } });
+          }}
+          onInstrument={() => {
+            const currentId = selected.id;
+            setSelected(undefined);
+            router.push({ pathname: '/fieldwork/instrument' as never, params: { targetId: currentId } });
+          }}
+          onClose={() => setSelected(undefined)}
+        />
+      )}
     </View>
   );
 }
