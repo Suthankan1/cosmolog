@@ -780,6 +780,35 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-27 — Issue #18: [P2][v1.5.0][F07] Build Sourced Evidence Dossiers (Behind the Discovery) Complete
+
+Completed implementation and verification of F07 Sourced Evidence Dossiers:
+
+1. **Evidence Dossier Schema & Model (`src/features/study/evidence.ts`):**
+   - Defined validated, revisioned data models for `EvidenceDossier`, `SourceRef`, and `EvidenceAsset`.
+   - Strict boundary validation (`validateEvidenceDossier`, `validateSourceRef`) enforcing four ruled scientific blocks: empirical observation, method/instrumentation, scientific inference, and explicit negative uncertainty boundaries (what the data does NOT establish).
+   - Validated secure HTTPS primary source references with author, title, publisher, and access timestamps.
+   - Distinct labeling separating empirical spectroscopic data from artist concept renderings.
+
+2. **Curated, Authoritative Reference Dossiers (`src/features/study/evidenceData.ts`):**
+   - Three original, peer-verified evidence dossiers authored from primary research literature:
+     - **Webb WASP-39 b NIRSpec Transmission Spectroscopy:** Empirical 4.3 µm absorption peak establishing molecular carbon dioxide ($CO_2$) in an exoplanetary atmosphere. Explicitly separates measured transit dips from visual renderings and strictly disclaims habitability or biological life inferences (NASA S07/S08).
+     - **Hubble Europa Plume Candidates:** Far-ultraviolet auroral emissions ($OI\text{ 130.4 nm}$, Lyman-$\alpha$) and recurring limb silhouettes silhouetted against Jupiter. Explicitly notes extreme intermittency and disclaims direct sampling or proven connectivity to Europa's global subsurface ocean (NASA/STScI S12).
+     - **Keck & VLT Sagittarius A* Astrometric Orbits:** Two decades of adaptive optics astrometry for star S2 enclosing a central dark mass of $(4.15 \pm 0.13) \times 10^6\,M_\odot$. Explicitly notes optical dust extinction and disclaims direct horizon resolution without millimeter VLBI (Keck/ESO S12).
+
+3. **Repository & Reader Presentation Layer (`src/features/study/evidenceRepository.ts`, `app/study/dossier/[id].tsx`, `app/study/dossiers.tsx`):**
+   - Offline-first repository (`listEvidenceDossiers`, `getEvidenceDossierById`, `getEvidenceDossiersForTarget`) returning validated models.
+   - Dedicated editorial Evidence Dossier reader screen (`app/study/dossier/[id].tsx`) featuring four ruled editorial blocks, revision badges, target tags, asset attribution, and actionable source citation buttons with offline status handling.
+   - Curated dossier index screen (`app/study/dossiers.tsx`) with scientific integrity disclosures.
+   - Cross-feature deep links from Space Study reader (`app/study/[id].tsx`), Explore Hub (`app/explore/index.tsx`), and Sky Viewer celestial detail sheet (`src/features/sky/SkyDetailSheet.tsx`).
+
+4. **Automated Verification:**
+   - `tests/evidenceDossiers.test.ts`: 9 schema, boundary, and repository tests passing (100%).
+   - `tests/evidenceDossierScreens.test.tsx`: 8 screen interaction, ruled block, and cross-linking tests passing (100%).
+   - Full test suite: 54 test suites, 301 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-26 — Issue #26: [release][v1.4.0] Field Observer Verification and Release Candidate Complete
 
 Completed full release gate verification for COSMOLOG v1.4.0 (Field Observer):

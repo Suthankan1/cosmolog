@@ -85,6 +85,19 @@ From Discover or Profile, open **Expedition packs** to embark on structured scie
   - **Travel Time Simulator:** Straight-line Euclidean duration simulator ($t = d/v$) with speed presets (Commercial Jet, Voyager 1, Parker Solar Probe, 0.1c) and custom velocity inputs with strict physical validation rejecting speeds $\ge c$. Discloses straight-line Euclidean assumptions vs curved Keplerian orbital mechanics.
   - **Interconnected Learning:** Deep links to Space Study curriculum chapters (`/study/[id]`), Expeditions (`/reading-packs`), and Sky Viewer targets (`/sky-viewer`).
 
+### Behind the Discovery: Sourced Evidence Dossiers (F07)
+- **Peer-Reviewed Scientific Dossiers (`/study/dossiers`):** Rigorous observational case studies authored from primary literature (NASA, ESA, STScI, Keck) evaluating real spacecraft and observatory detections.
+- **Four Ruled Scientific Blocks:** Every dossier structures evidence into four distinct ruled editorial blocks:
+  1. **Empirical Observation:** Measured flux dips, spectral absorption lines, and astrometric coordinates.
+  2. **Method & Instrumentation:** Observational facility (JWST, Hubble, Keck, VLT), detector modes, and wavelength regimes.
+  3. **Scientific Inference:** Supported physical conclusions (e.g. molecular detection, enclosed gravitational mass).
+  4. **Uncertainty & Boundary Conditions:** Honest science disclaimers stating what the evidence does NOT establish (e.g., carbon dioxide detection is not evidence of biological life; distinguishing empirical spectroscopic data from illustrative artist concepts).
+- **Curated Case Studies:**
+  - **Webb WASP-39 b NIRSpec Transmission Spectroscopy:** Decisive 4.3 µm molecular $CO_2$ absorption peak in a gas giant atmosphere (NASA S07/S08).
+  - **Hubble Europa Plume Candidates:** Far-ultraviolet auroral emissions and limb transit silhouettes disclaiming confirmed ocean connectivity (NASA S12).
+  - **Keck & VLT Sagittarius A* Orbit Astrometry:** Two-decade relativistic orbit of star S2 enclosing $4.15 \times 10^6\,M_\odot$ (Keck/ESO S12).
+- **Interconnected Knowledge Graph:** Deep-linked from Space Study chapters (`/study/[id]`), Explore Hub (`/explore`), and Sky Viewer target detail sheets (`/sky-viewer`).
+
 ### Sky Viewer
 
 Open **Discover → Study, sky and archives → Sky Viewer** and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.
