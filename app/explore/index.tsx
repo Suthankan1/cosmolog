@@ -135,6 +135,40 @@ export default function ExploreHubScreen() {
           </View>
         </Pressable>
 
+        {/* F08: Cultural Sky Overlays Card */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open One Sky, Many Stories: Cross-cultural celestial comparison"
+          accessibilityHint="Navigates to the cultural sky overlays comparative viewer"
+          style={({ pressed }) => [styles.labCard, pressed && styles.cardPressed]}
+          onPress={() => router.push('/explore/cultures' as never)}
+        >
+          <View style={styles.labCardHeader}>
+            <View style={styles.tagBadge}>
+              <Icon name="globe" size={14} color={colors.terracotta} />
+              <Text style={styles.tagText}>ONE SKY, MANY STORIES · F08</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.forest} />
+          </View>
+
+          <Text accessibilityRole="header" style={styles.labTitle}>One Sky, Many Stories</Text>
+          <Text style={styles.labSubtitle}>Cross-Cultural Asterism Comparison</Text>
+          <Text style={styles.labCopy}>
+            Compare how different ancient cultures viewed the exact same equatorial stars: from Indigenous Arabic Al-Jawza’ (“The Central Queen”) to Chinese Traditional Shen (参宿, “The Three Generals”).
+          </Text>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.metricPill}>
+              <Icon name="book-open" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>Stellarium & Al-Sufi Sources</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Icon name="check-circle" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>100% Offline</Text>
+            </View>
+          </View>
+        </Pressable>
+
         {/* Laboratory Scientific Standards Note */}
         <View style={styles.standardsBox}>
           <View style={styles.standardsHeader}>
