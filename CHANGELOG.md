@@ -2,6 +2,29 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
+## v1.7.0 — Accessible Exploration (2026-11-27)
+
+- **F11 Accessible Read Aloud (Native Speech Synthesis):**
+  - Native speech synthesis integration via `expo-speech` (`~58.0.4`) without requesting microphone permissions (output only).
+  - Single central narration controller (`src/services/voice/narrationService.ts`) with lifecycle management, rate clamping ($0.5\times\text{--}2.0\times$), and rate selection presets ($0.8\times, 1.0\times, 1.25\times, 1.5\times$).
+  - Sentence-bounded text chunking (<350 chars) preventing buffer exhaustion and word-boundary clipping.
+  - Stale callback cancellation: session tokens incremented on every start/stop ensure discarded callbacks from superseded sessions never trigger state transitions.
+  - Two-way mutual exclusion with speech recognition (`src/hooks/useVoiceToText.ts`): speech synthesis automatically stops before voice recognition begins, and voice recognition is paused when narration starts.
+  - Automatic stop on screen unmount, route blur, or user logout.
+  - Accessible `ReadAloudBar` component (`src/components/common/ReadAloudBar.tsx`) with $\ge 48\text{ dp}$ touch targets, progress indicators, iOS silent mode caveat notice, and publisher summary boundaries.
+  - Integrated into Discovery Details reader (`app/details/[source]/[id].tsx`) and Evidence Dossier reader (`app/study/dossier/[id].tsx`).
+
+- **F12 Night Observation Mode (Dark Red/Charcoal Theme):**
+  - High-contrast charcoal/obsidian and dark red palette (`src/theme/tokens.ts`): background (`#0D0B0B`), surface (`#1A1414`), primary red heading accent (`#E64A38`), soft light-red ink (`#F2D6D3`), muted rose-gray (`#A8807C`), deep wine red chip background (`#2E1C1A`), and amber brass (`#E6A15C`).
+  - Contrast-tested tokens: body text contrast ratio $> 13:1$ against background (exceeding WCAG AAA 7:1); primary red headings $> 4.8:1$ (exceeding WCAG AA 4.5:1). Preserves human eye dark adaptation at the telescope eyepiece without claiming medical guarantees.
+  - Full visual parity in default editorial mode (`#F8F4EA` ivory / `#184235` forest / `#C1654A` terracotta / `#C79B4D` brass).
+  - Schema migration 20 adding `reader_preferences` table (`account_id`, `theme`, `speech_rate`, `voice_id`, `updated_at`).
+  - Durable account-isolated SQLite repository (`src/database/repositories/preferencesRepository.ts`), defaulting to editorial mode and resetting safely on logout.
+  - Root application layout wrapped in `ThemeProvider` (`app/_layout.tsx`), dynamically adjusting system status bar style (`light` in night mode, `dark` in daytime editorial mode) and Stack canvas background.
+  - Dedicated Profile settings toggle (`app/(tabs)/profile.tsx`) with clear disclaimer that system dialogs use OS appearance.
+  - Fieldwork Hub quick toggle chip (`app/fieldwork/index.tsx`) for immediate activation and exit at the eyepiece.
+  - Adaptive styling across navigation tabs, floating docks, common buttons, headers, and banners.
+
 ## v1.6.0 — Your Cosmic Journey (2026-11-27)
 
 - **F09 Personal Sky Timeline (Account-Scoped Historical Chronology):**

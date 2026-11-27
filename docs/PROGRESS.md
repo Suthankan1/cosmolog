@@ -1118,3 +1118,19 @@ Completed implementation and verification of F12 Night Observation Mode:
    - Full test suite: 66 test suites, 381 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-27 — Issue #29: [release][v1.7.0] Accessible Exploration Verification and Release Gate Complete
+
+Completed release gate verification for COSMOLOG v1.7.0 (Accessible Exploration):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Verified F11 Accessible Read Aloud: native speech synthesis via `expo-speech` (~58.0.4) without microphone permissions, central narration controller with bounded chunking, two-way mutual exclusion with speech recognition, iOS silent mode caveat guidance, and visible publisher summary boundaries.
+   - [x] Verified F12 Night Observation Mode: semantic theme tokens (`src/theme/tokens.ts`) with high-contrast dark red and charcoal palette, contrast-tested against WCAG AAA (>13:1 for text, >4.8:1 for headings), Migration 20 adding `reader_preferences` table, account isolation, default editorial theme preservation, quick toggle in Fieldwork masthead, and settings toggle in Profile.
+   - [x] Verified core offline behavior, app restart with persisted night theme and speech rate, and logout theme reset.
+   - [x] All 66 test suites and 381 automated tests passing with zero failures.
+   - [x] ESLint 9: 0 errors, 0 warnings.
+   - [x] TypeScript: 0 errors.
+   - [x] Version bump consistency:
+     - `package.json`: `1.7.0`
+     - `app.json`: `1.7.0` (versionCode: 9, buildNumber: "9")
+     - `android/app/build.gradle`: `versionName "1.7.0"`, `versionCode 9`
