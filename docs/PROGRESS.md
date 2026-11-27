@@ -780,6 +780,25 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-27 — Issue #27: [release][v1.5.0] Science Behind Space Verification and Release Candidate Complete
+
+Completed full release gate verification for COSMOLOG v1.5.0 (Science Behind Space):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Verified F07 Behind the Discovery: 3 peer-reviewed evidence dossiers (WASP-39 b, Europa plume candidates, Sagittarius A* orbits) with four ruled scientific blocks, explicit negative uncertainty disclosures (what evidence does NOT establish), empirical data vs artist concept distinction, and secure HTTPS primary literature citations.
+   - [x] Verified F08 One Sky, Many Stories: 2 documented cultural sky traditions (Indigenous Arabic Al-Jawza' and Chinese Traditional Shen) for the equatorial region, strictly mapped to verified Hipparcos catalog entries in `bright-stars.json`.
+   - [x] Verified mathematical sky projection: 100% stable, identical star pixel coordinates across modes; non-gesture accessible selector (Al-Jawza', Shen, Compare Both); accessible Star Telemetry Table; explicit disclaimers separating cultural asterisms from modern IAU Orion.
+   - [x] Verified cross-feature deep linking from Space Study chapters (`/study/[id]`), Explore Hub (`/explore`), and Sky Viewer (`/sky-viewer`).
+   - [x] Prior regression gates: all existing SQLite migrations (v1-19), media coordinator locks, storage telemetry, observation journal, eyepiece photos, and field instrument pass 100%.
+   - [x] Verified version and build configuration consistency:
+     - `package.json`: `1.5.0`
+     - `app.json`: `1.5.0` (versionCode: 7, buildNumber: "7")
+     - `android/app/build.gradle`: `versionName "1.5.0"`, `versionCode 7`
+   - [x] Automated test suite:
+     - 56 test suites, 318 automated tests passing (100%).
+     - ESLint 9: 0 errors, 0 warnings.
+     - TypeScript: 0 errors.
+
 ## 2026-11-27 — Issue #20: [P2][v1.5.0][F08] Implement One Sky, Many Stories Comparison UI Complete
 
 Completed implementation and verification of F08 One Sky, Many Stories Comparison UI:

@@ -2,7 +2,7 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
-## Unreleased
+## v1.5.0 — Science Behind Space (2026-11-27)
 
 - **F08 Licensed Cultural Sky Overlay Datasets (One Sky, Many Stories):**
   - Peer-reviewed sky culture overlay schema and validator (`src/features/sky/catalog/cultures/types.ts`) with Hipparcos catalog verification, segment topology validation, and explicit modern IAU boundary disclaimers.
