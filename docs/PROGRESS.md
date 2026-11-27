@@ -1044,3 +1044,20 @@ Completed implementation and verification of F10 Sourced Annual Meteor Calendar:
    - Full test suite: 62 test suites, 356 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-27 — Issue #28: [release][v1.6.0] Your Cosmic Journey Verification and Release Gate Complete
+
+Completed release gate verification for COSMOLOG v1.6.0 (Your Cosmic Journey):
+
+1. **Release Gate Verification Checklist:**
+   - [x] Verified F09 Personal Sky Timeline: pure SQLite read projection without event duplication or fabricated timestamps, strict account isolation, stable cursor pagination, local timezone day boundaries (`Asia/Colombo` +05:30), and explicit action vs publication date differentiation.
+   - [x] Verified F10 Sourced Annual Meteor Calendar: verified 2026 dataset from IMO (S10) and AMS (S11), exact UTC peak conversion to local time, date-only peak preservation, expiration warning, and idealized ZHR caveat.
+   - [x] Verified Observation to Timeline linkage (1.6.6): observation created from meteor shower radiant target (`meteor:<id>`) projects accurately in the personal timeline under `OBSERVATION`.
+   - [x] Verified cross-feature deep linking from Field Shelf, Fieldwork Hub, Explore Hub, and Sky Viewer.
+   - [x] All 62 test suites and 356 automated tests passing with zero failures.
+   - [x] ESLint 9: 0 errors, 0 warnings.
+   - [x] TypeScript: 0 errors.
+   - [x] Version bump consistency:
+     - `package.json`: `1.6.0`
+     - `app.json`: `1.6.0` (versionCode: 8, buildNumber: "8")
+     - `android/app/build.gradle`: `versionName "1.6.0"`, `versionCode 8`

@@ -2,7 +2,25 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
-## v1.5.0 — Science Behind Space (2026-11-27)
+## v1.6.0 — Your Cosmic Journey (2026-11-27)
+
+- **F09 Personal Sky Timeline (Account-Scoped Historical Chronology):**
+  - Account-isolated SQLite read projection (`src/features/timeline/timelineRepository.ts`) unifying independent eyepiece observations (`observations`), saved discoveries (`favourites` JOIN `cached_items`), article reading history (`reading_history` JOIN `cached_items`), and study bookmarks (`study_bookmarks` JOIN `study_entries`).
+  - Zero event log duplication; zero invented timestamps. Undated records (e.g. study bookmarks without timestamps) are honestly designated `dateKind: 'undated'` and ordered deterministically at the end of the timeline.
+  - Stable composite cursor `(event_at, kind, source_id)` supporting smooth cursor pagination across dated and undated rows.
+  - Timezone-aware date grouping engine (`src/features/timeline/timelineGrouping.ts`) with local midnight boundaries (including `Asia/Colombo` +05:30) grouping records into Today, Yesterday, formatted months (e.g. November 2026), and Undated Reference Marks.
+  - Explicit labeling distinguishing user action dates (e.g. Saved / Read date) from publisher release dates without conflation.
+  - Dedicated Personal Sky Timeline surface (`app/timeline/index.tsx`) with category filter chips (`All`, `Observations`, `Saved`, `Reading`, `Study`), color-coded event badges, and typed routing to `/fieldwork/[id]`, `/details/[source]/[id]`, and `/study/[id]`.
+  - Linked entry points from Field Shelf (`app/(tabs)/favourites.tsx`) and Fieldwork Hub (`app/fieldwork/index.tsx`).
+
+- **F10 Sourced Annual Meteor Calendar:**
+  - Authoritative annual meteor shower dataset for 2026 (`src/features/events/data/meteors-2026.json`) covering 7 major annual showers (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids) cross-checked between the International Meteor Organization (IMO S10) and American Meteor Society (AMS S11).
+  - Strict preservation of source date precision: exact UTC peaks preserved where known; date-only peaks (e.g. Orionids) explicitly retained without fabricated hours.
+  - Timezone conversion engine (`src/features/events/meteorFormatter.ts`) supporting half-hour offsets (`Asia/Colombo` +05:30) and automatic expiration warnings preventing silent annual peak reuse.
+  - Prominent scientific caveat explaining that Zenithal Hourly Rate (ZHR) is an idealized rate under pristine skies with the radiant overhead, not a local visibility or weather forecast.
+  - Accessible Meteor Calendar interface (`app/events/meteors.tsx`) with status badges (`PEAK ACTIVE NOW`, `ACTIVE SHOWER`, `UPCOMING`, `PAST`), quick observation logging linking directly to the observation journal, and radiant locator opening Sky Viewer (`/sky-viewer`).
+  - Cross-feature observation linkage: field observations linked to meteor shower celestial targets (`meteor:<id>`) seamlessly integrate into the Personal Sky Timeline.
+  - Entry points linked from Explore Hub (`app/explore/index.tsx`) and Fieldwork Hub (`app/fieldwork/index.tsx`).
 
 - **F08 Licensed Cultural Sky Overlay Datasets (One Sky, Many Stories):**
   - Peer-reviewed sky culture overlay schema and validator (`src/features/sky/catalog/cultures/types.ts`) with Hipparcos catalog verification, segment topology validation, and explicit modern IAU boundary disclaimers.
