@@ -139,6 +139,13 @@ export default function FieldworkHubScreen() {
                 accessibilityLabel="Open celestial field instrument"
                 onPress={() => router.push('/fieldwork/instrument' as never)}
               />
+              <Button
+                title="Sky timeline"
+                icon="calendar"
+                variant="outline"
+                accessibilityLabel="Open Personal Sky Timeline"
+                onPress={() => router.push('/timeline' as never)}
+              />
             </View>
           </View>
         }

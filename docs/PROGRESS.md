@@ -982,3 +982,33 @@ Completed full release gate verification for COSMOLOG v1.3.0 (Beyond Time and Sc
      - 49 test suites, 239 automated tests passing (100%).
      - ESLint 9: 0 errors, 0 warnings.
      - TypeScript: 0 errors.
+
+## 2026-11-27 — Issue #21: [P2][v1.6.0][F09] Personal Sky Timeline Complete
+
+Completed implementation and verification of F09 Personal Sky Timeline:
+
+1. **Account-Filtered Sourced Read Projection (`src/features/timeline/timelineRepository.ts`):**
+   - Pure SQLite read projection unifying independent observations (`observations`), saved discoveries (`favourites` JOIN `cached_items`), article reading history (`reading_history` JOIN `cached_items`), and study bookmarks (`study_bookmarks` JOIN `study_entries`).
+   - Zero event log duplication; zero invented timestamps. Undated records (e.g. study bookmarks lacking timestamps) explicitly labeled `dateKind: 'undated'` and ordered deterministically at the end.
+   - Stable composite cursor `(event_at, kind, source_id)` supporting smooth cursor pagination across dated and undated rows.
+   - Account isolation strictly enforced: records from account A are never visible to account B.
+   - Dynamic reflection: edits and deletions in underlying tables immediately update in the projection without stale cache.
+
+2. **Timezone & Calendar Day Grouping (`src/features/timeline/timelineGrouping.ts`):**
+   - Correct day boundary calculation across IANA timezones (including `Asia/Colombo` +05:30).
+   - Grouping into "Today", "Yesterday", human-readable month groups (e.g. "November 2026"), and "Undated Reference Marks".
+   - Explicit subtitle labeling differentiating user action date (e.g. Saved / Read date) from publisher publication date.
+
+3. **Magazine UI & Integration (`app/timeline/index.tsx`):**
+   - Accessible timeline view with filter chips (`All`, `Observations`, `Saved`, `Reading`, `Study`).
+   - Color-coded badges and icons per event kind with high-contrast editorial styling.
+   - Typed deep navigation to `/fieldwork/[id]`, `/details/[source]/[id]`, and `/study/[id]`.
+   - Entry points linked from Field Shelf (`app/(tabs)/favourites.tsx`) and Fieldwork Hub (`app/fieldwork/index.tsx`).
+
+4. **Automated Verification:**
+   - `tests/timelineRepository.test.ts`: 6 tests verifying account isolation, deterministic tie-breaking, undated row handling, live edit/delete reflection, cursor pagination, and cursor encoding.
+   - `tests/timelineGrouping.test.ts`: 4 tests verifying timezone day boundaries, subtitle differentiation, and calendar grouping.
+   - `tests/timelineScreen.test.tsx`: 4 component tests verifying rendering, badges, card navigation, and empty state.
+   - Full test suite: 59 test suites, 335 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
