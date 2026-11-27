@@ -253,4 +253,37 @@ describe('timelineRepository SQLite Read Projection', () => {
 
     expect(decodeCursor('invalid-base64')).toBeNull();
   });
+
+  it('demonstrates an observation linked to a meteor shower event visible in timeline (1.6.6)', async () => {
+    await writeDatabase(async db => {
+      await db.runAsync('DELETE FROM observations WHERE account_id = 1');
+      await db.runAsync(`
+        INSERT INTO observations (id, account_id, title, notes, observed_at, timezone, target_id, target_name, conditions, created_at, updated_at)
+        VALUES (
+          'obs_geminids',
+          1,
+          'Geminid Peak Eyepiece Observation',
+          'Counted 14 bright meteors in 30 minutes radiant in Gemini',
+          '2026-12-14T02:00:00.000Z',
+          'Asia/Colombo',
+          'meteor:geminids-2026',
+          'Geminids',
+          'Bortle 3, clear transparency',
+          '2026-12-14T02:30:00.000Z',
+          '2026-12-14T02:30:00.000Z'
+        )
+      `);
+    });
+
+    const result = await getTimelineItems({ accountId: 1, filter: 'observations' });
+    expect(result.items).toHaveLength(1);
+
+    const item = result.items[0];
+    expect(item.title).toBe('Geminid Peak Eyepiece Observation');
+    expect(item.dateKind).toBe('observed');
+    expect(item.metadata?.targetName).toBe('Geminids');
+    expect(item.metadata?.conditions).toContain('Bortle 3');
+    expect(item.routeRef.pathname).toBe('/fieldwork/[id]');
+    expect(item.routeRef.params?.id).toBe('obs_geminids');
+  });
 });

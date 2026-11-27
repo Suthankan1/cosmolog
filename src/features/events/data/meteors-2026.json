@@ -1,0 +1,191 @@
+{
+  "editionYear": 2026,
+  "validFrom": "2026-01-01",
+  "validUntil": "2026-12-31",
+  "reviewedAt": "2026-11-26",
+  "license": "Factual astronomical parameters sourced from IMO & AMS. Explanatory prose and viewing context authored by COSMOLOG.",
+  "sources": [
+    {
+      "id": "S10",
+      "name": "International Meteor Organization (IMO 2026 Meteor Calendar)",
+      "url": "https://www.imo.net/calendar/"
+    },
+    {
+      "id": "S11",
+      "name": "American Meteor Society (AMS Meteor Shower Calendar)",
+      "url": "https://www.amsmeteors.org/meteor-showers/meteor-shower-calendar/"
+    }
+  ],
+  "events": [
+    {
+      "id": "quadrantids-2026",
+      "editionYear": 2026,
+      "name": "Quadrantids",
+      "iauCode": "QUA",
+      "activeStart": "2026-01-01",
+      "activeEnd": "2026-01-12",
+      "peakUTC": "2026-01-03T21:00:00Z",
+      "peakDate": "2026-01-03",
+      "precision": "hour",
+      "radiant": {
+        "ra": 230,
+        "dec": 49,
+        "constellation": "Boötes"
+      },
+      "zhr": 120,
+      "velocityKmS": 41,
+      "parentBody": "Asteroid (196256) 2003 EH1 (extinct comet nucleus)",
+      "skyViewerTargetId": "constellation:Boo",
+      "observingGuidance": "Sharp peak lasting approximately 6 hours. Favors northern observers in the hours before dawn when radiant rises in the northeast.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" }
+      ]
+    },
+    {
+      "id": "lyrids-2026",
+      "editionYear": 2026,
+      "name": "Lyrids",
+      "iauCode": "LYR",
+      "activeStart": "2026-04-14",
+      "activeEnd": "2026-04-30",
+      "peakUTC": "2026-04-22T13:00:00Z",
+      "peakDate": "2026-04-22",
+      "precision": "hour",
+      "radiant": {
+        "ra": 271,
+        "dec": 34,
+        "constellation": "Lyra"
+      },
+      "zhr": 18,
+      "velocityKmS": 49,
+      "parentBody": "Comet C/1861 G1 (Thatcher)",
+      "skyViewerTargetId": "star:Vega",
+      "observingGuidance": "Known for fast meteors with occasional bright fireballs. Radiant culminates high in the morning sky near Vega.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" }
+      ]
+    },
+    {
+      "id": "eta-aquariids-2026",
+      "editionYear": 2026,
+      "name": "Eta Aquariids",
+      "iauCode": "ETA",
+      "activeStart": "2026-04-19",
+      "activeEnd": "2026-05-28",
+      "peakUTC": "2026-05-06T03:00:00Z",
+      "peakDate": "2026-05-06",
+      "precision": "hour",
+      "radiant": {
+        "ra": 338,
+        "dec": -1,
+        "constellation": "Aquarius"
+      },
+      "zhr": 50,
+      "velocityKmS": 66,
+      "parentBody": "Comet 1P/Halley",
+      "skyViewerTargetId": "constellation:Aqr",
+      "observingGuidance": "Fast meteors producing persistent luminous ionization trains. Best observed from tropical and southern latitudes before morning twilight.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" },
+        { "id": "S11", "name": "AMS Meteor Calendar", "url": "https://www.amsmeteors.org/meteor-showers/meteor-shower-calendar/" }
+      ]
+    },
+    {
+      "id": "perseids-2026",
+      "editionYear": 2026,
+      "name": "Perseids",
+      "iauCode": "PER",
+      "activeStart": "2026-07-17",
+      "activeEnd": "2026-08-24",
+      "peakUTC": "2026-08-12T14:00:00Z",
+      "peakDate": "2026-08-12",
+      "precision": "hour",
+      "radiant": {
+        "ra": 48,
+        "dec": 58,
+        "constellation": "Perseus"
+      },
+      "zhr": 100,
+      "velocityKmS": 59,
+      "parentBody": "Comet 109P/Swift-Tuttle",
+      "skyViewerTargetId": "constellation:Per",
+      "observingGuidance": "One of the most prolific showers of the year, rich in fast, bright streaks and bolides. Peak visible from midnight to dawn.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" }
+      ]
+    },
+    {
+      "id": "orionids-2026",
+      "editionYear": 2026,
+      "name": "Orionids",
+      "iauCode": "ORI",
+      "activeStart": "2026-10-02",
+      "activeEnd": "2026-11-07",
+      "peakUTC": null,
+      "peakDate": "2026-10-21",
+      "precision": "day",
+      "radiant": {
+        "ra": 95,
+        "dec": 16,
+        "constellation": "Orion"
+      },
+      "zhr": 20,
+      "velocityKmS": 66,
+      "parentBody": "Comet 1P/Halley",
+      "skyViewerTargetId": "star:Betelgeuse",
+      "observingGuidance": "Debris stream from Halley's Comet; broad maximum around Oct 21 with source reporting date-only precision. Radiant rises late evening near Betelgeuse.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" }
+      ]
+    },
+    {
+      "id": "leonids-2026",
+      "editionYear": 2026,
+      "name": "Leonids",
+      "iauCode": "LEO",
+      "activeStart": "2026-11-06",
+      "activeEnd": "2026-11-30",
+      "peakUTC": "2026-11-17T17:00:00Z",
+      "peakDate": "2026-11-17",
+      "precision": "hour",
+      "radiant": {
+        "ra": 152,
+        "dec": 22,
+        "constellation": "Leo"
+      },
+      "zhr": 15,
+      "velocityKmS": 71,
+      "parentBody": "Comet 55P/Tempel-Tuttle",
+      "skyViewerTargetId": "constellation:Leo",
+      "observingGuidance": "Fastest annual meteor shower at 71 km/s. Famous for periodic 33-year storms; currently in quiet inter-storm baseline rates.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" }
+      ]
+    },
+    {
+      "id": "geminids-2026",
+      "editionYear": 2026,
+      "name": "Geminids",
+      "iauCode": "GEM",
+      "activeStart": "2026-12-04",
+      "activeEnd": "2026-12-20",
+      "peakUTC": "2026-12-14T01:00:00Z",
+      "peakDate": "2026-12-14",
+      "precision": "hour",
+      "radiant": {
+        "ra": 112,
+        "dec": 33,
+        "constellation": "Gemini"
+      },
+      "zhr": 150,
+      "velocityKmS": 35,
+      "parentBody": "Asteroid (3200) Phaethon",
+      "skyViewerTargetId": "star:Castor",
+      "observingGuidance": "The most active and reliable meteor display of the year. Bright, multi-hued, slower-moving meteors visible from ~21:00 local time onwards.",
+      "sources": [
+        { "id": "S10", "name": "IMO Calendar 2026", "url": "https://www.imo.net/calendar/" },
+        { "id": "S11", "name": "AMS Meteor Calendar", "url": "https://www.amsmeteors.org/meteor-showers/meteor-shower-calendar/" }
+      ]
+    }
+  ]
+}

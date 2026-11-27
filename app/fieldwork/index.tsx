@@ -146,6 +146,13 @@ export default function FieldworkHubScreen() {
                 accessibilityLabel="Open Personal Sky Timeline"
                 onPress={() => router.push('/timeline' as never)}
               />
+              <Button
+                title="Meteor calendar"
+                icon="zap"
+                variant="outline"
+                accessibilityLabel="Open Annual Meteor Calendar"
+                onPress={() => router.push('/events/meteors' as never)}
+              />
             </View>
           </View>
         }
