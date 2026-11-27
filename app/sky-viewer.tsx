@@ -126,6 +126,10 @@ export default function SkyViewerScreen() {
             setSelected(undefined);
             router.push({ pathname: '/fieldwork/instrument' as never, params: { targetId: currentId } });
           }}
+          onDossier={(dossierId) => {
+            setSelected(undefined);
+            router.push({ pathname: '/study/dossier/[id]', params: { id: dossierId } } as never);
+          }}
           onClose={() => setSelected(undefined)}
         />
       )}

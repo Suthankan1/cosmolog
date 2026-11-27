@@ -2,6 +2,17 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
+## Unreleased
+
+- **F07 Sourced Evidence Dossiers (Behind the Discovery):**
+  - Peer-reviewed empirical dossier schema and validation (`src/features/study/evidence.ts`) enforcing four ruled scientific blocks: empirical observation, method/instrumentation, scientific inference, and explicit negative boundary uncertainty (what evidence does NOT establish).
+  - Three authoritatively sourced evidence dossiers (`src/features/study/evidenceData.ts`):
+    - Webb WASP-39 b NIRSpec Transmission Spectroscopy: empirical 4.3 µm carbon dioxide ($CO_2$) absorption peak, explicitly distinguishing measured flux dips from artist renderings and disclaiming biological life or habitability inferences (NASA sources S07/S08).
+    - Hubble Europa Plume Candidates: far-ultraviolet oxygen/hydrogen auroral emissions and limb transit silhouettes, disclaiming confirmed global ocean connectivity or steady-state cryovolcanism (NASA/STScI sources S12).
+    - Keck & VLT Sagittarius A* Stellar Dynamics: two decades of near-infrared astrometry for star S2 enclosing $(4.15 \pm 0.13) \times 10^6\,M_\odot$, disclaiming direct event-horizon resolution without millimeter VLBI (Keck/ESO sources S12).
+  - Dedicated Evidence Dossier reader surface (`app/study/dossier/[id].tsx`) and curated index (`app/study/dossiers.tsx`) with four ruled editorial blocks, verified peer review metadata, empirical data vs artist concept badges, and actionable primary citations with offline fallback.
+  - Cross-feature deep linking from Space Study chapters (`app/study/[id].tsx`), Explore Hub (`app/explore/index.tsx`), and Sky Viewer celestial detail sheet (`src/features/sky/SkyDetailSheet.tsx`).
+
 ## v1.4.0 — Field Observer (2026-11-26)
 
 - **F05 Independent Observation Journal (Advanced Field Notes):**

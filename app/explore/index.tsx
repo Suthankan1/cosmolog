@@ -101,6 +101,40 @@ export default function ExploreHubScreen() {
           </View>
         </Pressable>
 
+        {/* F07: Evidence Dossiers Card */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open Behind the Discovery: Research-backed evidence dossiers"
+          accessibilityHint="Navigates to the peer-reviewed evidence dossiers index"
+          style={({ pressed }) => [styles.labCard, pressed && styles.cardPressed]}
+          onPress={() => router.push('/study/dossiers' as never)}
+        >
+          <View style={styles.labCardHeader}>
+            <View style={styles.tagBadge}>
+              <Icon name="layers" size={14} color={colors.terracotta} />
+              <Text style={styles.tagText}>EVIDENCE DOSSIERS · F07</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={colors.forest} />
+          </View>
+
+          <Text accessibilityRole="header" style={styles.labTitle}>Behind the Discovery</Text>
+          <Text style={styles.labSubtitle}>Peer-Reviewed Observational Dossiers</Text>
+          <Text style={styles.labCopy}>
+            Examine empirical measurements, instrumentation, and scientific inferences separating verified facts from artist concepts (Webb WASP-39 b, Europa plumes, and Sgr A* orbits).
+          </Text>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.metricPill}>
+              <Icon name="shield" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>NASA & Keck Primary Sources</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Icon name="check-circle" size={13} color={colors.forest} />
+              <Text style={styles.metricText}>100% Offline</Text>
+            </View>
+          </View>
+        </Pressable>
+
         {/* Laboratory Scientific Standards Note */}
         <View style={styles.standardsBox}>
           <View style={styles.standardsHeader}>

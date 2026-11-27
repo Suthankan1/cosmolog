@@ -14,6 +14,8 @@ import {
 import { FieldNote } from '../../src/features/journal/FieldNote';
 import { studyEntries, glossary, sectionNumber } from '../../src/features/study/edition';
 import { studyStyles as s } from '../../src/features/study/layout';
+import { EvidenceDossier } from '../../src/features/study/evidence';
+import { getEvidenceDossiersForTarget } from '../../src/features/study/evidenceRepository';
 
 export default function StudyReader() {
   const { id, section } = useLocalSearchParams<{ id: string; section?: string }>();
@@ -31,6 +33,7 @@ function Reader({ id, section }: { id: string; section?: string }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('Opening guide…');
   const [attempt, retry] = useState(0);
+  const [relatedDossiers, setRelatedDossiers] = useState<EvidenceDossier[]>([]);
   useEffect(() => {
     let active = true;
     if (account)
@@ -46,6 +49,10 @@ function Reader({ id, section }: { id: string; section?: string }) {
           setPage(safePage);
           setEntry(row);
           setMessage(row ? '' : 'This entry is unavailable.');
+
+          void getEvidenceDossiersForTarget(effectiveId).then((dossiers) => {
+            if (active) setRelatedDossiers(dossiers);
+          });
         })
         .catch(() => {
           if (active) setMessage('Could not read the local entry.');
@@ -166,6 +173,25 @@ function Reader({ id, section }: { id: string; section?: string }) {
                   {word} · {meaning}
                 </Text>
               ))}
+            {relatedDossiers.length > 0 && (
+              <>
+                <Text style={s.section}>Behind the Discovery</Text>
+                {relatedDossiers.map((d) => (
+                  <Button
+                    key={d.id}
+                    title={`Evidence Dossier: ${d.targetName}`}
+                    icon="layers"
+                    variant="outline"
+                    onPress={() =>
+                      router.push({
+                        pathname: '/study/dossier/[id]',
+                        params: { id: d.id },
+                      } as never)
+                    }
+                  />
+                ))}
+              </>
+            )}
             {entry.related !== '[]' && <Text style={s.section}>Related reading</Text>}
             {(JSON.parse(entry.related) as string[]).map((link) => (
               <Button

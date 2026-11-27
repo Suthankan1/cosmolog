@@ -58,6 +58,8 @@ function RootNavigator() {
             <Stack.Screen name="offline-library" />
             <Stack.Screen name="study/index" />
             <Stack.Screen name="study/downloads" />
+            <Stack.Screen name="study/dossiers" />
+            <Stack.Screen name="study/dossier/[id]" />
             <Stack.Screen name="study/[id]" />
             <Stack.Screen name="sky-viewer" />
             <Stack.Screen name="explore/index" />

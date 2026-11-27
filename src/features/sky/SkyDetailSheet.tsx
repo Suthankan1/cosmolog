@@ -5,6 +5,7 @@ import { Button } from '../../components/common/Button';
 import { colors, radii, spacing, typography } from '../../theme/tokens';
 import { findSkyObject, type SkyObjectId } from './catalog';
 import type { SkyPosition } from './skyMath';
+import { evidenceDossiers } from '../study/evidenceData';
 
 interface Props {
   id: SkyObjectId;
@@ -12,10 +13,11 @@ interface Props {
   offline: boolean;
   onStudy?: () => void;
   onInstrument?: () => void;
+  onDossier?: (dossierId: string) => void;
   onClose: () => void;
 }
 
-export function SkyDetailSheet({ id, position, offline, onStudy, onInstrument, onClose }: Props) {
+export function SkyDetailSheet({ id, position, offline, onStudy, onInstrument, onDossier, onClose }: Props) {
   const [linkError, setLinkError] = useState(false);
   const heading = useRef<ComponentRef<typeof Text>>(null);
   const insets = useSafeAreaInsets();
@@ -59,6 +61,20 @@ export function SkyDetailSheet({ id, position, offline, onStudy, onInstrument, o
             {linkError && <Text accessibilityRole="alert" style={styles.credit}>Could not open the link.</Text>}
             <>{onStudy && <Button title="Read in Space Study" icon="book-open" onPress={onStudy}/>}</>
             <>{onInstrument && <Button title="Sight in Field Instrument" icon="compass" variant="outline" onPress={onInstrument}/>}</>
+            {(() => {
+              const matchingDossier = evidenceDossiers.find((d) => d.relatedIds.includes(id));
+              if (matchingDossier && onDossier) {
+                return (
+                  <Button
+                    title="Behind the Discovery Dossier"
+                    icon="layers"
+                    variant="outline"
+                    onPress={() => onDossier(matchingDossier.id)}
+                  />
+                );
+              }
+              return null;
+            })()}
             <Button title="Read more" icon="external-link" disabled={offline} onPress={() => { void openLink(object.readMoreUrl); }} />
             {object.sourceUrl !== object.readMoreUrl && (
               <Button title="View catalog source" variant="outline" disabled={offline} onPress={() => { void openLink(object.sourceUrl); }} />
