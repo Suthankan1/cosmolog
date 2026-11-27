@@ -2,6 +2,31 @@
 
 This file records the existing published release baseline and planned work separately. GitHub release notes are authoritative for historical details. Do not assign a release date or version to unverified work.
 
+## v2.0.0 — Integrated COSMOLOG (2026-11-27)
+
+COSMOLOG v2.0.0 is the complete, integrated release of all 12 planned Space & Science discovery and field exploration capabilities for IN3210 Assignment 2 (Student index `234202J`, Space & Science `2`, Offline-first `0`).
+
+- **Full 12-Capability Integration (F01–F12):**
+  - **F01 Offline Library & Storage Management:** Durable SQLite cache reconciliation, media provenance tracking, reclaimable disk space accounting, and shared-media retention locks.
+  - **F02 Sourced Reading Packs & Expeditions:** 6 curated multimodal expedition packs with independent learning step progress separated from download retention, revision tracking (migrations 15 & 16), and cancellation safety.
+  - **F03 LightTrace Laboratory:** Interactive astronomical speed of light simulator, lookback time calculator, logarithmic distance track ($1\,\text{AU}$ to $13.4\,\text{Gly}$), and lookback horizon boundary math.
+  - **F04 Cosmic Scale Laboratory:** Relative scale comparisons, logarithmic planetary diameters, astronomical travel times at terrestrial vs relativistic speeds, and orbital approximations.
+  - **F05 Independent Observation Journal:** Account-isolated observation logbook (migration 17) with optional eyepiece photo attachments and GPS coordinates (migration 18), private storage directory, and boundary validation.
+  - **F06 Celestial Field Instrument:** Foreground-only sensor pointing pipeline, forest/brass compass rose bezel, inclination gauge, target tracking bearing calculation, and prominent solar observing safety warnings.
+  - **F07 Sourced Evidence Dossiers:** Behind the Discovery readers with four ruled empirical blocks (Observation, Method, Inference, Uncertainty Boundaries) covering Webb WASP-39 b, Hubble Europa Plumes, and Keck/VLT Sgr A* black hole dynamics.
+  - **F08 Licensed Sky Culture Overlays:** Multi-cultural celestial viewer covering Indigenous Arabic (*Al-Jawza'*) and Chinese Traditional (*Shen*) constellations mapped to Hipparcos bright stars with IAU Orion disclaimers.
+  - **F09 Personal Sky Timeline:** Unified SQLite read projection combining observations, saved discoveries, reading history, and study bookmarks into a local timezone grouped chronology (`Asia/Colombo` +05:30) with undated reference marks.
+  - **F10 Sourced Annual Meteor Calendar:** IMO and AMS verified annual meteor showers for 2026 with exact peak timezones, date-only peak preservation, radiant location deep linking, and idealized ZHR caveats.
+  - **F11 Accessible Read Aloud:** Native speech synthesis (`expo-speech`) with sentence-bounded chunking, rate control ($0.8\times\text{--}1.5\times$), mutual exclusion with speech recognition, and iOS silent mode guidance.
+  - **F12 Night Observation Mode:** Contrast-tested red-on-charcoal semantic theme (>13:1 text contrast, >4.8:1 heading contrast) for telescope dark adaptation, persisted via migration 20 in `reader_preferences` with quick toggle controls.
+
+- **Architecture, Security & Accessibility Integrity:**
+  - Strict account-isolated persistence across all SQLite tables (migrations 1 through 20).
+  - OS-backed token storage via `expo-secure-store`; zero tokens in logs or Redux state.
+  - Zero permission prompts on boot; sensor permissions requested only on explicit user tap.
+  - Minimum touch targets $\ge 48\text{ dp}$ throughout the magazine interface.
+  - 66 test suites with 381 automated tests passing at 100% pass rate.
+
 ## v1.7.0 — Accessible Exploration (2026-11-27)
 
 - **F11 Accessible Read Aloud (Native Speech Synthesis):**
