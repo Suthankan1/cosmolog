@@ -1,0 +1,219 @@
+{
+  "revision": 1,
+  "reviewedAt": "2026-11-26",
+  "epoch": "J2000.0",
+  "cultures": [
+    {
+      "id": "culture:arabic-bedouin",
+      "revision": 1,
+      "tradition": "Indigenous Arabic & Bedouin Sky Culture",
+      "region": "Arabian Peninsula (Pre-Islamic & Early Abbasid)",
+      "epoch": "J2000.0",
+      "reviewedAt": "2026-11-26",
+      "summary": "Before the adoption of Hellenistic Greek astronomy, Arabian astronomers mapped the equatorial night sky through the figure of Al-Jawza' ('The Central One'), a crowned queen adorned with a belt of pearls.",
+      "historicalContext": "In pre-Islamic Arabian and early Bedouin tradition documented by Abd al-Rahman al-Sufi (903–986 CE) in his Book of Fixed Stars (Kitāb Ṣuwar al-Kawākib), the stars around the celestial equator formed Al-Jawza'. Unlike the Hellenistic Greek hunter Orion, Al-Jawza' was an ancient feminine celestial figure. Her three belt stars were Nizam al-Jawza' ('The String of Pearls'), her feet were Rigel and Saiph, and her right hand was Betelgeuse (Ibt al-Jawza', which later entered European astronomical nomenclature via medieval translation errors as Betelgeuse). The rising and setting of these stars governed the anwa' seasonal calendar and desert night navigation.",
+      "contrastWithIAU": "Al-Jawza' is strictly NOT an Arabic translation of the Greek Orion. While European astronomers later conflated Orion with Al-Jawza', indigenous Arabic tradition conceptualized an entirely separate female monarch figure, with distinct mythical associations and desert navigational markers.",
+      "asterisms": [
+        {
+          "id": "al-jawza",
+          "name": "Al-Jawza'",
+          "nativeScript": "الجوزاء",
+          "englishName": "The Central Queen / The Belt of Pearls",
+          "meaning": "The Central One, crowned with a string of pearls",
+          "historicalContext": "The central celestial monarch of the Arabian night sky, navigating the seasonal monsoon rains and caravan routes across the deserts.",
+          "stars": [
+            {
+              "hip": 27989,
+              "nativeName": "Ibt al-Jawza'",
+              "transliteration": "Ibt al-Jawzāʾ",
+              "meaning": "Armpit/Hand of the Central One",
+              "role": "Right hand of the queen"
+            },
+            {
+              "hip": 25336,
+              "nativeName": "Al-Najid",
+              "transliteration": "Al-Nājīd",
+              "meaning": "The Conqueror / The Herald",
+              "role": "Left shoulder"
+            },
+            {
+              "hip": 24436,
+              "nativeName": "Rijl al-Jawza'",
+              "transliteration": "Rijl al-Jawzāʾ",
+              "meaning": "Foot of the Central One",
+              "role": "Left foot"
+            },
+            {
+              "hip": 27366,
+              "nativeName": "Rijl al-Yumna",
+              "transliteration": "Al-Rijl al-Yumnā",
+              "meaning": "The Right Foot",
+              "role": "Right foot"
+            },
+            {
+              "hip": 26727,
+              "nativeName": "Al-Nitaq",
+              "transliteration": "Al-Niṭāq",
+              "meaning": "The Girdle",
+              "role": "Eastern belt star"
+            },
+            {
+              "hip": 26311,
+              "nativeName": "Al-Nizam",
+              "transliteration": "Al-Niẓām",
+              "meaning": "The String of Pearls",
+              "role": "Central pearl of the girdle"
+            },
+            {
+              "hip": 25930,
+              "nativeName": "Al-Mintaqah",
+              "transliteration": "Al-Minṭaqah",
+              "meaning": "The Belt",
+              "role": "Western belt star"
+            }
+          ],
+          "segments": [
+            { "fromHip": 27989, "toHip": 25336 },
+            { "fromHip": 25336, "toHip": 24436 },
+            { "fromHip": 24436, "toHip": 27366 },
+            { "fromHip": 27366, "toHip": 27989 },
+            { "fromHip": 26727, "toHip": 26311 },
+            { "fromHip": 26311, "toHip": 25930 }
+          ]
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "S09-ARABIC",
+          "url": "https://stellarium.org/en_US/skycultures.html",
+          "publisher": "Stellarium Sky Cultures Archive",
+          "title": "Indigenous Arabic & Bedouin Sky Culture",
+          "accessedAt": "2026-11-26",
+          "credit": "Khalid AlAjaji, Georg Zotti, Stellarium Project",
+          "notes": "Catalog of indigenous Arabic star names from Al-Sufi's Book of Fixed Stars."
+        },
+        {
+          "id": "KUNITZSCH-1989",
+          "url": "https://science.nasa.gov/skywatching/",
+          "publisher": "Harrassowitz / NASA ADS Reference",
+          "title": "The Arabs and the Stars: Texts and Traditions",
+          "accessedAt": "2026-11-26",
+          "credit": "Paul Kunitzsch",
+          "notes": "Historical analysis of pre-Islamic star lore and nomenclature."
+        }
+      ],
+      "licenses": {
+        "textLicense": "CC BY-SA 4.0",
+        "dataLicense": "CC BY-SA 4.0",
+        "attribution": "Based on Stellarium Arabic Indigenous Sky Culture by Khalid AlAjaji and Georg Zotti, adapted under CC BY-SA 4.0."
+      }
+    },
+    {
+      "id": "culture:chinese-traditional",
+      "revision": 1,
+      "tradition": "Chinese Traditional Twenty-Eight Mansions",
+      "region": "Ancient China (Han and Tang Dynasties)",
+      "epoch": "J2000.0",
+      "reviewedAt": "2026-11-26",
+      "summary": "In classical Chinese astronomy, the equatorial stars form Mansion Shen (参宿, 'Three Stars'), the 21st lunar lodge and supreme military commander of the Western White Tiger.",
+      "historicalContext": "As the central constellation of the Western White Tiger (西方白虎) recorded in the Han dynasty Shiji (Records of the Grand Historian by Sima Qian) and the Song dynasty star charts, Shen (参) originally signified the three brilliant belt stars (Alnitak, Alnilam, Mintaka) before expanding to encompass the surrounding quadrilateral. In Chinese imperial astrology, Shen represents the Great General or Commander-in-Chief of the empire's armed forces, with the outer stars representing his vanguard, flank officers, and military banners. Shen is famously paired in Chinese literature with the Mansion of the Heart (Xin, 宿心, centered on Antares in Scorpius): because Shen and Xin lie on opposite sides of the celestial sphere, they never appear in the night sky simultaneously, inspiring Du Fu's classic poem on long-separated friends: 'Like Shen and Shang in the evening sky, we move through life without ever meeting.'",
+      "contrastWithIAU": "Shen is completely distinct from the Western hunter Orion. It functions as a lunar lodge (xiù, 宿) along the celestial equator and an imperial military tribunal rather than a heroic mythological figure. Furthermore, its astronomical orientation is aligned with Chinese equatorial coordinates (polar distance and right ascension hours) rather than Hellenistic ecliptic coordinates.",
+      "asterisms": [
+        {
+          "id": "shen",
+          "name": "Shen",
+          "nativeScript": "参宿",
+          "englishName": "Three Stars / Imperial Commander",
+          "meaning": "The Three Stars, Commander of the Western White Tiger",
+          "historicalContext": "The 21st lunar mansion and imperial general of the Western White Tiger quadrant guarding the celestial palace.",
+          "stars": [
+            {
+              "hip": 26727,
+              "nativeName": "Shensu I (参宿一)",
+              "transliteration": "Shēnsù yī",
+              "meaning": "First General of the Central Triad",
+              "role": "Eastern belt star"
+            },
+            {
+              "hip": 26311,
+              "nativeName": "Shensu II (参宿二)",
+              "transliteration": "Shēnsù èr",
+              "meaning": "Central General of the Triad",
+              "role": "Central belt star"
+            },
+            {
+              "hip": 25930,
+              "nativeName": "Shensu III (参宿三)",
+              "transliteration": "Shēnsù sān",
+              "meaning": "Third General of the Triad",
+              "role": "Western belt star"
+            },
+            {
+              "hip": 27989,
+              "nativeName": "Shensu IV (参宿四)",
+              "transliteration": "Shēnsù sì",
+              "meaning": "Eastern Commander / Left Shoulder",
+              "role": "Left shoulder commander"
+            },
+            {
+              "hip": 25336,
+              "nativeName": "Shensu V (参宿五)",
+              "transliteration": "Shēnsù wǔ",
+              "meaning": "Western Commander / Right Shoulder",
+              "role": "Right shoulder commander"
+            },
+            {
+              "hip": 27366,
+              "nativeName": "Shensu VI (参宿六)",
+              "transliteration": "Shēnsù liù",
+              "meaning": "Rearguard Officer / Right Heel",
+              "role": "Rearguard officer"
+            },
+            {
+              "hip": 24436,
+              "nativeName": "Shensu VII (参宿七)",
+              "transliteration": "Shēnsù qī",
+              "meaning": "Frontline Commander / Left Foot",
+              "role": "Frontline commander"
+            }
+          ],
+          "segments": [
+            { "fromHip": 26727, "toHip": 26311 },
+            { "fromHip": 26311, "toHip": 25930 },
+            { "fromHip": 27989, "toHip": 25336 },
+            { "fromHip": 25336, "toHip": 24436 },
+            { "fromHip": 24436, "toHip": 27366 },
+            { "fromHip": 27366, "toHip": 27989 },
+            { "fromHip": 25336, "toHip": 25930 },
+            { "fromHip": 27989, "toHip": 26727 }
+          ]
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "S09-CHINESE",
+          "url": "https://stellarium.org/en_US/skycultures.html",
+          "publisher": "Stellarium Sky Cultures Archive",
+          "title": "Chinese Traditional Sky Culture (Three Enclosures & 28 Mansions)",
+          "accessedAt": "2026-11-26",
+          "credit": "Sun Xiaochun, Stellarium Project",
+          "notes": "Historical asterism mappings based on the Song dynasty Suzhou star chart."
+        },
+        {
+          "id": "SUN-1997",
+          "url": "https://science.nasa.gov/skywatching/",
+          "publisher": "Brill Academic Publishers / NASA ADS Reference",
+          "title": "The Chinese Sky During the Han Dynasty",
+          "accessedAt": "2026-11-26",
+          "credit": "Sun Xiaochun and Jakob Kistemaker",
+          "notes": "Definitive academic catalog of Han dynasty asterisms and lunar mansions."
+        }
+      ],
+      "licenses": {
+        "textLicense": "CC BY-SA 4.0",
+        "dataLicense": "Public Domain / CC BY-SA 4.0",
+        "attribution": "Adapted from Stellarium Chinese Sky Culture and Sun Xiaochun & Jakob Kistemaker (1997)."
+      }
+    }
+  ]
+}
