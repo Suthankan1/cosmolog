@@ -2,18 +2,18 @@
   "expo": {
     "name": "COSMOLOG",
     "slug": "cosmolog",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/brand/launcher-icon.png",
     "scheme": "cosmolog",
     "userInterfaceStyle": "light",
     "ios": {
-      "buildNumber": "5",
+      "buildNumber": "6",
       "supportsTablet": false,
       "bundleIdentifier": "com.cosmolog.app"
     },
     "android": {
-      "versionCode": 5,
+      "versionCode": 6,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
