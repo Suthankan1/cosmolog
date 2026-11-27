@@ -121,6 +121,14 @@ The bundled star and deep-sky catalogs, Moon and planet positions, and detail te
   - **Instrument Snapshots:** Attach validated orientation telemetry directly to observations with explicit source separation (`sensor` vs `manual`).
   - **Deep-Linked Target Sighting:** Seamlessly transition from Sky Viewer detail sheets (`/sky-viewer`) to the Field Instrument with target guidance offsets.
 
+### Your Cosmic Journey: Personal Sky Timeline & Annual Meteor Calendar
+- **Personal Sky Timeline (F09):** Unified SQLite read projection (`/timeline`) integrating observations, saved discoveries, article reading history, and study bookmarks into an account-isolated chronology. Local timezone engine (`Asia/Colombo` +05:30) organizes entries into Today, Yesterday, formatted months, and undated marks with zero data duplication.
+- **Sourced Annual Meteor Calendar (F10):** Annual astronomical meteor shower calendar (`/events/meteors`) sourced from IMO and AMS for 2026. Computes exact local peak times, preserves date-only shower precision, features an idealized ZHR caveat, and deep-links directly to observation logging and Sky Viewer radiants.
+
+### Accessible Exploration: Read Aloud & Night Observation Mode
+- **Accessible Read Aloud (F11):** Native speech synthesis (`expo-speech`) with sentence-bounded chunking (<350 chars), rate controls ($0.8\times\text{--}1.5\times$), stale callback cancellation, and mutual exclusion with speech recognition. Offers audio guidance for iOS physical silent switch boundaries and publisher summaries.
+- **Night Observation Mode (F12):** Contrast-tested dark red and charcoal semantic theme (`#0D0B0B` background, `#1A1414` surface, `#E64A38` red accent, `#F2D6D3` high-contrast ink) designed to protect rhodopsin and night adaptation at the telescope eyepiece (>13:1 body contrast, >4.8:1 heading contrast). Persisted safely per account in SQLite (`reader_preferences`, migration 20) with quick toggle chips in Fieldwork Hub and Profile.
+
 ### Media and provenance
 
 NASA APOD and Spaceflight News retain the original publication link, available credits, and source date. **Share discovery** opens the device share sheet with the public title, credit, and link. The sheet can open from cached Details while offline. News records contain publisher summaries. APOD video and iframe records link to the source. The app stores images durably when a recognized Creative Commons license or documented NASA-only credit permits it. Other records retain text and provenance. Each saved entry reports its actual image state. The sign-in masthead uses NASA’s Earthrise photograph, AS08-14-2383, credited to NASA / Bill Anders.
@@ -205,7 +213,7 @@ npm run typecheck
 npm test -- --runInBand
 ```
 
-Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver (including migration 16 supporting v14, unmodified v15, and modified v15 upgrade paths), reconnect and source failure behavior, route validation, media normalization, checkpoints, archive search, media lock mutual exclusion, and expedition manifest boundary validation. 45 test suites and 188 automated tests pass 100% cleanly. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The v1.2.0 Android run verified upgrade without data loss, paragraph restore, local search after an airplane-mode cold launch, expedition download cancellation and resumption, and cache pruning with genuine disk telemetry. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
+Jest exercises auth lifecycle, real SQLite migrations and rollback through Node's SQLite driver (including migration 16 supporting v14, unmodified v15, and modified v15 upgrade paths, up to migration 20 reader preferences), reconnect and source failure behavior, route validation, media normalization, checkpoints, archive search, media lock mutual exclusion, expedition manifest boundary validation, celestial mechanics, and voice synthesis. 66 test suites and 381 automated tests pass 100% cleanly. A GitHub Actions workflow repeats the JavaScript checks on a clean install. The v2.0.0 Android run verified upgrade without data loss, paragraph restore, local search after an airplane-mode cold launch, expedition download cancellation and resumption, and cache pruning with genuine disk telemetry. See [device scenarios and evidence](docs/TEST_PLAN.md), the [demo script](docs/DEMO_SCRIPT.md), and [AI usage](AI_USAGE.md).
 
 ## Space Study
 
@@ -223,8 +231,8 @@ The archive migration preserves existing discoveries, favourites and orbital dat
 
 The first-edition city index occupies 11,960,320 bytes uncompressed and 5,279,873 bytes inside the Android APK. A Pixel 9 emulator timing harness ran 60 local searches against the installed SQLite edition using Hermes, including layout of the first result page. The 95th percentile was **22.8 ms**. Physical-device timing can differ. Before a content release, run `npm test -- --runInBand tests/studyEdition.test.ts tests/studyDownloads.test.ts` to validate the book and pack manifests.
 
-## Planned cumulative expansion
+## Shipped 12-Capability Platform (COSMOLOG v2.0.0)
 
-The next releases extend the existing archive, Space Study, Sky Viewer and voice features into an offline-first field journal and exploration platform. See the [product roadmap](PRODUCT_ROADMAP.md), [feature catalogue](docs/FEATURE_CATALOG.md), [expansion architecture](design/EXPANSION_ARCHITECTURE.md), [source registry](docs/expansion/SOURCE_REGISTRY.md), [release tasks](tasks/releases/README.md) and [implementation prompt](MASTER_IMPLEMENTATION_PROMPT.md). All twelve expansions are planned; this documentation does not imply they are shipped. The assignment remains a separately gated stable milestone.
+All twelve planned Space & Science discovery and field exploration capabilities (F01–F12) are fully implemented, verified, tested, and shipped in COSMOLOG v2.0.0. See the [product roadmap](PRODUCT_ROADMAP.md), [feature catalogue](docs/FEATURE_CATALOG.md), [expansion architecture](design/EXPANSION_ARCHITECTURE.md), [source registry](docs/expansion/SOURCE_REGISTRY.md), [release tasks](tasks/releases/README.md) and [implementation prompt](MASTER_IMPLEMENTATION_PROMPT.md). All twelve expansions are delivered with verified automated test coverage (381 tests across 66 suites).
 
-Development is tracked in [GitHub issue #31 — agent task queue](https://github.com/Suthankan1/cosmolog/issues/31). Read this issue for dependencies, release blockers and the next eligible implementation task.
+Development progress and completed issues are tracked in [GitHub issue #31 — agent task queue](https://github.com/Suthankan1/cosmolog/issues/31).
