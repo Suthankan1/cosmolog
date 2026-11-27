@@ -98,6 +98,14 @@ From Discover or Profile, open **Expedition packs** to embark on structured scie
   - **Keck & VLT Sagittarius A* Orbit Astrometry:** Two-decade relativistic orbit of star S2 enclosing $4.15 \times 10^6\,M_\odot$ (Keck/ESO S12).
 - **Interconnected Knowledge Graph:** Deep-linked from Space Study chapters (`/study/[id]`), Explore Hub (`/explore`), and Sky Viewer target detail sheets (`/sky-viewer`).
 
+### Cultural Astronomy: One Sky, Many Stories (F08)
+- **Cross-Cultural Asterism Comparison (`/explore/cultures`):** Interactive comparative viewer analyzing how ancient cultures observed the exact same equatorial stars and saw radically different celestial structures.
+- **Curated Equatorial Traditions:**
+  - **Indigenous Arabic & Bedouin Sky Culture (*Al-Jawza'*, "The Central Queen"):** Pre-Islamic desert navigation and seasonal monsoon (*anwa'*) tradition documented by Abd al-Rahman al-Sufi and Paul Kunitzsch (S09, CC BY-SA 4.0).
+  - **Chinese Traditional Astronomy (*Shen*, 参宿, "Three Stars / Imperial Commander"):** 21st lunar mansion of the Western White Tiger (西方白虎) documented in Han dynasty *Shiji* records and Sun Xiaochun & Jakob Kistemaker (1997) (S09, CC BY-SA 4.0).
+- **Stable Astronomical Projection:** Mathematical 2D projection guaranteeing 100% stable, identical pixel coordinates for all 7 stars across traditions.
+- **Accessibility & Integrity:** Non-gesture mode selector (Al-Jawza', Shen, Compare Both), screen-reader friendly Star Telemetry Table, and explicit disclosures distinguishing indigenous asterisms from modern IAU constellation boundaries.
+
 ### Sky Viewer
 
 Open **Discover → Study, sky and archives → Sky Viewer** and tap **Use my location**. Hold the back of your phone toward the sky to orient the chart. To explore manually, drag the chart or use the arrow buttons. **Change location** accepts signed decimal coordinates and offers a Colombo preview. Tap a marker or choose an object in **Objects above the horizon** to read its details and follow its source links.

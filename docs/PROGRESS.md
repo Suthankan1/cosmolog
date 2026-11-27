@@ -780,6 +780,36 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-27 — Issue #20: [P2][v1.5.0][F08] Implement One Sky, Many Stories Comparison UI Complete
+
+Completed implementation and verification of F08 One Sky, Many Stories Comparison UI:
+
+1. **Deterministic Sky Projection Engine (`src/features/sky/catalog/cultures/cultureProjection.ts`):**
+   - Astronomical coordinate projection mapping J2000.0 equatorial coordinates (RA 5.15h–6.0h, Dec -11° to +8.5°) to 2D screen coordinates with North up and East left.
+   - Mathematically guarantees identical, drift-free pixel positions for stars when switching between Indigenous Arabic and Chinese Traditional overlays.
+   - Rejects missing Hipparcos IDs and handles custom padding.
+
+2. **Interactive Cultural Sky Comparison Surface (`app/explore/cultures.tsx`):**
+   - Dedicated comparative exploration screen featuring a Forest night-sky chart (`#184235`), non-gesture accessible segmented tabs, color-coded legend, and pure React Native View line rendering without SVG or third-party dependencies.
+   - Interactive Modes:
+     - **Al-Jawza' (Indigenous Arabic):** Brass segments (`#C79B4D`), Bedouin desert monsoon (*anwa'*) historical context, and Al-Sufi / Paul Kunitzsch citations.
+     - **Shen (Chinese Traditional):** Terracotta segments (`#C1654A`), Western White Tiger (西方白虎) imperial military context, Han dynasty Shiji records, and Sun Xiaochun citations.
+     - **Compare Both:** Side-by-side comparative overlay showing both asterism line networks simultaneously on the exact same stars.
+   - Prominent callout box ("Distinct from Modern IAU Orion") explicitly disclaiming one-to-one equivalence with the modern Hellenistic Greek constellation.
+   - Accessible Star Telemetry table providing a screen-reader friendly, tabular alternative listing native names, scripts, meanings, and J2000 coordinates.
+   - Deep link action ("Inspect in Sky Viewer") navigating to `/sky-viewer` centered on Betelgeuse (`hip:27989`).
+
+3. **Explore Hub & Sky Viewer Integration:**
+   - Added "One Sky, Many Stories" card to Explore Hub (`app/explore/index.tsx`).
+   - Added direct entry button to Sky Viewer (`app/sky-viewer.tsx`).
+   - Registered `explore/cultures` as a protected route in `app/_layout.tsx`.
+
+4. **Automated Verification:**
+   - `tests/skyCultureScreens.test.tsx`: 8 projection, mode toggle, telemetry, offline status, and cross-feature link tests passing (100%).
+   - Full test suite: 56 test suites, 318 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-27 — Issue #19: [P2][v1.5.0][F08] Prepare Licensed and Verified Cultural Sky Overlay Datasets Complete
 
 Completed implementation and verification of F08 Cultural Sky Overlay Datasets:

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../src/components/common/Header';
+import { Button } from '../src/components/common/Button';
 import { Icon } from '../src/components/common/Icon';
 import { findSkyObject, type SkyObjectId } from '../src/features/sky/catalog';
 import { SatelliteStatus } from '../src/features/sky/SatelliteStatus';
@@ -89,6 +90,14 @@ export default function SkyViewerScreen() {
               (targetPosition.altitude>=0?'Above horizon':'Below horizon')+' · elevation '+Math.round(targetPosition.altitude)+'° · bearing '+Math.round(targetPosition.azimuth)+'°':'Position unavailable'}</Text>}
             <Text style={styles.note}>Daylight, weather and observing equipment affect what you can see.</Text>
             <SkyLocationControls {...locationControls} />
+            <View style={{ marginVertical: spacing[2] }}>
+              <Button
+                title="Cultural Sky Traditions (One Sky, Many Stories)"
+                icon="globe"
+                variant="outline"
+                onPress={() => router.push('/explore/cultures' as never)}
+              />
+            </View>
             <SatelliteStatus {...satellites} positions={satellitePositions} offline={offline} now={now} />
             <Text accessibilityRole="header" style={styles.section}>Objects above the horizon</Text>
           </View>

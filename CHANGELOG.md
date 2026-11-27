@@ -10,6 +10,8 @@ This file records the existing published release baseline and planned work separ
     - Indigenous Arabic & Bedouin Sky Culture (*Al-Jawza'*, "The Central Queen"): based on Al-Sufi's *Book of Fixed Stars* and Paul Kunitzsch's scholarship, adapted from the Stellarium Sky Cultures project (Khalid AlAjaji, Georg Zotti) under CC BY-SA 4.0.
     - Chinese Traditional Twenty-Eight Mansions (*Shen*, 参宿, "Three Stars / Imperial Commander"): based on Han dynasty *Shiji* records and Sun Xiaochun & Jakob Kistemaker (1997) under CC BY-SA 4.0.
   - All star endpoints map directly to existing HYG Hipparcos entries in `bright-stars.json` with J2000.0 coordinates.
+  - Dedicated comparison viewer and reader surface (`app/explore/cultures.tsx`) with interactive star chart, stable pixel projection (`src/features/sky/catalog/cultures/cultureProjection.ts`), non-gesture mode toggle (Al-Jawza', Shen, Compare Both), accessible star telemetry table, and explicit IAU Orion disclaimers.
+  - Deep-linked entry points from Explore Hub (`app/explore/index.tsx`) and Sky Viewer (`app/sky-viewer.tsx`).
   - Offline repository layer (`src/features/sky/catalog/cultures/cultureRepository.ts`) and catalog documentation (`src/features/sky/catalog/README.md`).
 
 - **F07 Sourced Evidence Dossiers (Behind the Discovery):**
