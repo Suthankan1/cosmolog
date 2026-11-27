@@ -4,6 +4,14 @@ This file records the existing published release baseline and planned work separ
 
 ## Unreleased
 
+- **F08 Licensed Cultural Sky Overlay Datasets (One Sky, Many Stories):**
+  - Peer-reviewed sky culture overlay schema and validator (`src/features/sky/catalog/cultures/types.ts`) with Hipparcos catalog verification, segment topology validation, and explicit modern IAU boundary disclaimers.
+  - Curated, versioned manifest (`src/features/sky/catalog/cultures/manifest.json`) covering the equatorial sky region:
+    - Indigenous Arabic & Bedouin Sky Culture (*Al-Jawza'*, "The Central Queen"): based on Al-Sufi's *Book of Fixed Stars* and Paul Kunitzsch's scholarship, adapted from the Stellarium Sky Cultures project (Khalid AlAjaji, Georg Zotti) under CC BY-SA 4.0.
+    - Chinese Traditional Twenty-Eight Mansions (*Shen*, 参宿, "Three Stars / Imperial Commander"): based on Han dynasty *Shiji* records and Sun Xiaochun & Jakob Kistemaker (1997) under CC BY-SA 4.0.
+  - All star endpoints map directly to existing HYG Hipparcos entries in `bright-stars.json` with J2000.0 coordinates.
+  - Offline repository layer (`src/features/sky/catalog/cultures/cultureRepository.ts`) and catalog documentation (`src/features/sky/catalog/README.md`).
+
 - **F07 Sourced Evidence Dossiers (Behind the Discovery):**
   - Peer-reviewed empirical dossier schema and validation (`src/features/study/evidence.ts`) enforcing four ruled scientific blocks: empirical observation, method/instrumentation, scientific inference, and explicit negative boundary uncertainty (what evidence does NOT establish).
   - Three authoritatively sourced evidence dossiers (`src/features/study/evidenceData.ts`):

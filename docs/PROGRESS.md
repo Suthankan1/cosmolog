@@ -780,6 +780,32 @@ Completed implementation and verification of F05 Independent Observation Journal
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
 
+## 2026-11-27 — Issue #19: [P2][v1.5.0][F08] Prepare Licensed and Verified Cultural Sky Overlay Datasets Complete
+
+Completed implementation and verification of F08 Cultural Sky Overlay Datasets:
+
+1. **Sky Culture Data Model & Schema (`src/features/sky/catalog/cultures/types.ts`):**
+   - Defined validated, revisioned data models for `CultureOverlay`, `CultureAsterism`, `CultureStarRef`, and `CultureSegment`.
+   - Strict boundary validation (`validateCultureOverlay`) verifying that all line segment endpoints connect valid stars within the asterism, rejecting self-loops (`fromHip === toHip`), and verifying that all star IDs exist in the verified HYG `bright-stars.json` catalog.
+   - Requires explicit `contrastWithIAU` disclosure preventing false one-to-one equivalence with modern IAU constellations.
+
+2. **Curated, Authoritative Cultural Manifest (`src/features/sky/catalog/cultures/manifest.json`):**
+   - Two peer-reviewed, independently documented traditions for the equatorial sky region:
+     - **Indigenous Arabic & Bedouin Tradition (`culture:arabic-bedouin`):** *Al-Jawza'* ("The Central Queen"), documented from Abd al-Rahman al-Sufi's *Book of Fixed Stars* and Paul Kunitzsch's academic scholarship, adapted from Stellarium (Khalid AlAjaji, Georg Zotti) under CC BY-SA 4.0.
+     - **Chinese Traditional Twenty-Eight Mansions (`culture:chinese-traditional`):** *Shen* (参宿, "Three Stars"), the 21st lunar mansion and imperial general of the Western White Tiger (西方白虎), documented from Han dynasty *Shiji* records and Sun Xiaochun & Jakob Kistemaker (1997) under CC BY-SA 4.0.
+   - Every star maps directly to existing Hipparcos catalog entries (`hip: 27989, 25336, 24436, 27366, 26727, 26311, 25930`).
+   - Pinned revision 1, epoch J2000.0, reviewedAt 2026-11-26, and full license/attribution metadata.
+
+3. **Repository Layer & Documentation (`src/features/sky/catalog/cultures/cultureRepository.ts`, `src/features/sky/catalog/README.md`):**
+   - Offline-first culture repository (`listCultureOverlays`, `getCultureOverlayById`, `validateAllCultures`).
+   - Updated catalog documentation in `src/features/sky/catalog/README.md` acknowledging upstream scholars and Stellarium terms.
+
+4. **Automated Verification:**
+   - `tests/skyCultures.test.ts`: 9 schema, catalog alignment, endpoint existence, cultural distinction, and repository tests passing (100%).
+   - Full test suite: 55 test suites, 310 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.
+
 ## 2026-11-27 — Issue #18: [P2][v1.5.0][F07] Build Sourced Evidence Dossiers (Behind the Discovery) Complete
 
 Completed implementation and verification of F07 Sourced Evidence Dossiers:
