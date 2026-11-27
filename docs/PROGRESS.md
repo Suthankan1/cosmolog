@@ -1087,3 +1087,34 @@ Completed implementation and verification of F11 Accessible Read Aloud:
    - Full test suite: 64 test suites, 368 tests passing (100%).
    - ESLint 9: 0 errors, 0 warnings.
    - TypeScript: 0 errors.
+
+## 2026-11-27 — Issue #24: [P2][v1.7.0][F12] Night Observation Mode Theme Complete
+
+Completed implementation and verification of F12 Night Observation Mode:
+
+1. **Semantic Theme Roles & Contrast-Tested Dark Red Palette (`src/theme/tokens.ts`):**
+   - Defined `ThemeMode` (`'editorial' | 'night'`), `ThemeColors`, `editorialColors`, and `nightColors`.
+   - Contrast-tested palette for dark sky preservation: charcoal/obsidian background (`#0D0B0B`), dark surface (`#1A1414`), high-contrast red accent (`#E64A38`), soft light-red ink (`#F2D6D3`), muted rose-gray (`#A8807C`), deep wine red chip background (`#2E1C1A`), and amber brass (`#E6A15C`).
+   - Contrast verification: body text contrast ratio $> 13:1$ against background (exceeding WCAG AAA 7:1); primary red headings $> 4.8:1$ (exceeding WCAG AA 4.5:1).
+   - Preserves default magazine design completely when in editorial mode.
+
+2. **Account-Isolated Persistence & Database Migration 20 (`src/database/schema.ts`):**
+   - Migration 20 introducing `reader_preferences` table (`account_id`, `theme`, `speech_rate`, `voice_id`, `updated_at`).
+   - SQLite CRUD repository (`src/database/repositories/preferencesRepository.ts`) ensuring strict account isolation.
+   - Default theme defaults to `'editorial'`.
+   - Sign-out resets theme safely to editorial without data leakage.
+
+3. **Application Integration & Explicit Accessible Controls:**
+   - Root application layout wrapped in `ThemeProvider` (`app/_layout.tsx`), dynamically adjusting system status bar style (`light` in night mode, `dark` in editorial daytime mode) and Stack canvas background.
+   - Tab layout and floating dock navigation adaptively styled (`app/(tabs)/_layout.tsx`, `FloatingSurface.tsx`).
+   - Profile settings toggle (`app/(tabs)/profile.tsx`): dedicated Night Observation Mode card with clear disclaimer that system dialogs use OS appearance.
+   - Fieldwork Hub quick toggle (`app/fieldwork/index.tsx`): accessible quick toggle chip in the masthead for immediate activation and exit at the telescope eyepiece.
+   - Core common components (`Header.tsx`, `OfflineBanner.tsx`, `Button.tsx`) updated with dynamic semantic roles.
+
+4. **Automated Verification:**
+   - `tests/migrationSafety.test.ts`: Added 2 migration tests for Migration 20 (fresh install to version 20 and version 19 upgrade preserving existing data).
+   - `tests/preferencesRepository.test.ts`: 6 tests verifying SQLite CRUD, default values, account isolation, and setting speech rate.
+   - `tests/themeContext.test.tsx`: 5 tests verifying default editorial theme, loading persisted preference, toggling theme, logout reset, and WCAG contrast ratios.
+   - Full test suite: 66 test suites, 381 tests passing (100%).
+   - ESLint 9: 0 errors, 0 warnings.
+   - TypeScript: 0 errors.

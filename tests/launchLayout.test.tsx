@@ -7,7 +7,10 @@ const mockDispatch = jest.fn();
 jest.mock('../src/store', () => ({
   store: {},
   useAppDispatch: () => mockDispatch,
-  useAppSelector: () => ({ isAuthenticated: false, isInitialSessionLoading: mockRestoring }),
+  useAppSelector: (selector?: (state: any) => any) => {
+    const state = { auth: { user: null, isAuthenticated: false, isInitialSessionLoading: mockRestoring } };
+    return selector ? selector(state) : state.auth;
+  },
 }));
 jest.mock('react-redux', () => ({ Provider: ({ children }: React.PropsWithChildren) => children }));
 jest.mock('../src/store/archiveLifecycle', () => ({ useArchiveLifecycle: jest.fn() }));

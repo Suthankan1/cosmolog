@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FloatingSurface } from '../../src/components/common/FloatingSurface';
 import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 const destinations = [
   { name: 'discover', title: 'Discover', icon: 'compass' },
@@ -25,6 +26,7 @@ function FloatingTabBar(props: BottomTabBarProps) {
 export default function TabLayout() {
   const { bottom, left, right } = useSafeAreaInsets();
   const { fontScale, width } = useWindowDimensions();
+  const { isNight, colors: themeColors } = useTheme();
   const [labelWidth, setLabelWidth] = useState(0);
   const usable = width - left - right;
   const dockWidth = Math.min(usable - spacing[2], Math.max(layout.dockWidth, Math.ceil(3 * (labelWidth + 14) + 12)));
@@ -38,9 +40,9 @@ export default function TabLayout() {
     <Tabs tabBar={props => <FloatingTabBar {...props} />} screenOptions={{
       headerShown: false,
       tabBarLabelPosition: 'below-icon',
-      tabBarActiveTintColor: colors.forest,
-      tabBarInactiveTintColor: colors.ink,
-      tabBarActiveBackgroundColor: colors.sageLight,
+      tabBarActiveTintColor: isNight ? themeColors.forest : colors.forest,
+      tabBarInactiveTintColor: isNight ? themeColors.textSecondary : colors.ink,
+      tabBarActiveBackgroundColor: isNight ? themeColors.sageLight : colors.sageLight,
       tabBarBackground: () => <FloatingSurface />,
       tabBarStyle: [styles.bar, {
         height: 'auto', minHeight: 40 + Math.ceil(17 * fontScale), bottom: bottom + spacing[2], start: left + side, end: right + side,

@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { colors, layout, radii, typography } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeContext';
 import { FeatherIconName, Icon } from './Icon';
 
 export interface ButtonProps {
@@ -37,6 +38,7 @@ export const Button: React.FC<ButtonProps> = ({
   accessibilityLabel,
   testID,
 }) => {
+  const { isNight, colors: themeColors } = useTheme();
   const isOutline = variant === 'outline' || variant === 'secondary';
   const destination = variant === 'destination';
   const isDanger = variant === 'danger';
@@ -44,23 +46,34 @@ export const Button: React.FC<ButtonProps> = ({
   const containerStyles = [
     styles.buttonBase,
     variant === 'primary' && styles.primaryButton,
+    variant === 'primary' && isNight && { backgroundColor: themeColors.forest },
     isOutline && styles.secondaryButton,
+    isOutline && isNight && { backgroundColor: themeColors.sageLight },
     destination && styles.destination,
+    destination && isNight && { backgroundColor: themeColors.surface, borderColor: themeColors.border, borderWidth: 1 },
     isDanger && styles.dangerButton,
+    isDanger && isNight && { borderColor: themeColors.danger },
     disabled && styles.disabledButton,
+    disabled && isNight && { backgroundColor: themeColors.border },
     style,
   ];
 
   const labelStyles = [
     styles.buttonText,
     variant === 'primary' && styles.primaryText,
+    variant === 'primary' && isNight && { color: themeColors.ivory },
     (isOutline || destination) && styles.outlineText,
+    (isOutline || destination) && isNight && { color: destination ? themeColors.ink : themeColors.forest },
     isDanger && styles.dangerText,
+    isDanger && isNight && { color: themeColors.danger },
     disabled && styles.disabledText,
+    disabled && isNight && { color: themeColors.muted },
     textStyle,
   ];
 
-  const iconColor = variant === 'primary' ? colors.white : isDanger ? colors.danger : colors.forest;
+  const iconColor = isNight
+    ? (variant === 'primary' ? themeColors.ivory : isDanger ? themeColors.danger : themeColors.forest)
+    : (variant === 'primary' ? colors.white : isDanger ? colors.danger : colors.forest);
 
   return (
     <Pressable

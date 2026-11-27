@@ -1,6 +1,6 @@
 import { useTabContentInset } from '../../src/navigation/useTabContentInset';
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,16 +9,18 @@ import { logoutThunk } from '../../src/store/slices/authSlice';
 import { refreshImagesThunk } from '../../src/store/slices/favouritesSlice';
 import { refreshArchive } from '../../src/store/archiveLifecycle';
 import { colors, layout, radii, spacing, typography } from '../../src/theme/tokens';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { Button } from '../../src/components/common/Button';
 import { Icon, type FeatherIconName } from '../../src/components/common/Icon';
 import { formatSyncTimestamp } from '../../src/utils/text';
 
 function Stat({ value, label, icon }: { value: string; label: string; icon: FeatherIconName }) {
+  const { isNight, colors: themeColors } = useTheme();
   return (
-    <View style={styles.stat}>
-      <Icon name={icon} size={19} color={colors.forest} />
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.secondary}>{label}</Text>
+    <View style={[styles.stat, isNight && { backgroundColor: themeColors.surface }]}>
+      <Icon name={icon} size={19} color={isNight ? themeColors.forest : colors.forest} />
+      <Text style={[styles.statValue, isNight && { color: themeColors.ink }]}>{value}</Text>
+      <Text style={[styles.secondary, isNight && { color: themeColors.muted }]}>{label}</Text>
     </View>
   );
 }
@@ -34,6 +36,7 @@ export default function ProfileScreen() {
   const paddingBottom = useTabContentInset();
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+  const { isNight, colors: themeColors, toggleTheme } = useTheme();
   const { user, isLoading, error } = useAppSelector(state => state.auth);
   const { items, metadata, connection, isRefreshing } = useAppSelector(state => state.feed);
   const { favourites, isDownloading, error: shelfError } = useAppSelector(state => state.favourites);
@@ -58,9 +61,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.scroll, { paddingBottom }]}>
+    <ScrollView style={[styles.screen, isNight && { backgroundColor: themeColors.background }]} contentContainerStyle={[styles.scroll, { paddingBottom }]}>
       {focused && <StatusBar style="light" />}
-      <View style={[styles.masthead, { paddingTop: insets.top + spacing[4] }]}>
+      <View style={[styles.masthead, { paddingTop: insets.top + spacing[4] }, isNight && { backgroundColor: themeColors.surface }]}>
         <Image source={require('../../assets/brand/cosmolog-mark-ivory.png')} style={styles.mark} accessible={false} />
         <Text accessibilityRole="header" style={styles.heading}>Profile</Text>
       </View>
@@ -69,18 +72,18 @@ export default function ProfileScreen() {
           <View style={styles.avatar}>
             {user.image && !avatarFailed && connection !== 'offline'
               ? <Image source={{ uri: user.image }} style={StyleSheet.absoluteFill} onError={() => setAvatarFailed(true)} />
-              : <Icon name="user" size={25} color={colors.forest} />}
+              : <Icon name="user" size={25} color={isNight ? themeColors.forest : colors.forest} />}
           </View>
           <View style={styles.identityCopy}>
-            <Text style={styles.name}>{user.fullName}</Text>
-            <Text style={styles.secondary}>@{user.username}</Text>
+            <Text style={[styles.name, isNight && { color: themeColors.forest }]}>{user.fullName}</Text>
+            <Text style={[styles.secondary, isNight && { color: themeColors.muted }]}>@{user.username}</Text>
           </View>
         </View>
-        <View style={styles.connection}>
-          <Icon name={connection === 'offline' ? 'wifi-off' : 'download-cloud'} color={colors.forest} size={21} />
+        <View style={[styles.connection, isNight && { backgroundColor: themeColors.sageLight }]}>
+          <Icon name={connection === 'offline' ? 'wifi-off' : 'download-cloud'} color={isNight ? themeColors.forest : colors.forest} size={21} />
           <View style={styles.identityCopy}>
-            <Text style={styles.connectionTitle}>{connection === 'offline' ? 'You’re offline' : 'Offline library'}</Text>
-            <Text style={styles.secondary}>{items.length} feed discoveries · {downloadCount} downloaded favourite images</Text>
+            <Text style={[styles.connectionTitle, isNight && { color: themeColors.forest }]}>{connection === 'offline' ? 'You’re offline' : 'Offline library'}</Text>
+            <Text style={[styles.secondary, isNight && { color: themeColors.muted }]}>{items.length} feed discoveries · {downloadCount} downloaded favourite images</Text>
           </View>
         </View>
         <Button
@@ -95,6 +98,27 @@ export default function ProfileScreen() {
           variant="outline"
           onPress={() => router.push('/offline-library' as never)}
         />
+        <View style={[styles.settingCard, isNight && { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <View style={styles.settingCardHeader}>
+            <Icon name="moon" size={20} color={isNight ? themeColors.forest : colors.forest} />
+            <View style={styles.settingCardCopy}>
+              <Text style={[styles.settingTitle, isNight && { color: themeColors.forest }]}>Night Observation Mode</Text>
+              <Text style={[styles.settingDescription, isNight && { color: themeColors.muted }]}>
+                High-contrast red-on-charcoal theme designed for dark sky viewing at the telescope. System dialogs use OS appearance.
+              </Text>
+            </View>
+            <Switch
+              value={isNight}
+              onValueChange={() => { void toggleTheme(); }}
+              trackColor={{ false: isNight ? themeColors.border : colors.border, true: themeColors.forest }}
+              thumbColor={isNight ? themeColors.brass : colors.surface}
+              accessibilityRole="switch"
+              accessibilityLabel="Night Observation Mode"
+              accessibilityHint="Toggles between default editorial and night observation palettes"
+              testID="night-mode-switch"
+            />
+          </View>
+        </View>
         <View style={styles.stats}>
           <Stat label="Saved discoveries" value={String(favourites.length)} icon="bookmark" />
           <Stat label="Favourite images" value={formatBytes(imageBytes)} icon="hard-drive" />
@@ -158,4 +182,29 @@ const styles = StyleSheet.create({
   sourceLabel: { ...typography.body, color: colors.ink },
   signOut: { borderRadius: radii.pill },
   error: { ...typography.bodySmall, color: colors.danger },
+  settingCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing[4],
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  settingCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+  },
+  settingCardCopy: {
+    flex: 1,
+  },
+  settingTitle: {
+    ...typography.label,
+    fontSize: 15,
+    color: colors.forest,
+  },
+  settingDescription: {
+    ...typography.bodySmall,
+    color: colors.muted,
+    marginTop: 2,
+  },
 });

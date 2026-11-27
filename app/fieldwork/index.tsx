@@ -17,9 +17,11 @@ import {
 } from '../../src/database/repositories/observationsRepository';
 import { useAppSelector } from '../../src/store';
 import { colors, radii, spacing, typography } from '../../src/theme/tokens';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 export default function FieldworkHubScreen() {
   const router = useRouter();
+  const { isNight, colors: themeColors, toggleTheme } = useTheme();
   const { user } = useAppSelector(state => state.auth);
   const userId = user?.id;
   const { connection, metadata, legacySyncedAt } = useAppSelector(state => state.feed);
@@ -60,54 +62,58 @@ export default function FieldworkHubScreen() {
         accessibilityRole="button"
         accessibilityLabel={`Observation: ${item.title}, dated ${formattedDate}`}
         accessibilityHint="Navigates to observation details"
-        style={({ pressed }) => [styles.observationCard, pressed && styles.cardPressed]}
+        style={({ pressed }) => [
+          styles.observationCard,
+          isNight && { backgroundColor: themeColors.surface, borderColor: themeColors.border },
+          pressed && (isNight ? { backgroundColor: themeColors.cardPressed } : styles.cardPressed),
+        ]}
         onPress={() => router.push(`/fieldwork/${item.id}` as never)}
       >
         <View style={styles.cardHeader}>
-          <View style={styles.targetBadge}>
-            <Icon name="crosshair" size={12} color={colors.forest} />
-            <Text style={styles.targetBadgeText}>
+          <View style={[styles.targetBadge, isNight && { backgroundColor: themeColors.sageLight }]}>
+            <Icon name="crosshair" size={12} color={isNight ? themeColors.forest : colors.forest} />
+            <Text style={[styles.targetBadgeText, isNight && { color: themeColors.forest }]}>
               {(item.targetName || item.targetId || 'GENERAL SKY').toUpperCase()}
             </Text>
           </View>
           <View style={styles.headerRightRow}>
             {item.instrumentSnapshot ? (
-              <Icon name="compass" size={13} color={colors.forest} style={styles.badgeIcon} />
+              <Icon name="compass" size={13} color={isNight ? themeColors.forest : colors.forest} style={styles.badgeIcon} />
             ) : null}
             {item.imageFileName ? (
-              <Icon name="camera" size={13} color={colors.terracotta} style={styles.badgeIcon} />
+              <Icon name="camera" size={13} color={isNight ? themeColors.terracotta : colors.terracotta} style={styles.badgeIcon} />
             ) : null}
             {item.latitude != null ? (
-              <Icon name="map-pin" size={13} color={colors.brass} style={styles.badgeIcon} />
+              <Icon name="map-pin" size={13} color={isNight ? themeColors.brass : colors.brass} style={styles.badgeIcon} />
             ) : null}
-            <Text style={styles.dateMeta}>{formattedDate}</Text>
+            <Text style={[styles.dateMeta, isNight && { color: themeColors.muted }]}>{formattedDate}</Text>
           </View>
         </View>
 
-        <Text accessibilityRole="header" style={styles.cardTitle}>{item.title}</Text>
+        <Text accessibilityRole="header" style={[styles.cardTitle, isNight && { color: themeColors.ink }]}>{item.title}</Text>
 
         {item.conditions ? (
-          <Text style={styles.conditionsText} numberOfLines={1}>
+          <Text style={[styles.conditionsText, isNight && { color: themeColors.muted }]} numberOfLines={1}>
             Conditions: {item.conditions}
           </Text>
         ) : null}
 
-        <Text style={styles.notesSnippet} numberOfLines={2}>
+        <Text style={[styles.notesSnippet, isNight && { color: themeColors.muted }]} numberOfLines={2}>
           {item.notes}
         </Text>
 
         <View style={styles.cardFooter}>
-          <Text style={styles.timezoneMeta}>
+          <Text style={[styles.timezoneMeta, isNight && { color: themeColors.muted }]}>
             Recorded: {item.timezone}
           </Text>
-          <Icon name="chevron-right" size={16} color={colors.forest} />
+          <Icon name="chevron-right" size={16} color={isNight ? themeColors.forest : colors.forest} />
         </View>
       </Pressable>
     );
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, isNight && { backgroundColor: themeColors.background }]}>
       <Header title="Fieldwork Journal" showBack />
       {offline && <OfflineBanner lastSyncedAt={syncedAt} />}
 
@@ -117,10 +123,37 @@ export default function FieldworkHubScreen() {
         renderItem={renderItem}
         contentContainerStyle={styles.content}
         ListHeaderComponent={
-          <View style={styles.masthead}>
-            <Text style={styles.kicker}>INDEPENDENT ASTRONOMICAL RECORDS · F05</Text>
-            <Text accessibilityRole="header" style={styles.title}>Observational Fieldwork</Text>
-            <Text style={styles.summary}>
+          <View style={[styles.masthead, isNight && { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+            <View style={styles.mastheadTopRow}>
+              <Text style={[styles.kicker, isNight && { color: themeColors.brass }]}>INDEPENDENT ASTRONOMICAL RECORDS · F05</Text>
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityLabel={`Night Observation Mode: ${isNight ? 'Active' : 'Inactive'}`}
+                accessibilityHint="Quickly toggles dark red night theme at the eyepiece"
+                accessibilityState={{ checked: isNight }}
+                testID="fieldwork-night-mode-toggle"
+                style={[
+                  styles.nightModeChip,
+                  {
+                    backgroundColor: isNight ? themeColors.sageLight : colors.surface,
+                    borderColor: isNight ? themeColors.forest : colors.border,
+                  },
+                ]}
+                onPress={() => { void toggleTheme(); }}
+              >
+                <Icon name="moon" size={12} color={isNight ? themeColors.forest : colors.forest} />
+                <Text
+                  style={[
+                    styles.nightModeChipText,
+                    { color: isNight ? themeColors.forest : colors.forest },
+                  ]}
+                >
+                  {isNight ? 'NIGHT: ON' : 'NIGHT: OFF'}
+                </Text>
+              </Pressable>
+            </View>
+            <Text accessibilityRole="header" style={[styles.title, isNight && { color: themeColors.forest }]}>Observational Fieldwork</Text>
+            <Text style={[styles.summary, isNight && { color: themeColors.muted }]}>
               Account-isolated logbook for celestial eyepiece observations, night sky conditions, and fieldwork field notes.
             </Text>
 
@@ -303,5 +336,26 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: 'center',
     marginBottom: spacing[2],
+  },
+  mastheadTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing[1],
+  },
+  nightModeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    gap: 4,
+  },
+  nightModeChipText: {
+    fontFamily: typography.label.fontFamily,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

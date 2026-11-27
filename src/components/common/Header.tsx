@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, layout, spacing, typography } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeContext';
 import { Icon } from './Icon';
 
 export interface HeaderProps {
@@ -31,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isNight, colors: themeColors } = useTheme();
 
   const handleBack = () => {
     if (onBack) {
@@ -43,28 +45,28 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <View style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 16) }, style]}>
+    <View style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 16) }, isNight && { backgroundColor: themeColors.surface, borderBottomColor: themeColors.border }, style]}>
       <View style={styles.topRow}>
         {showBack ? (
           <Pressable
             onPress={handleBack}
-            style={styles.backButton}
+            style={[styles.backButton, isNight && { backgroundColor: themeColors.sageLight }]}
             accessibilityRole="button"
             accessibilityLabel="Go back to previous screen"
-            android_ripple={{ color: colors.sage }}
+            android_ripple={{ color: isNight ? themeColors.forest : colors.sage }}
           >
-            <Icon name="arrow-left" size={22} color={colors.forest} />
+            <Icon name="arrow-left" size={22} color={isNight ? themeColors.forest : colors.forest} />
           </Pressable>
         ) : (
           <View style={styles.placeholder} />
         )}
 
         <View style={styles.titleContainer}>
-          <Text style={styles.title} >
+          <Text style={[styles.title, isNight && { color: themeColors.forest }]}>
             {title}
           </Text>
           {Boolean(subtitle) && (
-            <Text style={styles.subtitle} >
+            <Text style={[styles.subtitle, isNight && { color: themeColors.muted }]}>
               {subtitle}
             </Text>
           )}
