@@ -261,3 +261,13 @@ export const MIGRATE_TO_OBSERVATIONS_SQL = `
   PRAGMA user_version = 17;
 `;
 
+export const MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL = `
+  ALTER TABLE observations ADD COLUMN latitude REAL;
+  ALTER TABLE observations ADD COLUMN longitude REAL;
+  ALTER TABLE observations ADD COLUMN location_name TEXT;
+  ALTER TABLE observations ADD COLUMN image_file_name TEXT;
+  ALTER TABLE observations ADD COLUMN image_bytes INTEGER NOT NULL DEFAULT 0;
+  PRAGMA user_version = 18;
+`;
+
+

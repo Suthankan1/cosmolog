@@ -21,6 +21,7 @@ import {
   MIGRATE_TO_EXPEDITIONS_SQL,
   MIGRATE_TO_EXPEDITION_REVISIONS_SQL,
   MIGRATE_TO_OBSERVATIONS_SQL,
+  MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL,
 } from '../src/database/schema';
 
 // Helper to run all migrations from version up to 16 on a raw SQLite connection
@@ -60,6 +61,15 @@ async function runMigrationsTo17(db: mockDatabaseSync) {
   const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
   if (row.user_version < 17) {
     db.exec(MIGRATE_TO_OBSERVATIONS_SQL);
+  }
+}
+
+// Helper to run all migrations from version up to 18 on a raw SQLite connection
+async function runMigrationsTo18(db: mockDatabaseSync) {
+  await runMigrationsTo17(db);
+  const row = db.prepare('PRAGMA user_version').get() as { user_version: number };
+  if (row.user_version < 18) {
+    db.exec(MIGRATE_TO_OBSERVATION_ATTACHMENTS_SQL);
   }
 }
 
@@ -306,6 +316,66 @@ describe('Database Migration 16 Safety (Issue 1)', () => {
 
       const rows = db.prepare('SELECT * FROM expedition_progress WHERE account_id = 10').all();
       expect(rows.length).toBe(1);
+
+      db.close();
+    });
+  });
+
+  describe('Database Migration 18 Safety (Observation Attachments & Coordinates)', () => {
+    it('applies Migration 18 on fresh install and sets user_version to 18', async () => {
+      const dbPath = join(tmpDir, 'fresh-18.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo18(db);
+
+      const versionRow = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow.user_version).toBe(18);
+
+      const cols = db.prepare('PRAGMA table_info(observations)').all() as { name: string }[];
+      const colNames = cols.map(c => c.name);
+      expect(colNames).toContain('latitude');
+      expect(colNames).toContain('longitude');
+      expect(colNames).toContain('location_name');
+      expect(colNames).toContain('image_file_name');
+      expect(colNames).toContain('image_bytes');
+
+      db.close();
+    });
+
+    it('upgrades from version 17 to 18 preserving existing observations', async () => {
+      const dbPath = join(tmpDir, 'upgrade-17-to-18.sqlite');
+      const db = new mockDatabaseSync(dbPath);
+
+      db.exec(CREATE_TABLES_SQL);
+      await runMigrationsTo17(db);
+
+      // Insert pre-migration observation record
+      db.prepare(`
+        INSERT INTO observations (
+          id, account_id, title, notes, observed_at, timezone, target_id, target_name, conditions, created_at, updated_at
+        ) VALUES (
+          'obs_v17_test', 10, 'Pre-migration Lunar Note', 'Craters sharp at dusk.', '2026-11-26T18:00:00Z', 'UTC', 'body:Moon', 'The Moon', 'Clear', '2026-11-26T18:00:00Z', '2026-11-26T18:00:00Z'
+        )
+      `).run();
+
+      const versionRow17 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow17.user_version).toBe(17);
+
+      // Upgrade to 18
+      await runMigrationsTo18(db);
+
+      const versionRow18 = db.prepare('PRAGMA user_version').get() as { user_version: number };
+      expect(versionRow18.user_version).toBe(18);
+
+      // Verify existing row is preserved with NULL coordinates and photo
+      const preserved = db.prepare("SELECT * FROM observations WHERE id = 'obs_v17_test'").get() as any;
+      expect(preserved).toBeDefined();
+      expect(preserved.title).toBe('Pre-migration Lunar Note');
+      expect(preserved.latitude).toBeNull();
+      expect(preserved.longitude).toBeNull();
+      expect(preserved.image_file_name).toBeNull();
+      expect(preserved.image_bytes).toBe(0);
 
       db.close();
     });

@@ -42,6 +42,32 @@ jest.mock('expo-router', () => {
 
 jest.mock('../src/database/repositories/observationsRepository');
 
+jest.mock('expo-image-picker', () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  launchImageLibraryAsync: jest.fn().mockResolvedValue({
+    canceled: false,
+    assets: [{ uri: 'file:///mock/cache/picker_img.jpg' }],
+  }),
+}));
+
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({
+    coords: { latitude: 6.9271, longitude: 79.8612 },
+  }),
+  Accuracy: { Balanced: 3 },
+}));
+
+jest.mock('../src/services/storage/observationStorage', () => ({
+  stageObservationPhoto: jest.fn().mockResolvedValue({
+    fileName: 'obs_staged_photo.jpg',
+    bytes: 245000,
+    uri: 'file:///mock/cosmolog_observations/obs_staged_photo.jpg',
+  }),
+  getObservationPhotoUri: jest.fn(name => (name ? `file:///mock/cosmolog_observations/${name}` : null)),
+  deleteObservationPhotoFile: jest.fn().mockReturnValue(true),
+}));
+
 const sampleObservation: ObservationRecord = {
   id: 'obs_sample_123',
   accountId: 10,
@@ -52,6 +78,11 @@ const sampleObservation: ObservationRecord = {
   targetId: 'body:Saturn',
   targetName: 'Saturn',
   conditions: 'Clear, Bortle 4',
+  latitude: 6.9271,
+  longitude: 79.8612,
+  locationName: 'Colombo Dark Sky Site',
+  imageFileName: 'sample_saturn.jpg',
+  imageBytes: 245000,
   linkedDiscoveryId: 'nasa-apod:2026-11-26',
   linkedStudyId: 'chapter:worlds',
   createdAt: '2026-11-26T19:35:00.000Z',
@@ -182,6 +213,42 @@ describe('Create Observation Screen (CreateObservationScreen)', () => {
     );
     expect(mockBack).toHaveBeenCalled();
   });
+
+  it('attaches photo from library and allows removal (Issue #16)', async () => {
+    await render(<CreateObservationScreen />);
+
+    const attachBtn = screen.getByLabelText('Attach telescope or eyepiece photo from device photo library');
+    await act(async () => {
+      fireEvent.press(attachBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('obs_staged_photo.jpg')).toBeTruthy();
+      expect(screen.getByText('Remove photo')).toBeTruthy();
+    });
+
+    const removeBtn = screen.getByLabelText('Remove attached eyepiece photo');
+    await act(async () => {
+      fireEvent.press(removeBtn);
+    });
+
+    expect(screen.queryByText('obs_staged_photo.jpg')).toBeNull();
+  });
+
+  it('captures GPS coordinates on button press (Issue #16)', async () => {
+    await render(<CreateObservationScreen />);
+
+    const gpsBtn = screen.getByLabelText('Capture current GPS coordinates');
+    await act(async () => {
+      fireEvent.press(gpsBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('6.9271')).toBeTruthy();
+      expect(screen.getByDisplayValue('79.8612')).toBeTruthy();
+      expect(screen.getByDisplayValue('Current Observing Site')).toBeTruthy();
+    });
+  });
 });
 
 describe('Observation Detail & Edit Screen (ObservationDetailScreen)', () => {
@@ -196,6 +263,9 @@ describe('Observation Detail & Edit Screen (ObservationDetailScreen)', () => {
       expect(screen.getByText('Sky Conditions: Clear, Bortle 4')).toBeTruthy();
       expect(screen.getByText('Sharp Cassini division visible at 200x magnification.')).toBeTruthy();
       expect(screen.getByText('Recorded timezone: Asia/Colombo')).toBeTruthy();
+      expect(screen.getByText(/6.9271°, 79.8612°/)).toBeTruthy();
+      expect(screen.getByText('Colombo Dark Sky Site')).toBeTruthy();
+      expect(screen.getByText('sample_saturn.jpg')).toBeTruthy();
       expect(screen.getByText('View linked Discovery plate')).toBeTruthy();
       expect(screen.getByText('View linked Space Study guide')).toBeTruthy();
     });
